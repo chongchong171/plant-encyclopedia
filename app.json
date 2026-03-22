@@ -1,0 +1,55 @@
+{
+  "pages": [
+    "pages/home/home",
+    "pages/camera/camera",
+    "pages/result_swiper/result_swiper",
+    "pages/search_page/search_page",
+    "pages/search_result/seach_result",
+    "pages/search_detail/search_detail",
+    "pages/favorites/favorites",
+    "pages/history/history",
+    "pages/profile/profile"
+  ],
+  "window": {
+    "backgroundTextStyle": "light",
+    "navigationBarBackgroundColor": "#4CAF50",
+    "navigationBarTitleText": "植物百科大全",
+    "navigationBarTextStyle": "white",
+    "backgroundColor": "#E8F5E9"
+  },
+  "tabBar": {
+    "color": "#999999",
+    "selectedColor": "#4CAF50",
+    "backgroundColor": "#ffffff",
+    "borderStyle": "black",
+    "list": [
+      {
+        "pagePath": "pages/home/home",
+        "text": "识别",
+        "iconPath": "/image/tab/scan.png",
+        "selectedIconPath": "/image/tab/scan-active.png"
+      },
+      {
+        "pagePath": "pages/search_page/search_page",
+        "text": "搜索",
+        "iconPath": "/image/tab/search.png",
+        "selectedIconPath": "/image/tab/search-active.png"
+      },
+      {
+        "pagePath": "pages/favorites/favorites",
+        "text": "收藏",
+        "iconPath": "/image/tab/heart.png",
+        "selectedIconPath": "/image/tab/heart-active.png"
+      },
+      {
+        "pagePath": "pages/profile/profile",
+        "text": "我的",
+        "iconPath": "/image/tab/user.png",
+        "selectedIconPath": "/image/tab/user-active.png"
+      }
+    ]
+  },
+  "cloud": true,
+  "style": "v2",
+  "sitemapLocation": "sitemap.json"
+}

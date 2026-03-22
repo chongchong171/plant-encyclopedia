@@ -1,0 +1,35 @@
+<!-- 历史记录页面 -->
+<view class="container">
+  <!-- 顶部标题 -->
+  <view class="header">
+    <text class="title">识别历史</text>
+    <text class="clear-btn" bindtap="clearHistory" wx:if="{{history.length > 0}}">清空</text>
+  </view>
+
+  <!-- 历史列表 -->
+  <view class="history-list" wx:if="{{history.length > 0}}">
+    <view 
+      class="history-item" 
+      wx:for="{{history}}" 
+      wx:key="id"
+      bindtap="goToDetail"
+      data-plant="{{item}}"
+    >
+      <image class="plant-image" src="{{item.image}}" mode="aspectFill"></image>
+      <view class="plant-info">
+        <text class="plant-name">{{item.name}}</text>
+        <text class="plant-family">{{item.family}}</text>
+        <text class="identify-time">{{item.timeStr}}</text>
+      </view>
+      <text class="arrow">›</text>
+    </view>
+  </view>
+
+  <!-- 空状态 -->
+  <view class="empty-state" wx:else>
+    <image class="empty-icon" src="/image/empty-history.png" mode="aspectFit"></image>
+    <text class="empty-text">还没有识别记录</text>
+    <text class="empty-hint">拍照识别植物后记录会显示在这里</text>
+    <button class="btn-primary" bindtap="goToHome">去识别</button>
+  </view>
+</view>

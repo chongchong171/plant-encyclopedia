@@ -1,0 +1,156 @@
+/**
+ * 个人中心样式
+ */
+
+.container {
+  padding: 20rpx;
+  background-color: #E8F5E9;
+  min-height: 100vh;
+}
+
+/* 用户卡片 */
+.user-card {
+  background: linear-gradient(135deg, #4CAF50 0%, #81C784 100%);
+  border-radius: 20rpx;
+  padding: 40rpx;
+  display: flex;
+  align-items: center;
+  gap: 24rpx;
+  margin-bottom: 20rpx;
+}
+
+.avatar {
+  width: 120rpx;
+  height: 120rpx;
+  border-radius: 50%;
+  border: 4rpx solid #FFFFFF;
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+}
+
+.nickname {
+  font-size: 36rpx;
+  font-weight: 600;
+  color: #FFFFFF;
+}
+
+.vip-status {
+  font-size: 24rpx;
+  color: #FFD700;
+}
+
+.login-hint {
+  font-size: 24rpx;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* 统计卡片 */
+.stats-card {
+  background-color: #FFFFFF;
+  border-radius: 16rpx;
+  padding: 30rpx;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  margin-bottom: 20rpx;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8rpx;
+}
+
+.stat-value {
+  font-size: 40rpx;
+  font-weight: 600;
+  color: #4CAF50;
+}
+
+.stat-label {
+  font-size: 24rpx;
+  color: #999999;
+}
+
+.divider {
+  width: 1rpx;
+  height: 60rpx;
+  background-color: #E0E0E0;
+}
+
+/* 功能列表 */
+.menu-card {
+  background-color: #FFFFFF;
+  border-radius: 16rpx;
+  overflow: hidden;
+  margin-bottom: 20rpx;
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  padding: 30rpx;
+  border-bottom: 1rpx solid #F5F5F5;
+}
+
+.menu-item:last-child {
+  border-bottom: none;
+}
+
+.menu-item:active {
+  background-color: #F5F5F5;
+}
+
+.menu-icon {
+  font-size: 40rpx;
+  margin-right: 24rpx;
+}
+
+.menu-text {
+  flex: 1;
+  font-size: 30rpx;
+  color: #333333;
+}
+
+.menu-arrow {
+  font-size: 32rpx;
+  color: #CCCCCC;
+}
+
+/* VIP 卡片 */
+.vip-card {
+  background: linear-gradient(135deg, #FFD700 0%, #FFA000 100%);
+  border-radius: 16rpx;
+  padding: 30rpx;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.vip-content {
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+}
+
+.vip-title {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #333333;
+}
+
+.vip-desc {
+  font-size: 24rpx;
+  color: rgba(0, 0, 0, 0.6);
+}
+
+.vip-price {
+  font-size: 36rpx;
+  font-weight: 600;
+  color: #333333;
+}

@@ -1,0 +1,120 @@
+/**
+ * 收藏页面样式
+ */
+
+.container {
+  padding: 20rpx;
+  background-color: #E8F5E9;
+  min-height: 100vh;
+}
+
+.header {
+  background-color: #FFFFFF;
+  border-radius: 16rpx;
+  padding: 30rpx;
+  margin-bottom: 20rpx;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.title {
+  font-size: 36rpx;
+  font-weight: 600;
+  color: #333333;
+}
+
+.count {
+  font-size: 26rpx;
+  color: #999999;
+}
+
+.favorite-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+}
+
+.favorite-item {
+  background-color: #FFFFFF;
+  border-radius: 16rpx;
+  padding: 24rpx;
+  display: flex;
+  align-items: center;
+  gap: 24rpx;
+}
+
+.plant-image {
+  width: 120rpx;
+  height: 120rpx;
+  border-radius: 12rpx;
+  flex-shrink: 0;
+}
+
+.plant-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+}
+
+.plant-name {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #333333;
+}
+
+.plant-family {
+  font-size: 24rpx;
+  color: #666666;
+}
+
+.add-time {
+  font-size: 22rpx;
+  color: #999999;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+}
+
+.remove-btn {
+  font-size: 26rpx;
+  color: #F44336;
+  padding: 12rpx 24rpx;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 100rpx 40rpx;
+}
+
+.empty-icon {
+  width: 200rpx;
+  height: 200rpx;
+  margin-bottom: 40rpx;
+}
+
+.empty-text {
+  font-size: 32rpx;
+  color: #666666;
+  margin-bottom: 16rpx;
+}
+
+.empty-hint {
+  font-size: 26rpx;
+  color: #999999;
+  margin-bottom: 40rpx;
+}
+
+.btn-primary {
+  background-color: #4CAF50;
+  color: #FFFFFF;
+  border-radius: 40rpx;
+  padding: 20rpx 60rpx;
+  font-size: 28rpx;
+}

@@ -1,0 +1,68 @@
+<!-- 个人中心页面 -->
+<view class="container">
+  <!-- 用户信息卡片 -->
+  <view class="user-card">
+    <image class="avatar" src="{{userInfo.avatarUrl || '/image/default-avatar.png'}}" mode="aspectFill"></image>
+    <view class="user-info">
+      <text class="nickname">{{userInfo.nickName || '未登录'}}</text>
+      <text class="vip-status" wx:if="{{vipUser}}">👑 VIP会员</text>
+      <text class="login-hint" wx:else>点击登录享受更多功能</text>
+    </view>
+  </view>
+
+  <!-- 识别统计 -->
+  <view class="stats-card">
+    <view class="stat-item">
+      <text class="stat-value">{{todayCount}}</text>
+      <text class="stat-label">今日识别</text>
+    </view>
+    <view class="divider"></view>
+    <view class="stat-item">
+      <text class="stat-value">{{totalCount}}</text>
+      <text class="stat-label">累计识别</text>
+    </view>
+    <view class="divider"></view>
+    <view class="stat-item">
+      <text class="stat-value">{{favoriteCount}}</text>
+      <text class="stat-label">收藏植物</text>
+    </view>
+  </view>
+
+  <!-- 功能列表 -->
+  <view class="menu-card">
+    <view class="menu-item" bindtap="goToHistory">
+      <text class="menu-icon">📋</text>
+      <text class="menu-text">识别历史</text>
+      <text class="menu-arrow">›</text>
+    </view>
+    <view class="menu-item" bindtap="goToFavorites">
+      <text class="menu-icon">❤️</text>
+      <text class="menu-text">我的收藏</text>
+      <text class="menu-arrow">›</text>
+    </view>
+    <view class="menu-item" bindtap="showVipInfo">
+      <text class="menu-icon">👑</text>
+      <text class="menu-text">VIP会员</text>
+      <text class="menu-arrow">›</text>
+    </view>
+    <view class="menu-item" bindtap="showFeedback">
+      <text class="menu-icon">💬</text>
+      <text class="menu-text">意见反馈</text>
+      <text class="menu-arrow">›</text>
+    </view>
+    <view class="menu-item" bindtap="showAbout">
+      <text class="menu-icon">ℹ️</text>
+      <text class="menu-text">关于我们</text>
+      <text class="menu-arrow">›</text>
+    </view>
+  </view>
+
+  <!-- VIP 卡片 -->
+  <view class="vip-card" wx:if="{{!vipUser}}" bindtap="showVipInfo">
+    <view class="vip-content">
+      <text class="vip-title">升级 VIP 会员</text>
+      <text class="vip-desc">无限识别 + 更多功能</text>
+    </view>
+    <text class="vip-price">¥9.9/月</text>
+  </view>
+</view>
