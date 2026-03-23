@@ -5,6 +5,7 @@
  */
 
 const PLANTNET_API_URL = 'https://my-api.plantnet.org/v2/identify/all';
+const PLANTNET_API_KEY = '2b10FL68fQYQN3rsOHf9xCrSe';
 const QWEN_API_URL = 'https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions';
 const QWEN_API_KEY = 'sk-d43b58a6d0dd486d89b69a38f305483a';
 
@@ -80,7 +81,7 @@ async function identifyWithPlantNet(imageBase64) {
       encoding: 'binary',
       success: () => {
         wx.uploadFile({
-          url: PLANTNET_API_URL + '?api-key=YOUR_PLANTNET_API_KEY',
+          url: `${PLANTNET_API_URL}?api-key=${PLANTNET_API_KEY}`,
           filePath: filePath,
           name: 'images',
           formData: {
