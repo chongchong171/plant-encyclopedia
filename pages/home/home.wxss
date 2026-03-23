@@ -65,9 +65,21 @@
   background: linear-gradient(135deg, #4CAF50 0%, #66BB6A 100%);
 }
 
+.camera-card .action-icon {
+  width: 100rpx;
+  height: 100rpx;
+  margin-bottom: 20rpx;
+}
+
 .album-card {
   background: white;
   border: 4rpx solid #4CAF50;
+}
+
+.album-card .action-icon {
+  width: 100rpx;
+  height: 100rpx;
+  margin-bottom: 20rpx;
 }
 
 .action-icon {
