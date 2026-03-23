@@ -23,10 +23,10 @@
   margin-bottom: 20rpx;
 }
 
-.logo-image {
-  width: 120rpx;
-  height: 120rpx;
+.logo-icon {
+  font-size: 120rpx;
   margin-bottom: 20rpx;
+  filter: drop-shadow(0 4rpx 8rpx rgba(0,0,0,0.2));
 }
 
 .app-name {
@@ -34,6 +34,7 @@
   font-weight: bold;
   color: white;
   letter-spacing: 4rpx;
+  text-shadow: 0 2rpx 4rpx rgba(0,0,0,0.2);
 }
 
 .slogan {
@@ -65,10 +66,9 @@
   background: linear-gradient(135deg, #4CAF50 0%, #66BB6A 100%);
 }
 
-.camera-card .action-icon {
-  width: 100rpx;
-  height: 100rpx;
-  margin-bottom: 20rpx;
+.camera-card .action-emoji {
+  font-size: 100rpx;
+  filter: drop-shadow(0 4rpx 8rpx rgba(0,0,0,0.2));
 }
 
 .album-card {
@@ -76,21 +76,12 @@
   border: 4rpx solid #4CAF50;
 }
 
-.album-card .action-icon {
-  width: 100rpx;
-  height: 100rpx;
-  margin-bottom: 20rpx;
-}
-
-.action-icon {
-  width: 80rpx;
-  height: 80rpx;
-  margin-bottom: 20rpx;
+.album-card .action-emoji {
+  font-size: 100rpx;
 }
 
 .action-emoji {
-  width: 80rpx;
-  height: 80rpx;
+  font-size: 80rpx;
   margin-bottom: 20rpx;
 }
 
@@ -112,24 +103,6 @@
 
 .camera-card .action-desc {
   color: rgba(255, 255, 255, 0.8);
-}
-
-/* 识别次数提示 */
-.count-tip {
-  background: rgba(255, 255, 255, 0.9);
-  border-radius: 40rpx;
-  padding: 20rpx 40rpx;
-  display: flex;
-  align-items: center;
-  gap: 20rpx;
-  font-size: 26rpx;
-  color: #666;
-  margin-bottom: 40rpx;
-}
-
-.vip-link {
-  color: #FF9800;
-  font-weight: bold;
 }
 
 /* 测试按钮 */

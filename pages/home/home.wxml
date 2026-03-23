@@ -3,7 +3,7 @@
   <!-- 顶部区域 -->
   <view class="header">
     <view class="logo-area">
-      <image class="logo-image" src="/image/icons/logo-tree.png" mode="aspectFit"></image>
+      <view class="logo-icon">🌳</view>
       <text class="app-name">养花助手</text>
     </view>
     <text class="slogan">拍照识别植物，一键获取养护指南</text>
@@ -12,13 +12,13 @@
   <!-- 主要操作区 -->
   <view class="main-actions">
     <view class="action-card camera-card" bindtap="takePhoto">
-      <image class="action-icon" src="/image/icons/camera-cute.png" mode="aspectFit"></image>
+      <view class="action-emoji">📷</view>
       <text class="action-title">拍照识别</text>
       <text class="action-desc">打开相机拍摄植物</text>
     </view>
 
     <view class="action-card album-card" bindtap="chooseFromAlbum">
-      <image class="action-icon" src="/image/icons/album-cute.png" mode="aspectFit"></image>
+      <view class="action-emoji">🖼️</view>
       <text class="action-title">相册上传</text>
       <text class="action-desc">从相册选择植物图片</text>
     </view>
