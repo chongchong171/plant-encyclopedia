@@ -11,12 +11,11 @@ Page({
     const ctx = wx.createCameraContext();
     
     ctx.takePhoto({
-      quality: 'high',
+      quality: 'low',
       success: (res) => {
         const tempImagePath = res.tempImagePath;
-        wx.navigateTo({
-          url: `/pages/result_swiper/result_swiper?tmp_filePath=${encodeURIComponent(tempImagePath)}`
-        });
+        // 压缩图片
+        this.compressAndNavigate(tempImagePath);
       },
       fail: (err) => {
         wx.showToast({
@@ -38,8 +37,34 @@ Page({
       sourceType: ['album'],
       success: (res) => {
         const tempImagePath = res.tempFilePaths[0];
+        // 压缩图片
+        this.compressAndNavigate(tempImagePath);
+      }
+    });
+  },
+
+  /**
+   * 压缩图片并跳转
+   */
+  compressAndNavigate(imagePath) {
+    wx.showLoading({ title: '处理中...' });
+    
+    wx.compressImage({
+      src: imagePath,
+      quality: 50,
+      success: (res) => {
+        wx.hideLoading();
+        console.log('压缩后路径:', res.tempFilePath);
         wx.navigateTo({
-          url: `/pages/result_swiper/result_swiper?tmp_filePath=${encodeURIComponent(tempImagePath)}`
+          url: `/pages/result_swiper/result_swiper?tmp_filePath=${encodeURIComponent(res.tempFilePath)}`
+        });
+      },
+      fail: (err) => {
+        wx.hideLoading();
+        console.log('压缩失败，使用原图:', err);
+        // 压缩失败就直接用原图
+        wx.navigateTo({
+          url: `/pages/result_swiper/result_swiper?tmp_filePath=${encodeURIComponent(imagePath)}`
         });
       }
     });
