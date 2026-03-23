@@ -21,10 +21,7 @@
 
 .loading-overlay {
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  top: 0; left: 0; right: 0; bottom: 0;
   background: rgba(0, 0, 0, 0.4);
   display: flex;
   align-items: center;
@@ -48,9 +45,7 @@
   animation: spin 1s linear infinite;
 }
 
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
+@keyframes spin { to { transform: rotate(360deg); } }
 
 .loading-text {
   font-size: 30rpx;
@@ -58,9 +53,7 @@
 }
 
 /* === 识别失败 === */
-.error-container {
-  padding: 40rpx;
-}
+.error-container { padding: 40rpx; }
 
 .error-image {
   width: 100%;
@@ -76,9 +69,7 @@
   text-align: center;
 }
 
-.error-icon {
-  font-size: 80rpx;
-}
+.error-icon { font-size: 80rpx; }
 
 .error-title {
   display: block;
@@ -107,9 +98,7 @@
 }
 
 /* === 结果展示 === */
-.result-container {
-  padding-bottom: 160rpx;
-}
+.result-container { padding-bottom: 160rpx; }
 
 /* 顶部图片 */
 .plant-header {
@@ -118,19 +107,7 @@
   height: 480rpx;
 }
 
-.plant-image {
-  width: 100%;
-  height: 100%;
-}
-
-.image-gradient {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 120rpx;
-  background: linear-gradient(transparent, #F5F5F5);
-}
+.plant-image { width: 100%; height: 100%; }
 
 .favorite-btn {
   position: absolute;
@@ -154,7 +131,6 @@
   border-radius: 30rpx;
   padding: 40rpx;
   box-shadow: 0 8rpx 40rpx rgba(0, 0, 0, 0.08);
-  position: relative;
 }
 
 /* 名称区域 */
@@ -170,14 +146,6 @@
   font-size: 48rpx;
   font-weight: bold;
   color: #1B5E20;
-  margin-bottom: 10rpx;
-}
-
-.plant-scientific {
-  display: block;
-  font-size: 26rpx;
-  color: #999;
-  font-style: italic;
   margin-bottom: 20rpx;
 }
 
@@ -193,20 +161,11 @@
   font-size: 24rpx;
 }
 
-.tag-green {
-  background: #E8F5E9;
-  color: #4CAF50;
-}
-
-.tag-red {
-  background: #FFEBEE;
-  color: #E53935;
-}
+.tag-green { background: #E8F5E9; color: #4CAF50; }
+.tag-red { background: #FFEBEE; color: #E53935; }
 
 /* 信息区块 */
-.section {
-  margin-bottom: 30rpx;
-}
+.section { margin-bottom: 30rpx; }
 
 .section-header {
   display: flex;
@@ -225,71 +184,104 @@
   color: #333;
 }
 
-/* 描述框 */
-.description-box {
+/* 结果行 - 拆分显示 */
+.result-lines {
   background: #FAFAFA;
-  border-radius: 16rpx;
-  padding: 24rpx;
-  border-left: 6rpx solid #4CAF50;
-}
-
-.description-text {
-  font-size: 28rpx;
-  color: #444;
-  line-height: 1.8;
-}
-
-/* 养护网格 */
-.care-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 16rpx;
-}
-
-.care-item {
-  background: #F5F5F5;
-  border-radius: 16rpx;
+  border-radius: 20rpx;
   padding: 20rpx;
-  text-align: center;
+}
+
+.result-line {
+  display: flex;
+  align-items: flex-start;
+  padding: 16rpx 0;
+  border-bottom: 1rpx solid #F0F0F0;
+}
+
+.result-line:last-child {
+  border-bottom: none;
+}
+
+.result-line.care {
+  background: #E8F5E9;
+  border-radius: 12rpx;
+  padding: 16rpx 12rpx;
+  margin: 8rpx 0;
+}
+
+.line-dot {
+  font-size: 28rpx;
+  margin-right: 12rpx;
+  flex-shrink: 0;
+}
+
+.line-text {
+  font-size: 28rpx;
+  color: #333;
+  line-height: 1.7;
+  flex: 1;
+}
+
+/* 养护卡片 */
+.care-card {
+  background: linear-gradient(135deg, #E8F5E9 0%, #C8E6C9 100%);
+  border-radius: 20rpx;
+  padding: 24rpx;
+  margin-top: 20rpx;
+}
+
+.care-title {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20rpx;
+}
+
+.care-icon {
+  font-size: 32rpx;
+  margin-right: 8rpx;
+}
+
+.care-title text:last-child {
+  font-size: 30rpx;
+  font-weight: bold;
+  color: #2E7D32;
+}
+
+.care-items {
+  background: white;
+  border-radius: 16rpx;
+  padding: 16rpx;
+}
+
+.care-row {
+  display: flex;
+  align-items: center;
+  padding: 16rpx 0;
+  border-bottom: 1rpx solid #F0F0F0;
+}
+
+.care-row:last-child {
+  border-bottom: none;
 }
 
 .care-emoji {
   font-size: 36rpx;
+  margin-right: 16rpx;
+  width: 48rpx;
+  text-align: center;
 }
 
-.care-title {
-  display: block;
-  font-size: 24rpx;
-  color: #999;
-  margin: 8rpx 0;
-}
-
-.care-text {
-  display: block;
-  font-size: 26rpx;
-  color: #333;
-  font-weight: 500;
-}
-
-/* 养护提示 */
-.care-tips {
-  margin-top: 20rpx;
-  background: linear-gradient(135deg, #FFF8E1 0%, #FFF3E0 100%);
-  border-radius: 16rpx;
-  padding: 20rpx;
-  display: flex;
-  align-items: flex-start;
-}
-
-.tips-icon {
-  font-size: 28rpx;
-  margin-right: 12rpx;
-}
-
-.tips-text {
+.care-label {
   font-size: 26rpx;
   color: #666;
-  line-height: 1.6;
+  width: 80rpx;
+}
+
+.care-value {
+  font-size: 28rpx;
+  color: #333;
+  font-weight: 500;
+  flex: 1;
 }
 
 /* 底部按钮 */
