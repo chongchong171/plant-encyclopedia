@@ -1,23 +1,34 @@
 /**
  * 植物识别工具
  * 使用 Qwen-VL 多模态模型识别植物
- * API 文档: https://help.aliyun.com/document_detail/2412504.html
  */
 
 const API_KEY = 'sk-d43b58a6d0dd486d89b69a38f305483a';
-// 使用 OpenAI 兼容模式 API（更稳定）
 const API_URL = 'https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions';
 
 /**
  * 识别植物
- * @param {string} imageBase64 - 图片的 base64 编码（不含前缀）
  */
 const identifyPlant = (imageBase64) => {
-  return new Promise((resolve, reject) => {
-    // 构建完整的 data URL
+  return new Promise((resolve) => {
+    console.log('🌿 图片Base64长度:', imageBase64.length);
+    
+    // 检查图片大小（最大约4MB base64）
+    if (imageBase64.length > 5500000) {
+      resolve({ success: false, error: '图片太大(>4MB)，请选择较小的图片' });
+      return;
+    }
+    
+    // 检查图片大小（最小要求）
+    if (imageBase64.length < 1000) {
+      resolve({ success: false, error: '图片太小，请重新拍摄' });
+      return;
+    }
+    
+    // 构建请求
     const imageUrl = `data:image/jpeg;base64,${imageBase64}`;
     
-    console.log('🌿 开始调用植物识别API...');
+    console.log('🚀 发送识别请求...');
     
     wx.request({
       url: API_URL,
@@ -34,76 +45,92 @@ const identifyPlant = (imageBase64) => {
             content: [
               {
                 type: 'image_url',
-                image_url: {
-                  url: imageUrl
-                }
+                image_url: { url: imageUrl }
               },
               {
                 type: 'text',
-                text: `请识别这张图片中的植物，直接返回JSON格式，不要有其他文字说明：
-{"name":"植物名称","scientificName":"学名","family":"科属","description":"简短描述(30字内)","careGuide":{"light":"光照需求","water":"浇水频率","temperature":"适宜温度","humidity":"湿度要求","fertilizer":"施肥建议","tips":"养护技巧"},"difficulty":"简单","toxicity":false,"features":["特点1","特点2"]}`
+                text: '请识别这张图片中的植物，告诉我：1.植物名称 2.简单养护建议'
               }
             ]
           }
-        ],
-        max_tokens: 1000
+        ]
       },
+      timeout: 60000,  // 60秒超时
       success: (res) => {
-        console.log('📡 API响应状态:', res.statusCode);
-        console.log('📡 API响应数据:', JSON.stringify(res.data).substring(0, 500));
+        console.log('📡 API状态码:', res.statusCode);
+        console.log('📡 API响应:', JSON.stringify(res.data).substring(0, 500));
         
-        if (res.statusCode !== 200) {
-          const errorMsg = res.data?.error?.message || res.data?.message || `HTTP错误(${res.statusCode})`;
-          console.error('❌ API错误:', errorMsg);
-          resolve({ success: false, error: errorMsg });
-          return;
-        }
-        
-        // OpenAI 兼容格式: choices[0].message.content
-        const content = res.data?.choices?.[0]?.message?.content;
-        
-        if (!content) {
-          console.error('❌ 未找到返回内容');
-          resolve({ success: false, error: 'AI未返回内容' });
-          return;
-        }
-        
-        console.log('✅ AI返回内容:', content.substring(0, 200));
-        
-        try {
-          // 尝试提取 JSON
-          const jsonMatch = content.match(/\{[\s\S]*\}/);
-          if (jsonMatch) {
-            const plantData = JSON.parse(jsonMatch[0]);
-            console.log('✅ 解析成功:', plantData.name);
-            resolve({ success: true, data: plantData });
-          } else {
-            // 如果没有 JSON 格式，尝试从文本中提取
-            console.log('⚠️ 未找到JSON，使用默认格式');
-            resolve({ 
-              success: true, 
-              data: { 
-                name: '植物',
-                description: content.substring(0, 100),
-                family: '未知',
-                difficulty: '中等',
-                toxicity: false,
-                careGuide: {
-                  light: '适中光照',
-                  water: '适量浇水',
-                  temperature: '常温'
+        if (res.statusCode === 200) {
+          const content = res.data?.choices?.[0]?.message?.content;
+          
+          if (content) {
+            // 尝试解析JSON，如果失败就用文本
+            let plant = {
+              name: '识别结果',
+              description: content,
+              family: '未知',
+              difficulty: '中等',
+              toxicity: false,
+              careGuide: {
+                light: '请参考描述',
+                water: '请参考描述',
+                temperature: '常温'
+              }
+            };
+            
+            try {
+              const jsonMatch = content.match(/\{[\s\S]*\}/);
+              if (jsonMatch) {
+                const parsed = JSON.parse(jsonMatch[0]);
+                plant = { ...plant, ...parsed };
+              } else {
+                // 从文本提取名称
+                const nameMatch = content.match(/(?:植物|名称)[是为：:]\s*([^\n,，。]+)/);
+                if (nameMatch) {
+                  plant.name = nameMatch[1].trim();
                 }
-              } 
-            });
+              }
+            } catch (e) {
+              console.log('JSON解析失败，使用文本模式');
+            }
+            
+            resolve({ success: true, data: plant });
+          } else {
+            resolve({ success: false, error: 'API未返回内容' });
           }
-        } catch (e) {
-          console.error('❌ JSON解析失败:', e);
-          resolve({ success: false, error: '解析失败: ' + e.message });
+        } else {
+          // 处理错误
+          let errMsg = '识别失败';
+          const errData = res.data?.error || res.data;
+          
+          if (errData?.message) {
+            errMsg = errData.message;
+            // 解析常见错误
+            if (errMsg.includes('image length and width')) {
+              errMsg = '图片尺寸不符合要求，请重新拍摄';
+            } else if (errMsg.includes('Failed to download')) {
+              errMsg = '图片处理失败，请重试';
+            }
+          } else if (res.statusCode === 401) {
+            errMsg = 'API认证失败，请联系管理员';
+          } else if (res.statusCode === 429) {
+            errMsg = '请求太频繁，请稍后再试';
+          } else if (res.statusCode >= 500) {
+            errMsg = '服务器繁忙，请稍后再试';
+          }
+          
+          resolve({ success: false, error: errMsg });
         }
       },
       fail: (err) => {
-        console.error('❌ 网络请求失败:', err);
-        resolve({ success: false, error: '网络错误: ' + (err.errMsg || '未知错误') });
+        console.error('❌ 请求失败:', err);
+        let errMsg = '网络请求失败';
+        if (err.errMsg?.includes('timeout')) {
+          errMsg = '请求超时，请检查网络';
+        } else if (err.errMsg?.includes('fail')) {
+          errMsg = '网络连接失败，请检查网络';
+        }
+        resolve({ success: false, error: errMsg });
       }
     });
   });
