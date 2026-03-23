@@ -1,4 +1,4 @@
-<!-- 植物百科大全 - 搜索结果页面 -->
+<!-- 养花助手 - 搜索结果页面 -->
 <view class="container">
   <!-- 加载中 -->
   <view class="loading-container" wx:if="{{loading}}">

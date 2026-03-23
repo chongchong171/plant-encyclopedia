@@ -1,5 +1,5 @@
 /**
- * 植物百科大全 - 搜索结果页面
+ * 养花助手 - 搜索结果页面
  */
 const API_KEY = 'sk-d43b58a6d0dd486d89b69a38f305483a';
 
@@ -117,7 +117,7 @@ Page({
    */
   onShareAppMessage() {
     return {
-      title: `植物百科大全 - ${this.data.searchText}`,
+      title: `养花助手 - ${this.data.searchText}`,
       path: `/pages/search_result/seach_result?search_text=${encodeURIComponent(this.data.searchText)}`
     };
   }

@@ -50,7 +50,7 @@
 
   <!-- 底部信息 -->
   <view class="footer">
-    <text class="footer-text">植物百科大全 v1.0.0</text>
+    <text class="footer-text">养花助手 v1.0.0</text>
     <text class="footer-text">让每个人都能养好花 🌸</text>
   </view>
 </view>

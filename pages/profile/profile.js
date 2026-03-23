@@ -90,7 +90,7 @@ Page({
    */
   showAbout() {
     wx.showModal({
-      title: '植物百科大全',
+      title: '养花助手',
       content: '版本：1.0.0\n\n拍照识别植物，一键获取养殖指南。\n\n让每个人都能养好花！',
       showCancel: false
     });
