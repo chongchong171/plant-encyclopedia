@@ -1,59 +1,133 @@
-
-//获取应用实例
-var WxSearch = require('wxSearch.js')
-
-var __keysColor = [];
-var __mindKeys = [];
+/**
+ * 植物百科大全 - 搜索详情页面
+ */
+const app = getApp();
 
 Page({
   data: {
-    focus:false,
-    wxSearchData:{}
+    keyword: '',
+    focus: true,
+    showSuggest: false,
+    showHistory: true,
+    suggestList: [],
+    historyList: [],
+    hotPlants: [
+      '绿萝', '多肉', '君子兰', '发财树',
+      '蝴蝶兰', '吊兰', '龟背竹', '富贵竹',
+      '仙人掌', '芦荟', '栀子花', '茉莉花'
+    ]
   },
-  onLoad: function () {
-    console.log('onLoad')
-    var that = this
-    //初始化的时候渲染wxSe12ewdsaarchdata
-    WxSearch.init(that, 43, ['番茄', '辣椒疮痂病', '柑桔黄龙病', '番茄晚疫病菌', '柑桔黄龙病', '苹果黑星病', '葡萄褐斑病','樱桃']);
-    WxSearch.initMindKeys(['番茄叶霉病', '蓝莓', '番茄斑枯病', '辣椒疮痂病', '葡萄轮斑病', '葡萄', '番茄花叶病毒病', '番茄斑点病', '樱桃', '番茄白粉病', '草莓叶枯病', '玉米锈病', '樱桃白粉病', '苹果雪松锈病', '番茄', '玉米', '番茄早疫病', '桃子疮痂病', '草莓', '马铃薯早疫病', '番茄疮痂病', '番茄红蜘蛛损伤', '玉米花叶病毒病', '马铃薯晚疫病', '番茄黄化曲叶病毒病', '苹果黑星病', '葡萄褐斑病', '桃子', '葡萄黑腐病', '玉米叶斑病', '番茄晚疫病菌', '辣椒', '苹果', '苹果灰斑病', '柑桔', '马铃薯', '柑桔黄龙病', '玉米灰斑病']);
-    that.setData({
-      focus:true
-    })
+
+  onLoad() {
+    this.loadHistory();
   },
-  wxSearchFn: function (e) {
-    var that = this
-    WxSearch.wxSearchAddHisKey(that);
-    // console.log(that)
+
+  onShow() {
+    this.loadHistory();
+  },
+
+  /**
+   * 加载搜索历史
+   */
+  loadHistory() {
+    const history = wx.getStorageSync('searchHistory') || [];
+    this.setData({ historyList: history.slice(0, 10) });
+  },
+
+  /**
+   * 输入事件
+   */
+  onInput(e) {
+    const keyword = e.detail.value.trim();
+    this.setData({ keyword });
+    
+    if (keyword.length > 0) {
+      const suggests = this.getSuggests(keyword);
+      this.setData({
+        showSuggest: suggests.length > 0,
+        showHistory: false,
+        suggestList: suggests
+      });
+    } else {
+      this.setData({
+        showSuggest: false,
+        showHistory: true,
+        suggestList: []
+      });
+    }
+  },
+
+  /**
+   * 获取搜索建议
+   */
+  getSuggests(keyword) {
+    const allPlants = [...this.data.hotPlants];
+    return allPlants.filter(p => p.includes(keyword)).slice(0, 5);
+  },
+
+  /**
+   * 搜索
+   */
+  onSearch() {
+    const { keyword } = this.data;
+    if (!keyword) {
+      wx.showToast({ title: '请输入植物名称', icon: 'none' });
+      return;
+    }
+    
+    this.saveHistory(keyword);
     wx.navigateTo({
-      url: '/pages/search_result/seach_result?search_text=' + that.data.wxSearchData.value,
-    })
+      url: `/pages/search_result/seach_result?search_text=${encodeURIComponent(keyword)}`
+    });
   },
-  wxSearchInput: function (e) {
-    var that = this
-    WxSearch.wxSearchInput(e, that);
+
+  /**
+   * 选择搜索建议
+   */
+  selectSuggest(e) {
+    const keyword = e.currentTarget.dataset.keyword;
+    this.saveHistory(keyword);
+    wx.navigateTo({
+      url: `/pages/search_result/seach_result?search_text=${encodeURIComponent(keyword)}`
+    });
   },
-  wxSerchFocus: function (e) {
-    var that = this
-    WxSearch.wxSearchFocus(e, that);
+
+  /**
+   * 选择历史记录
+   */
+  selectHistory(e) {
+    const keyword = e.currentTarget.dataset.keyword;
+    this.saveHistory(keyword);
+    wx.navigateTo({
+      url: `/pages/search_result/seach_result?search_text=${encodeURIComponent(keyword)}`
+    });
   },
-  wxSearchBlur: function (e) {
-    var that = this
-    WxSearch.wxSearchBlur(e, that);
+
+  /**
+   * 保存搜索历史
+   */
+  saveHistory(keyword) {
+    let history = wx.getStorageSync('searchHistory') || [];
+    history = history.filter(h => h !== keyword);
+    history.unshift(keyword);
+    history = history.slice(0, 20);
+    wx.setStorageSync('searchHistory', history);
   },
-  wxSearchKeyTap: function (e) {
-    var that = this
-    WxSearch.wxSearchKeyTap(e, that);
-  },
-  wxSearchDeleteKey: function (e) {
-    var that = this
-    WxSearch.wxSearchDeleteKey(e, that);
-  },
-  wxSearchDeleteAll: function (e) {
-    var that = this;
-    WxSearch.wxSearchDeleteAll(that);
-  },
-  wxSearchTap: function (e) {
-    var that = this
-    WxSearch.wxSearchHiddenPancel(that);
+
+  /**
+   * 清空历史
+   */
+  clearHistory() {
+    wx.showModal({
+      title: '确认清空',
+      content: '确定要清空搜索历史吗？',
+      success: (res) => {
+        if (res.confirm) {
+          wx.removeStorageSync('searchHistory');
+          this.setData({ historyList: [] });
+          wx.showToast({ title: '已清空', icon: 'success' });
+        }
+      }
+    });
   }
-})
+});

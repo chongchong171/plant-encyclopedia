@@ -1,182 +1,124 @@
-// pages/search_result/seach_result.js
-var share_text = ""
-var search_text = ''
+/**
+ * 植物百科大全 - 搜索结果页面
+ */
+const API_KEY = 'sk-d43b58a6d0dd486d89b69a38f305483a';
+
 Page({
-
-  /**
-   * 页面的初始数据
-   */
   data: {
-    search_text:"",
-    isDisease:false,
-    error_code:true,
-    image: "",
-    
-    pname:"",
-    other_name:"",
-    parea:"",
-    pnutrition:"",
-    ptime:"",
-
-    darea:"",
-    dcondition:"",
-    dconsequence:"",
-    dlocation:"",
-    dname:"",
-    dsymptom:"",
-    dtreatment:"",
-    other_name:"",
-    dobject:"",
-
-    loading_hide:false,
-
-    
-
+    searchText: '',
+    loading: true,
+    error: false,
+    plant: null
   },
-  onShareAppMessage: function () {
-    return {
-      title: 'deebug农作物专家',
-      path: '/pages/search_result/search_result?search_text='+share_text,
+
+  onLoad(options) {
+    const searchText = decodeURIComponent(options.search_text || '');
+    this.setData({ searchText });
+    
+    if (searchText) {
+      this.searchPlant(searchText);
+    } else {
+      this.setData({ loading: false, error: true });
     }
   },
 
-  back_to_home: function(){
-    console.log("back_to_home")
-    wx.switchTab({
-      url: '/pages/home/home',
-    })
-  },
   /**
-   * 生命周期函数--监听页面加载
+   * 搜索植物信息
    */
-  onLoad: function (options) {
-    var self = this;
-    /** 
-     * 获取系统信息 
-     */
-    console.log(options.search_text)
-    search_text = options.search_text
-    console.log(search_text)
+  searchPlant(keyword) {
+    wx.showLoading({ title: '查询中...' });
+    
     wx.request({
-      url: 'https://deebug.gluco.cn/api/v0/pd_search', //仅为示例，并非真实的接口地址
-      data: {
-        'keywords': search_text,
-      },
+      url: 'https://dashscope.aliyuncs.com/api/v1/services/aigc/text-generation/generation',
       method: 'POST',
       header: {
-        'content-type': 'application/x-www-form-urlencoded' // 默认值
+        'Authorization': `Bearer ${API_KEY}`,
+        'Content-Type': 'application/json'
       },
-      success: function (res) {
-        self.setData({
-          loading_hide:true
-        })
-        console.log(res.data.error_code)
-        if(res.data.error_code==1){
-          console.log("error_code==1")
-          self.setData({
-            error_code:true
-          })
-        }else{
-          self.setData({
-            error_code: false
-          })
-          console.log(res.data)
-          console.log(res.data.type)
-          var json_data = res.data
-          var p_or_d = json_data.type
-          var result = res.data.result
-          if (res.data.type == "plant") {
-
-            self.setData({
-              isDisease: false,
-              pname: result.pname,
-              image: "https://deebug.gluco.cn" + result.image,
-              other_name: result.other_name,
-              parea: result.parea,
-              pnutrition: result.pnutrition,
-              ptime: result.ptime
-            })
-          }
-          if (res.data.type == "disease") {
-            console.log("hahahahha")
-            console.log(result.dname)
-            self.setData({
-              image: "https://deebug.gluco.cn" + result.image,
-              isDisease: true,
-              darea: result.darea,
-              dcondition: result.dcondition,
-              dconsequence: result.dconsequence,
-              dlocation: result.dlocation,
-              dname: result.dname,
-              dsymptom: result.dsymptom,
-              dtreatment: result.dtreatment,
-              other_name: result.other_name,
-              dobject:result.dobject,
-            })
-          }
-
+      data: {
+        model: 'qwen-turbo',
+        input: {
+          messages: [
+            {
+              role: 'system',
+              content: '你是一个植物百科专家，请根据用户提供的植物名称，返回该植物的详细信息。'
+            },
+            {
+              role: 'user',
+              content: `请介绍"${keyword}"这种植物，以JSON格式返回：
+{
+  "name": "植物名称",
+  "scientificName": "学名",
+  "family": "科属",
+  "description": "简短描述（50字内）",
+  "careGuide": {
+    "light": "光照需求",
+    "water": "浇水频率",
+    "temperature": "适宜温度",
+    "humidity": "湿度要求",
+    "fertilizer": "施肥建议",
+    "tips": "养护技巧"
+  },
+  "difficulty": "简单/中等/困难",
+  "toxicity": false,
+  "features": ["特点1", "特点2"]
+}`
+            }
+          ]
         }
-
+      },
+      success: (res) => {
+        wx.hideLoading();
         
+        if (res.statusCode !== 200) {
+          this.setData({ loading: false, error: true });
+          return;
+        }
         
+        const content = res.data?.output?.text || res.data?.output?.choices?.[0]?.message?.content;
+        
+        if (!content) {
+          this.setData({ loading: false, error: true });
+          return;
+        }
+        
+        try {
+          const jsonMatch = content.match(/\{[\s\S]*\}/);
+          if (jsonMatch) {
+            const plant = JSON.parse(jsonMatch[0]);
+            this.setData({
+              loading: false,
+              error: false,
+              plant
+            });
+          } else {
+            this.setData({ loading: false, error: true });
+          }
+        } catch (e) {
+          this.setData({ loading: false, error: true });
+        }
+      },
+      fail: () => {
+        wx.hideLoading();
+        this.setData({ loading: false, error: true });
       }
-    })
-
-  
+    });
   },
 
   /**
-   * 生命周期函数--监听页面初次渲染完成
+   * 返回搜索
    */
-  onReady: function () {
-  
+  goBack() {
+    wx.navigateBack();
   },
 
   /**
-   * 生命周期函数--监听页面显示
+   * 分享
    */
-  onShow: function () {
-  
-  },
-
-  /**
-   * 生命周期函数--监听页面隐藏
-   */
-  onHide: function () {
-  
-  },
-
-  /**
-   * 生命周期函数--监听页面卸载
-   */
-  onUnload: function () {
-  
-  },
-
-  /**
-   * 页面相关事件处理函数--监听用户下拉动作
-   */
-  onPullDownRefresh: function () {
-  
-  },
-
-  /**
-   * 页面上拉触底事件的处理函数
-   */
-  onReachBottom: function () {
-  
-  },
-
-  /**
-   * 用户点击右上角分享
-   */
-  onShareAppMessage: function () {
-  
-  },
-  goto_bug: function(){
-    console.log(1)
-    wx.switchTab({
-      url: '/pages/list/list',
-    })
+  onShareAppMessage() {
+    return {
+      title: `植物百科大全 - ${this.data.searchText}`,
+      path: `/pages/search_result/seach_result?search_text=${encodeURIComponent(this.data.searchText)}`
+    };
   }
-})
+});

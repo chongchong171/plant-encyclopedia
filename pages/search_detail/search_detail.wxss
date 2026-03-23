@@ -1,123 +1,123 @@
-.wxSearch{
-  position: absolute;
-  top: 43rpx;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  margin-top: 20rpx;
-  border-top: 1px #eee solid;
-  /* background-color: rgba(0, 0, 0, 0.2); */
-  background-color: rgba(255, 255, 255, 0.2);
+/* 植物百科大全 - 搜索详情页面样式 */
+
+.container {
+  min-height: 100vh;
+  background: #E8F5E9;
+  padding: 30rpx;
 }
-.wxSearchInner{
-  background-color: #fff;
-}
-.wxSearch-section{
-  background-color: #fff;
-  padding: 4px 10px;
-  border: 1px #eee solid;
-}
-.wxSearch-pancel{
+
+/* 搜索框 */
+.search-box {
   display: flex;
-  flex-direction: row;
-  margin-left: 40rpx;
-}
-.wxSearch-input{
-  flex: 8; 
-  background-color: #99a7a0; 
+  align-items: center;
+  background: white;
+  border-radius: 40rpx;
   padding: 10rpx 20rpx;
-  border-radius: 5em;
-  margin-top: 10rpx;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.05);
 }
-.wxSearch-button{
+
+.search-input {
   flex: 1;
-  border: none !important;
-  color: cornflowerblue !important;
-}
-
-.wxSearchTitle{
-  display: block;
-  padding: 10px 5px 5px 10px;
+  height: 80rpx;
   font-size: 30rpx;
-  margin: 5rpx 0 0 63rpx;
-  text-shadow: teal;
-  color: rgb(153, 152, 152);
-  font-weight:bold;
-  letter-spacing:5rpx;
+  padding: 0 20rpx;
 }
 
-
-.wxSearchMindKeyItem{
-  margin-left: 10%;
-  margin-right: 10%;
-  padding: 10px 5px;
-  border-bottom: 1px solid #eee;
+.search-btn {
+  width: 80rpx;
+  height: 80rpx;
   display: flex;
-  font-size: 35rpx;
-  color: rgb(97, 114, 145);
+  align-items: center;
+  justify-content: center;
+  font-size: 36rpx;
 }
 
-.wxSearchKeyList{
+/* 搜索建议 */
+.suggest-section {
+  background: white;
+  border-radius: 20rpx;
+  margin-top: 20rpx;
+  overflow: hidden;
+}
+
+.suggest-item {
+  padding: 30rpx;
+  border-bottom: 2rpx solid #f5f5f5;
+  font-size: 30rpx;
+  color: #333;
+}
+
+.suggest-item:last-child {
+  border-bottom: none;
+}
+
+/* 区块标题 */
+.section-header {
   display: flex;
-  flex-direction:row;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20rpx;
+}
+
+.section-title {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #333;
+}
+
+.clear-btn {
+  font-size: 26rpx;
+  color: #f44336;
+}
+
+/* 搜索历史 */
+.history-section {
+  margin-top: 40rpx;
+}
+
+.history-list {
+  background: white;
+  border-radius: 20rpx;
+  overflow: hidden;
+}
+
+.history-item {
+  display: flex;
+  align-items: center;
+  padding: 30rpx;
+  border-bottom: 2rpx solid #f5f5f5;
+}
+
+.history-item:last-child {
+  border-bottom: none;
+}
+
+.history-icon {
+  font-size: 32rpx;
+  margin-right: 20rpx;
+}
+
+.history-text {
+  font-size: 30rpx;
+  color: #333;
+}
+
+/* 热门搜索 */
+.hot-section {
+  margin-top: 40rpx;
+}
+
+.hot-list {
+  display: flex;
   flex-wrap: wrap;
-  justify-content:space-around;
-  align-items:center;
+  gap: 20rpx;
+  margin-top: 20rpx;
 }
 
-.wxSearchKeyItem{
-  flex: 0 0 40%;
-  font-size: 30rpx;
-  text-align: center;
-  border: 1px solid rgb(190, 190, 190);
-  margin: 5rpx;
-  padding: 5rpx 10rpx;
-  border-radius: 5em;
-  color: #9aa6a0;
-  width: 30%;
-  line-height: 60rpx;
-  height: 60rpx;
-}
-.wxSearchHistoryItem{
-  margin-left: 10%;
-  margin-right: 10%;
-  padding: 10px 5px;
-  border-bottom: 1px solid #eee;
-  display: flex;
-  font-size: 35rpx;
-  color: rgb(97, 114, 145);
-}
-.wxSearchHistoryItemText{
-  flex: 8;
-  font-size: 14px;
-}
-.wxSearchHistoryItemDel{
-  flex: 1;
-  font-size: 12px;
-  text-align: center;
-  padding: 3px 5px;
-  border: 1px solid #eee;
-  border-radius: 5px;
-}
-.wxSearchHistoryEmpty{
-  display: block;
-  padding: 10px 5px 5px 10px;
-  font-size: 30rpx;
-  text-align: center;
-  text-shadow: teal;
-  color: #a9cbb9;
-  font-weight:bold;
-  letter-spacing:5rpx;
-  height: 70rpx;
-}
-.wxSearchDeleteAllBtn{
-  display: block;
-  padding: 17px 5px 5px 10px;
-  font-size: 30rpx;
-  text-align: center;
-  text-shadow: teal;
-  color: #203a2d;
-  font-weight:bold;
-  letter-spacing:5rpx;
-  height: 70rpx;
+.hot-item {
+  background: white;
+  padding: 16rpx 30rpx;
+  border-radius: 30rpx;
+  font-size: 28rpx;
+  color: #4CAF50;
 }
