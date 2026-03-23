@@ -118,6 +118,19 @@
   font-weight: bold;
 }
 
+/* 测试按钮 */
+.test-section {
+  margin: 30rpx 0;
+}
+
+.test-btn {
+  background: #FF9800;
+  color: white;
+  font-size: 28rpx;
+  padding: 20rpx 40rpx;
+  border-radius: 30rpx;
+}
+
 /* 快捷入口 */
 .quick-entry {
   display: flex;

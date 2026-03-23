@@ -24,10 +24,9 @@
     </view>
   </view>
 
-  <!-- 识别次数提示 -->
-  <view class="count-tip" wx:if="{{!vipUser}}">
-    <text>今日剩余识别次数：{{identifyLimit - identifyCount}} 次</text>
-    <text class="vip-link" bindtap="showVipInfo">开通VIP无限识别</text>
+  <!-- 测试按钮 -->
+  <view class="test-section">
+    <button class="test-btn" bindtap="testAPI">🔧 测试API连接</button>
   </view>
 
   <!-- 快捷入口 -->
