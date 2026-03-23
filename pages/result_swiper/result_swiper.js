@@ -1,6 +1,6 @@
-// pages/result_swiper/result_swiper.js
-// 植物百科大全 - 识别结果页面
-
+/**
+ * 植物百科大全 - 识别结果页面
+ */
 const app = getApp();
 const plantIdentify = require('../../utils/plantIdentify');
 
@@ -26,11 +26,9 @@ Page({
   onLoad(options) {
     console.log('结果页加载，参数:', options);
     
-    // 解码文件路径
     const imagePath = decodeURIComponent(options.tmp_filePath || '');
     
     if (!imagePath) {
-      console.error('未获取到图片路径');
       this.setData({ 
         loading: false, 
         identifyError: true, 
@@ -39,7 +37,6 @@ Page({
       return;
     }
     
-    console.log('图片路径:', imagePath);
     this.setData({ imagePath });
     this.identifyPlant(imagePath);
   },
@@ -48,20 +45,20 @@ Page({
     wx.showLoading({ title: '识别中...' });
     
     try {
-      console.log('开始读取图片...');
       const base64 = await this.readImageAsBase64(imagePath);
-      console.log('图片读取成功，长度:', base64.length);
-      
-      console.log('调用识别API...');
       const result = await plantIdentify.identifyPlant(base64);
-      console.log('识别结果:', result);
       
       wx.hideLoading();
       
       if (result.success && result.data) {
-        const plant = result.data;
-        plant.id = 'plant_' + Date.now();
-        plant.image = imagePath;
+        // 解析AI返回的内容
+        const parsedData = this.parseAIContent(result.data.description);
+        
+        const plant = {
+          id: 'plant_' + Date.now(),
+          image: imagePath,
+          ...parsedData
+        };
         
         this.setData({
           loading: false,
@@ -71,10 +68,7 @@ Page({
         
         if (app.addHistory) app.addHistory(plant);
         if (app.recordIdentify) app.recordIdentify();
-        
-        console.log('识别成功:', plant.name);
       } else {
-        console.error('识别失败:', result.error);
         this.setData({
           loading: false,
           identifyError: true,
@@ -83,13 +77,77 @@ Page({
       }
     } catch (error) {
       wx.hideLoading();
-      console.error('识别出错:', error);
       this.setData({
         loading: false,
         identifyError: true,
-        errorMessage: error.message || '识别出错，请重试'
+        errorMessage: error.message || '识别出错'
       });
     }
+  },
+
+  /**
+   * 解析AI返回的内容
+   */
+  parseAIContent(content) {
+    console.log('📝 解析AI内容:', content);
+    
+    let plant = {
+      name: '植物',
+      scientificName: '',
+      family: '未知',
+      description: content,
+      difficulty: '中等',
+      toxicity: false,
+      careGuide: {
+        light: '适中光照',
+        water: '适量浇水',
+        temperature: '室温'
+      },
+      features: []
+    };
+
+    if (!content) return plant;
+
+    // 尝试提取植物名称
+    const namePatterns = [
+      /植物[是为：:]\s*([^\n，,。]+)/,
+      /名称[是为：:]\s*([^\n，,。]+)/,
+      /这是([^\n，,。]+?)的图片/,
+      /图片中[是为]\s*([^\n，,。]+)/,
+      /这是一(株|棵|盆)\s*([^\n，,。]+)/
+    ];
+
+    for (const pattern of namePatterns) {
+      const match = content.match(pattern);
+      if (match) {
+        plant.name = (match[2] || match[1]).trim();
+        break;
+      }
+    }
+
+    // 尝试提取科属
+    const familyMatch = content.match(/科属?[是为：:]\s*([^\n，,。]+)/);
+    if (familyMatch) {
+      plant.family = familyMatch[1].trim();
+    }
+
+    // 尝试提取养护建议
+    const lightMatch = content.match(/光照[是为：:]\s*([^\n，,。]+)/);
+    if (lightMatch) plant.careGuide.light = lightMatch[1].trim();
+
+    const waterMatch = content.match(/浇水?[是为：:]\s*([^\n，,。]+)/);
+    if (waterMatch) plant.careGuide.water = waterMatch[1].trim();
+
+    const tempMatch = content.match(/温度[是为：:]\s*([^\n，,。]+)/);
+    if (tempMatch) plant.careGuide.temperature = tempMatch[1].trim();
+
+    // 提取养护建议段落
+    const careSection = content.match(/养护[^：:\n]*[：:]\s*([\s\S]+?)(?=\n\n|$)/);
+    if (careSection) {
+      plant.careGuide.tips = careSection[1].trim();
+    }
+
+    return plant;
   },
 
   readImageAsBase64(imagePath) {
@@ -97,14 +155,8 @@ Page({
       wx.getFileSystemManager().readFile({
         filePath: imagePath,
         encoding: 'base64',
-        success: (res) => {
-          console.log('Base64读取成功');
-          resolve(res.data);
-        },
-        fail: (err) => {
-          console.error('Base64读取失败:', err);
-          reject(err);
-        }
+        success: (res) => resolve(res.data),
+        fail: (err) => reject(err)
       });
     });
   },
@@ -117,7 +169,7 @@ Page({
       if (app.addFavorite) app.addFavorite(plant);
     }
     this.setData({ isFavorite: !isFavorite });
-    wx.showToast({ title: isFavorite ? '已取消收藏' : '已收藏', icon: 'success' });
+    wx.showToast({ title: isFavorite ? '已取消' : '已收藏', icon: 'success' });
   },
 
   retryIdentify() {
