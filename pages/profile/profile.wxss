@@ -1,156 +1,125 @@
-/**
- * 个人中心样式
- */
+/* 个人中心页面样式 */
 
 .container {
-  padding: 20rpx;
-  background-color: #E8F5E9;
   min-height: 100vh;
+  background: #E8F5E9;
 }
 
-/* 用户卡片 */
-.user-card {
-  background: linear-gradient(135deg, #4CAF50 0%, #81C784 100%);
-  border-radius: 20rpx;
-  padding: 40rpx;
-  display: flex;
-  align-items: center;
-  gap: 24rpx;
-  margin-bottom: 20rpx;
-}
-
-.avatar {
-  width: 120rpx;
-  height: 120rpx;
-  border-radius: 50%;
-  border: 4rpx solid #FFFFFF;
-}
-
-.user-info {
+/* 用户信息区 */
+.user-section {
+  background: linear-gradient(180deg, #4CAF50 0%, #81C784 100%);
+  padding: 60rpx 40rpx;
   display: flex;
   flex-direction: column;
-  gap: 8rpx;
-}
-
-.nickname {
-  font-size: 36rpx;
-  font-weight: 600;
-  color: #FFFFFF;
-}
-
-.vip-status {
-  font-size: 24rpx;
-  color: #FFD700;
-}
-
-.login-hint {
-  font-size: 24rpx;
-  color: rgba(255, 255, 255, 0.8);
-}
-
-/* 统计卡片 */
-.stats-card {
-  background-color: #FFFFFF;
-  border-radius: 16rpx;
-  padding: 30rpx;
-  display: flex;
-  justify-content: space-around;
   align-items: center;
+}
+
+.user-avatar {
+  width: 160rpx;
+  height: 160rpx;
+  background: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   margin-bottom: 20rpx;
+  box-shadow: 0 8rpx 30rpx rgba(0, 0, 0, 0.2);
+}
+
+.avatar-text {
+  font-size: 80rpx;
+}
+
+.user-name {
+  font-size: 36rpx;
+  font-weight: bold;
+  color: white;
+  margin-bottom: 10rpx;
+}
+
+.vip-badge {
+  background: #FFD700;
+  padding: 8rpx 24rpx;
+  border-radius: 20rpx;
+  font-size: 24rpx;
+  color: #333;
+}
+
+/* 统计信息 */
+.stats-section {
+  display: flex;
+  background: white;
+  margin: -40rpx 30rpx 30rpx;
+  border-radius: 20rpx;
+  padding: 40rpx;
+  box-shadow: 0 8rpx 30rpx rgba(0, 0, 0, 0.1);
 }
 
 .stat-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8rpx;
+  flex: 1;
+  text-align: center;
 }
 
 .stat-value {
-  font-size: 40rpx;
-  font-weight: 600;
+  display: block;
+  font-size: 48rpx;
+  font-weight: bold;
   color: #4CAF50;
+  margin-bottom: 10rpx;
 }
 
 .stat-label {
-  font-size: 24rpx;
-  color: #999999;
+  font-size: 26rpx;
+  color: #999;
 }
 
-.divider {
-  width: 1rpx;
-  height: 60rpx;
-  background-color: #E0E0E0;
-}
-
-/* 功能列表 */
-.menu-card {
-  background-color: #FFFFFF;
-  border-radius: 16rpx;
+/* 菜单列表 */
+.menu-section {
+  background: white;
+  margin: 0 30rpx;
+  border-radius: 20rpx;
   overflow: hidden;
-  margin-bottom: 20rpx;
 }
 
 .menu-item {
   display: flex;
   align-items: center;
   padding: 30rpx;
-  border-bottom: 1rpx solid #F5F5F5;
+  border-bottom: 2rpx solid #f5f5f5;
 }
 
 .menu-item:last-child {
   border-bottom: none;
 }
 
-.menu-item:active {
-  background-color: #F5F5F5;
-}
-
 .menu-icon {
   font-size: 40rpx;
-  margin-right: 24rpx;
+  margin-right: 20rpx;
 }
 
 .menu-text {
   flex: 1;
   font-size: 30rpx;
-  color: #333333;
+  color: #333;
 }
 
 .menu-arrow {
-  font-size: 32rpx;
-  color: #CCCCCC;
-}
-
-/* VIP 卡片 */
-.vip-card {
-  background: linear-gradient(135deg, #FFD700 0%, #FFA000 100%);
-  border-radius: 16rpx;
-  padding: 30rpx;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.vip-content {
-  display: flex;
-  flex-direction: column;
-  gap: 8rpx;
-}
-
-.vip-title {
-  font-size: 32rpx;
-  font-weight: 600;
-  color: #333333;
-}
-
-.vip-desc {
-  font-size: 24rpx;
-  color: rgba(0, 0, 0, 0.6);
-}
-
-.vip-price {
   font-size: 36rpx;
-  font-weight: 600;
-  color: #333333;
+  color: #ccc;
+}
+
+/* 底部信息 */
+.footer {
+  position: fixed;
+  bottom: 40rpx;
+  left: 0;
+  right: 0;
+  text-align: center;
+}
+
+.footer-text {
+  display: block;
+  font-size: 24rpx;
+  color: #999;
+  margin-bottom: 10rpx;
 }

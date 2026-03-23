@@ -1,76 +1,36 @@
-// pages/search_page/search_page.js
+/**
+ * 植物百科大全 - 搜索页面
+ */
 Page({
-
-  /**
-   * 页面的初始数据
-   */
   data: {
+    hotPlants: [
+      '绿萝', '多肉', '君子兰', '发财树',
+      '蝴蝶兰', '吊兰', '龟背竹', '富贵竹'
+    ],
+    categories: [
+      { id: 1, name: '观叶植物', icon: '🍃' },
+      { id: 2, name: '开花植物', icon: '🌸' },
+      { id: 3, name: '多肉植物', icon: '🪴' },
+      { id: 4, name: '水培植物', icon: '💧' },
+      { id: 5, name: '室内植物', icon: '🏠' },
+      { id: 6, name: '阳台植物', icon: '☀️' }
+    ]
   },
-  
-  SerchFocus:function(){
+
+  goToSearchDetail() {
     wx.navigateTo({
-      url: '../search_detail/search_detail',
-    })
+      url: '/pages/search_detail/search_detail'
+    });
   },
-  pressView: function (e) {
-    var viewDataSet = e.target.dataset.text;
-    console.log(viewDataSet); //输出点击的view的id，第二种情况就不重复写了
+
+  searchPlant(e) {
+    const text = e.currentTarget.dataset.text || e.currentTarget.dataset.category;
     wx.navigateTo({
-      url: '/pages/search_result/seach_result?search_text='+viewDataSet,
-    })
-  },
-  /**
-   * 生命周期函数--监听页面加载
-   */
-  onLoad: function (options) {
+      url: '/pages/search_result/seach_result?search_text=' + encodeURIComponent(text)
+    });
   },
 
-  /**
-   * 生命周期函数--监听页面初次渲染完成
-   */
-  onReady: function () {
-  
-  },
+  onLoad() {},
 
-  /**
-   * 生命周期函数--监听页面显示
-   */
-  onShow: function () {
-  
-  },
-
-  /**
-   * 生命周期函数--监听页面隐藏
-   */
-  onHide: function () {
-  
-  },
-
-  /**
-   * 生命周期函数--监听页面卸载
-   */
-  onUnload: function () {
-  
-  },
-
-  /**
-   * 页面相关事件处理函数--监听用户下拉动作
-   */
-  onPullDownRefresh: function () {
-  
-  },
-
-  /**
-   * 页面上拉触底事件的处理函数
-   */
-  onReachBottom: function () {
-  
-  },
-
-  /**
-   * 用户点击右上角分享
-   */
-  onShareAppMessage: function () {
-  
-  }
-})
+  onShow() {}
+});

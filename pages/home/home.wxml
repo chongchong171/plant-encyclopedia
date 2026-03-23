@@ -1,37 +1,45 @@
-<!--pages/home/home.wxml-->
-<!-- 全局view -->
-<view class='global'>
-<!-- 天气部分view -->
-<view class="weather" style='padding:0 20rpx;'>
-<!-- 今日天气 -->
-<view style=''><text style='color: #a9cbb9; font-size: 25rpx; font-weight:bold;'>今日天气\t{{city}}</text></view>
-<!-- 多云 温度部分 -->
-<view style='margin-top:7%;display:flex;justify-content:space-between;'>
-<view>
-<view style='display: flex'>
-<view><text style='color:white;font-size:40rpx;font-weight:bold;letter-spacing:5rpx;'>{{weather}}</text></view>
-<view style='margin-left:15rpx;'><text style='color:white;font-size:small;font-weight:bold;letter-spacing:0rpx;'>24~31℃</text></view>
-</view>
-<!-- 湿度 风力部分 -->
-<view style='margin-top:2%'><text style='color:white;font-size:25rpx;letter-spacing:1rpx;;'>PM2.5\t{{PM}} | \t风力\t{{wind}}</text></view>
-</view>
+<!-- 植物百科大全 - 首页 -->
+<view class="container">
+  <!-- 顶部区域 -->
+  <view class="header">
+    <view class="logo-area">
+      <text class="logo-emoji">🌱</text>
+      <text class="app-name">植物百科大全</text>
+    </view>
+    <text class="slogan">拍照识别植物，一键获取养殖指南</text>
+  </view>
 
-<view class="home_weather_image">
-<image class="home_weather_image" src='{{pic_url}}' style='width:80%;height:80%;'></image>
-</view>
+  <!-- 主要操作区 -->
+  <view class="main-actions">
+    <view class="action-card camera-card" bindtap="takePhoto">
+      <image class="action-icon" src="/image/tab/scan-active.png"></image>
+      <text class="action-title">拍照识别</text>
+      <text class="action-desc">打开相机拍摄植物</text>
+    </view>
 
-</view>
+    <view class="action-card album-card" bindtap="chooseFromAlbum">
+      <text class="action-emoji">🖼️</text>
+      <text class="action-title">相册上传</text>
+      <text class="action-desc">从相册选择植物图片</text>
+    </view>
+  </view>
 
-<view><text style='color:white;font-size:27rpx;font-weight:bold;letter-spacing:3rpx;'><text style='color:yellow;font-size:27rpx;font-weight:bold;'>!\t<text></text></text>{{sugg}}</text></view>
+  <!-- 识别次数提示 -->
+  <view class="count-tip" wx:if="{{!vipUser}}">
+    <text>今日剩余识别次数：{{identifyLimit - identifyCount}} 次</text>
+    <text class="vip-link" bindtap="showVipInfo">开通VIP无限识别</text>
+  </view>
 
-<!-- 天气部分 view结束 -->
-</view>
+  <!-- 快捷入口 -->
+  <view class="quick-entry">
+    <view class="entry-item" bindtap="goToSearch">
+      <image class="entry-icon" src="/image/tab/search-active.png"></image>
+      <text class="entry-text">搜索植物</text>
+    </view>
+  </view>
 
-<!-- button部分 -->
-<view style='margin-top:12%;display:flex;'>
-<button style="width:280rpx;height:85rpx;vertical-align:middle;font-size:32rpx;margin-left:72rpx;box-shadow:0rpx 7rpx 40rpx #444444;" bindtap='take_photo'><text style='color:#203a2d;font-weight:bold;letter-spacing:5rpx;'>拍照识图</text></button>
-<button style="border:3rpx white solid;opacity:1;width:280rpx;height:85rpx;vertical-align:middle;font-size:32rpx;margin-left:-22rpx;box-shadow:0rpx 7rpx 40rpx #444444;" bindtap='upload_photo' plain='true'><text style='color:white;font-weight:bold;letter-spacing:5rpx;'>从相册上传</text></button>
+  <!-- 底部提示 -->
+  <view class="footer-tip">
+    <text>🌱 让每个人都能养好花</text>
+  </view>
 </view>
-<!-- 全局view结束 -->
-</view>
-
