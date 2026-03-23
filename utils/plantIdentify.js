@@ -19,7 +19,7 @@ const identifyPlant = (imageBase64) => {
         'Content-Type': 'application/json'
       },
       data: {
-        model: 'qwen-vl-plus',
+        model: 'qwen-vl-max',  // 使用免费额度模型（100万Token，90天内）
         input: {
           messages: [
             {
