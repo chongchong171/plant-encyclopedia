@@ -16,6 +16,7 @@
     <view class="error-content">
       <text class="error-title">识别失败</text>
       <text class="error-message">{{errorMessage}}</text>
+      <text class="error-tip">请检查：1.网络连接 2.API额度 3.域名配置</text>
       <button class="retry-btn" bindtap="retryIdentify">重新拍照</button>
     </view>
   </view>

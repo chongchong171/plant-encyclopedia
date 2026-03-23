@@ -69,7 +69,18 @@
   display: block;
   font-size: 28rpx;
   color: #666;
-  margin-bottom: 40rpx;
+  margin-bottom: 20rpx;
+  padding: 20rpx;
+  background: #f5f5f5;
+  border-radius: 10rpx;
+  word-break: break-all;
+}
+
+.error-tip {
+  display: block;
+  font-size: 24rpx;
+  color: #999;
+  margin-bottom: 20rpx;
 }
 
 .retry-btn {

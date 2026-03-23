@@ -8,9 +8,15 @@ const API_URL = 'https://dashscope.aliyuncs.com/api/v1/services/aigc/multimodal-
 
 /**
  * 识别植物
+ * @param {string} imageBase64 - 图片的 base64 编码（不含前缀）
  */
 const identifyPlant = (imageBase64) => {
   return new Promise((resolve, reject) => {
+    // 添加图片前缀
+    const imageData = `data:image/jpeg;base64,${imageBase64}`;
+    
+    console.log('开始识别植物...');
+    
     wx.request({
       url: API_URL,
       method: 'POST',
@@ -19,32 +25,18 @@ const identifyPlant = (imageBase64) => {
         'Content-Type': 'application/json'
       },
       data: {
-        model: 'qwen-vl-max',  // 使用免费额度模型（100万Token，90天内）
+        model: 'qwen-vl-max',
         input: {
           messages: [
             {
               role: 'user',
               content: [
-                { image: imageBase64 },
-                { 
-                  text: `请识别这张图片中的植物，并以 JSON 格式返回：
-{
-  "name": "植物名称",
-  "scientificName": "学名",
-  "family": "科属",
-  "description": "简短描述",
-  "careGuide": {
-    "light": "光照需求",
-    "water": "浇水频率",
-    "temperature": "适宜温度",
-    "humidity": "湿度要求",
-    "fertilizer": "施肥建议",
-    "tips": "养护技巧"
-  },
-  "difficulty": "养殖难度",
-  "toxicity": false,
-  "features": ["特点1", "特点2"]
-}`
+                {
+                  image: imageData
+                },
+                {
+                  text: `请识别这张图片中的植物，直接返回JSON格式，不要有其他文字：
+{"name":"植物名称","scientificName":"学名","family":"科属","description":"简短描述","careGuide":{"light":"光照需求","water":"浇水频率","temperature":"适宜温度","humidity":"湿度要求","fertilizer":"施肥建议","tips":"养护技巧"},"difficulty":"简单或中等或困难","toxicity":false,"features":["特点1","特点2"]}`
                 }
               ]
             }
@@ -52,30 +44,69 @@ const identifyPlant = (imageBase64) => {
         }
       },
       success: (res) => {
+        console.log('API响应:', res);
+        
         if (res.statusCode !== 200) {
-          resolve({ success: false, error: `API错误: ${res.statusCode}` });
+          console.error('API错误:', res.statusCode, res.data);
+          resolve({ success: false, error: `API错误(${res.statusCode}): ${JSON.stringify(res.data)}` });
           return;
         }
         
-        const content = res.data?.output?.choices?.[0]?.message?.content;
+        // 尝试多种响应格式
+        let content = null;
+        
+        // 格式1: output.choices[0].message.content
+        if (res.data?.output?.choices?.[0]?.message?.content) {
+          content = res.data.output.choices[0].message.content;
+        }
+        // 格式2: output.text
+        else if (res.data?.output?.text) {
+          content = res.data.output.text;
+        }
+        // 格式3: data.choices (OpenAI 格式)
+        else if (res.data?.choices?.[0]?.message?.content) {
+          content = res.data.choices[0].message.content;
+        }
+        
+        console.log('AI返回内容:', content);
+        
         if (!content) {
+          console.error('未找到返回内容:', JSON.stringify(res.data));
           resolve({ success: false, error: 'AI未返回内容' });
           return;
         }
         
         try {
+          // 尝试提取 JSON
           const jsonMatch = content.match(/\{[\s\S]*\}/);
           if (jsonMatch) {
-            resolve({ success: true, data: JSON.parse(jsonMatch[0]) });
+            const plantData = JSON.parse(jsonMatch[0]);
+            console.log('解析成功:', plantData);
+            resolve({ success: true, data: plantData });
           } else {
-            resolve({ success: true, data: { name: '未知植物', description: content } });
+            // 如果没有 JSON，尝试直接用内容
+            resolve({ 
+              success: true, 
+              data: { 
+                name: '识别结果', 
+                description: content,
+                family: '未知',
+                careGuide: {
+                  light: '请查看描述',
+                  water: '请查看描述',
+                  temperature: '请查看描述'
+                }
+              } 
+            });
           }
         } catch (e) {
-          resolve({ success: false, error: '解析失败' });
+          console.error('JSON解析失败:', e);
+          resolve({ success: false, error: 'JSON解析失败: ' + e.message });
         }
       },
       fail: (err) => {
-        resolve({ success: false, error: err.errMsg || '网络失败' });
+        console.error('网络请求失败:', err);
+        resolve({ success: false, error: '网络失败: ' + (err.errMsg || JSON.stringify(err)) });
       }
     });
   });
