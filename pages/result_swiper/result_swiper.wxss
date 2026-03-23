@@ -124,6 +124,18 @@
   box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.1);
 }
 
+/* 来源标签 */
+.source-tag {
+  position: absolute;
+  bottom: 20rpx;
+  right: 20rpx;
+  background: rgba(0, 0, 0, 0.6);
+  color: white;
+  padding: 8rpx 16rpx;
+  border-radius: 20rpx;
+  font-size: 22rpx;
+}
+
 /* 植物卡片 */
 .plant-card {
   background: white;
@@ -146,13 +158,56 @@
   font-size: 48rpx;
   font-weight: bold;
   color: #1B5E20;
+  margin-bottom: 10rpx;
+}
+
+.plant-scientific {
+  display: block;
+  font-size: 26rpx;
+  color: #999;
+  font-style: italic;
   margin-bottom: 20rpx;
+}
+
+/* 置信度条 */
+.confidence-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 20rpx 0;
+  gap: 16rpx;
+}
+
+.confidence-label {
+  font-size: 24rpx;
+  color: #666;
+}
+
+.confidence-track {
+  width: 200rpx;
+  height: 16rpx;
+  background: #E0E0E0;
+  border-radius: 8rpx;
+  overflow: hidden;
+}
+
+.confidence-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #81C784, #4CAF50);
+  border-radius: 8rpx;
+}
+
+.confidence-value {
+  font-size: 24rpx;
+  color: #4CAF50;
+  font-weight: bold;
 }
 
 .tag-row {
   display: flex;
   justify-content: center;
   gap: 16rpx;
+  margin-top: 16rpx;
 }
 
 .tag {
@@ -162,7 +217,6 @@
 }
 
 .tag-green { background: #E8F5E9; color: #4CAF50; }
-.tag-red { background: #FFEBEE; color: #E53935; }
 
 /* 信息区块 */
 .section { margin-bottom: 30rpx; }
@@ -282,6 +336,20 @@
   color: #333;
   font-weight: 500;
   flex: 1;
+}
+
+/* 额度提示 */
+.quota-tip {
+  text-align: center;
+  padding: 20rpx;
+  background: #FFF8E1;
+  border-radius: 12rpx;
+  margin-top: 20rpx;
+}
+
+.quota-tip text {
+  font-size: 24rpx;
+  color: #F57C00;
 }
 
 /* 底部按钮 */

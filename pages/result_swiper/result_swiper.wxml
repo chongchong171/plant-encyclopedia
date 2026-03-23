@@ -30,6 +30,8 @@
       <view class="favorite-btn" bindtap="toggleFavorite">
         <text>{{isFavorite ? '❤️' : '🤍'}}</text>
       </view>
+      <!-- 来源标签 -->
+      <view class="source-tag">{{plant.source}}</view>
     </view>
 
     <!-- 植物卡片 -->
@@ -37,19 +39,27 @@
       <!-- 名称 -->
       <view class="name-area">
         <text class="plant-name">{{plant.name}}</text>
-        <view class="tag-row">
-          <view class="tag tag-green">{{plant.difficulty}}</view>
-          <view class="tag {{plant.toxicity ? 'tag-red' : 'tag-green'}}">
-            {{plant.toxicity ? '⚠️ 有毒' : '✅ 无毒'}}
+        <text class="plant-scientific" wx:if="{{plant.scientificName}}">{{plant.scientificName}}</text>
+        
+        <!-- 置信度（仅 PlantNet 显示） -->
+        <view class="confidence-bar" wx:if="{{plant.confidence > 0}}">
+          <text class="confidence-label">置信度</text>
+          <view class="confidence-track">
+            <view class="confidence-fill" style="width: {{plant.confidence}}%"></view>
           </view>
+          <text class="confidence-value">{{plant.confidence}}%</text>
+        </view>
+        
+        <view class="tag-row">
+          <view class="tag tag-green">养护难度：中等</view>
         </view>
       </view>
 
       <!-- AI 识别结果 - 逐行显示 -->
-      <view class="section">
+      <view class="section" wx:if="{{plant.descriptionLines.length > 0}}">
         <view class="section-header">
           <text class="section-icon">🤖</text>
-          <text class="section-title">AI 识别结果</text>
+          <text class="section-title">识别详情</text>
         </view>
         <view class="result-lines">
           <view class="result-line {{item.type}}" wx:for="{{plant.descriptionLines}}" wx:key="index">
@@ -63,7 +73,7 @@
       <view class="care-card">
         <view class="care-title">
           <text class="care-icon">🌿</text>
-          <text>养护要点</text>
+          <text>养护指南</text>
         </view>
         <view class="care-items">
           <view class="care-row">
@@ -82,6 +92,11 @@
             <text class="care-value">{{plant.careGuide.temperature}}</text>
           </view>
         </view>
+      </view>
+      
+      <!-- 额度提示 -->
+      <view class="quota-tip" wx:if="{{plant.quotaRemaining !== undefined}}">
+        <text>📊 今日剩余额度：{{plant.quotaRemaining}} 次</text>
       </view>
     </view>
 
