@@ -1,4 +1,4 @@
-/* 植物百科大全 - 首页样式 */
+/* 养花助手 - 首页样式 */
 
 .container {
   min-height: 100vh;
@@ -23,8 +23,9 @@
   margin-bottom: 20rpx;
 }
 
-.logo-emoji {
-  font-size: 100rpx;
+.logo-image {
+  width: 120rpx;
+  height: 120rpx;
   margin-bottom: 20rpx;
 }
 
@@ -76,7 +77,8 @@
 }
 
 .action-emoji {
-  font-size: 80rpx;
+  width: 80rpx;
+  height: 80rpx;
   margin-bottom: 20rpx;
 }
 

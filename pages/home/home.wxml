@@ -1,12 +1,12 @@
-<!-- 植物百科大全 - 首页 -->
+<!-- 养花助手 - 首页 -->
 <view class="container">
   <!-- 顶部区域 -->
   <view class="header">
     <view class="logo-area">
-      <text class="logo-emoji">🌱</text>
-      <text class="app-name">植物百科大全</text>
+      <image class="logo-image" src="/image/icons/logo-book.png" mode="aspectFit"></image>
+      <text class="app-name">养花助手</text>
     </view>
-    <text class="slogan">拍照识别植物，一键获取养殖指南</text>
+    <text class="slogan">拍照识别植物，一键获取养护指南</text>
   </view>
 
   <!-- 主要操作区 -->
@@ -18,7 +18,7 @@
     </view>
 
     <view class="action-card album-card" bindtap="chooseFromAlbum">
-      <text class="action-emoji">🖼️</text>
+      <image class="action-emoji" src="/image/icons/album.png" mode="aspectFit"></image>
       <text class="action-title">相册上传</text>
       <text class="action-desc">从相册选择植物图片</text>
     </view>
@@ -39,6 +39,6 @@
 
   <!-- 底部提示 -->
   <view class="footer-tip">
-    <text>🌱 让每个人都能养好花</text>
+    <text>🌸 让每个人都能养好花</text>
   </view>
 </view>
