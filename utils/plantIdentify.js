@@ -13,19 +13,16 @@ const identifyPlant = (imageBase64) => {
   return new Promise((resolve) => {
     console.log('🌿 图片Base64长度:', imageBase64.length);
     
-    // 检查图片大小（最大约4MB base64）
     if (imageBase64.length > 5500000) {
       resolve({ success: false, error: '图片太大(>4MB)，请选择较小的图片' });
       return;
     }
     
-    // 检查图片大小（最小要求）
     if (imageBase64.length < 1000) {
       resolve({ success: false, error: '图片太小，请重新拍摄' });
       return;
     }
     
-    // 构建请求
     const imageUrl = `data:image/jpeg;base64,${imageBase64}`;
     
     console.log('🚀 发送识别请求...');
@@ -55,82 +52,66 @@ const identifyPlant = (imageBase64) => {
           }
         ]
       },
-      timeout: 60000,  // 60秒超时
+      timeout: 60000,
       success: (res) => {
         console.log('📡 API状态码:', res.statusCode);
-        console.log('📡 API响应:', JSON.stringify(res.data).substring(0, 500));
+        console.log('📡 API完整响应:', JSON.stringify(res.data));
         
-        if (res.statusCode === 200) {
-          const content = res.data?.choices?.[0]?.message?.content;
+        if (res.statusCode === 200 && res.data) {
+          // 直接获取 content
+          const content = res.data.choices?.[0]?.message?.content;
+          
+          console.log('📝 AI返回内容:', content);
           
           if (content) {
-            // 尝试解析JSON，如果失败就用文本
-            let plant = {
-              name: '识别结果',
+            // 构造植物数据对象
+            const plant = {
+              id: 'plant_' + Date.now(),
+              name: '植物',
               description: content,
+              scientificName: '',
               family: '未知',
               difficulty: '中等',
               toxicity: false,
               careGuide: {
-                light: '请参考描述',
-                water: '请参考描述',
+                light: '适中光照',
+                water: '适量浇水',
                 temperature: '常温'
               }
             };
             
-            try {
-              const jsonMatch = content.match(/\{[\s\S]*\}/);
-              if (jsonMatch) {
-                const parsed = JSON.parse(jsonMatch[0]);
-                plant = { ...plant, ...parsed };
-              } else {
-                // 从文本提取名称
-                const nameMatch = content.match(/(?:植物|名称)[是为：:]\s*([^\n,，。]+)/);
-                if (nameMatch) {
-                  plant.name = nameMatch[1].trim();
-                }
+            // 尝试从文本中提取植物名称
+            const namePatterns = [
+              /这是(.+?)的图片/,
+              /图片中是(.+?)[，,。]/,
+              /这是一(.*?)(植物|花|树)/,
+              /植物[是为]?\s*(.+?)[，,。]/
+            ];
+            
+            for (const pattern of namePatterns) {
+              const match = content.match(pattern);
+              if (match && match[1]) {
+                plant.name = match[1].trim();
+                break;
               }
-            } catch (e) {
-              console.log('JSON解析失败，使用文本模式');
             }
             
+            console.log('✅ 解析成功，植物名称:', plant.name);
             resolve({ success: true, data: plant });
           } else {
-            resolve({ success: false, error: 'API未返回内容' });
+            resolve({ success: false, error: 'API返回内容为空' });
           }
         } else {
-          // 处理错误
           let errMsg = '识别失败';
-          const errData = res.data?.error || res.data;
-          
-          if (errData?.message) {
-            errMsg = errData.message;
-            // 解析常见错误
-            if (errMsg.includes('image length and width')) {
-              errMsg = '图片尺寸不符合要求，请重新拍摄';
-            } else if (errMsg.includes('Failed to download')) {
-              errMsg = '图片处理失败，请重试';
-            }
-          } else if (res.statusCode === 401) {
-            errMsg = 'API认证失败，请联系管理员';
-          } else if (res.statusCode === 429) {
-            errMsg = '请求太频繁，请稍后再试';
-          } else if (res.statusCode >= 500) {
-            errMsg = '服务器繁忙，请稍后再试';
-          }
-          
-          resolve({ success: false, error: errMsg });
+          if (res.statusCode === 401) errMsg = 'API认证失败';
+          else if (res.statusCode === 429) errMsg = '请求太频繁';
+          else if (res.statusCode >= 500) errMsg = '服务器繁忙';
+          resolve({ success: false, error: errMsg + '(' + res.statusCode + ')' });
         }
       },
       fail: (err) => {
         console.error('❌ 请求失败:', err);
-        let errMsg = '网络请求失败';
-        if (err.errMsg?.includes('timeout')) {
-          errMsg = '请求超时，请检查网络';
-        } else if (err.errMsg?.includes('fail')) {
-          errMsg = '网络连接失败，请检查网络';
-        }
-        resolve({ success: false, error: errMsg });
+        resolve({ success: false, error: '网络错误: ' + (err.errMsg || '请检查网络') });
       }
     });
   });
