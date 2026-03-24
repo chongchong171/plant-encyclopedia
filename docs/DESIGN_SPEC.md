@@ -353,6 +353,15 @@ const fetchData = async (url, options = {}) => {
 
 ## 六、开发流程
 
+### 6.0 初始化项目（首次克隆后必须执行）
+
+```bash
+# 克隆项目后，执行此脚本配置 Git Hooks
+bash scripts/setup-hooks.sh
+```
+
+**作用：** 配置 pre-commit hook，每次提交前自动执行代码检查
+
 ### 6.1 新增功能流程
 
 ```
