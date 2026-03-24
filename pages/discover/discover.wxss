@@ -46,10 +46,14 @@
   margin-right: 0;
 }
 
-.plant-img {
+.plant-icon {
   width: 220rpx;
   height: 180rpx;
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 80rpx;
+  background: linear-gradient(135deg, #E8F5E9 0%, #C8E6C9 100%);
 }
 
 .plant-name {

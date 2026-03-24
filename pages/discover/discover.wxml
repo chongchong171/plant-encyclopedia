@@ -7,7 +7,7 @@
     </view>
     <scroll-view class="plant-scroll" scroll-x>
       <view class="plant-card" wx:for="{{seasonPlants}}" wx:key="name" bindtap="goToSearch" data-name="{{item.name}}">
-        <image class="plant-img" src="{{item.image || '/image/default-plant.png'}}" mode="aspectFill"></image>
+        <view class="plant-icon">{{item.icon}}</view>
         <text class="plant-name">{{item.name}}</text>
         <text class="plant-desc">{{item.desc}}</text>
       </view>

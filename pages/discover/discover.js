@@ -5,11 +5,11 @@ const app = getApp();
 
 Page({
   data: {
-    // 当季推荐植物
+    // 当季推荐植物（使用本地默认图，emoji 作为视觉标识）
     seasonPlants: [
-      { name: '绿萝', desc: '净化空气', image: '' },
-      { name: '多肉', desc: '萌萌可爱', image: '' },
-      { name: '蝴蝶兰', desc: '高雅美丽', image: '' }
+      { name: '绿萝', desc: '净化空气', icon: '🌿' },
+      { name: '多肉', desc: '萌萌可爱', icon: '🌵' },
+      { name: '蝴蝶兰', desc: '高雅美丽', icon: '🌸' }
     ],
     
     // 养护小贴士
@@ -36,61 +36,6 @@ Page({
     if (app.globalData && app.globalData.hotPlants) {
       this.setData({ hotSearches: app.globalData.hotPlants });
     }
-    
-    // 加载当季推荐图片
-    this.loadPlantImages();
-  },
-
-  /**
-   * 加载植物图片（GBIF API，与搜索结果页相同）
-   */
-  async loadPlantImages() {
-    const plants = [...this.data.seasonPlants];
-    
-    for (let i = 0; i < plants.length; i++) {
-      const image = await this.getPlantImage(plants[i].name);
-      plants[i].image = image;
-    }
-    
-    this.setData({ seasonPlants: plants });
-  },
-
-  /**
-   * 从 GBIF 获取植物图片（与搜索结果页相同）
-   */
-  getPlantImage(plantName) {
-    return new Promise((resolve) => {
-      wx.request({
-        url: `https://api.gbif.org/v1/species/match?name=${encodeURIComponent(plantName)}&strict=true`,
-        success: (res) => {
-          const speciesKey = res.data?.speciesKey;
-          
-          if (speciesKey) {
-            wx.request({
-              url: `https://api.gbif.org/v1/occurrence/search?taxonKey=${speciesKey}&mediaType=StillImage&limit=5`,
-              success: (mediaRes) => {
-                const results = mediaRes.data?.results || [];
-                
-                for (const result of results) {
-                  if (result.media && result.media.length > 0) {
-                    const img = result.media.find(m => m.identifier && m.type === 'StillImage');
-                    if (img) {
-                      resolve(img.identifier);
-                      return;
-                    }
-                  }
-                }
-                resolve('');
-              },
-              fail: () => resolve('')
-            });
-          } else {
-            resolve('');
-          }
-        },
-        fail: () => resolve('')
-      });
-    });
   },
 
   /**
