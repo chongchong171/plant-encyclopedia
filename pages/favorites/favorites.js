@@ -6,6 +6,12 @@ const { formatRelativeTime } = require('../../utils/util');
 
 Page({
   data: {
+    // 状态（标准）
+    loading: false,
+    error: false,
+    errorMessage: '',
+    
+    // 数据
     favorites: []
   },
 

@@ -81,9 +81,14 @@ const CATEGORY_DATA = {
 
 Page({
   data: {
+    // 状态（标准）
+    loading: true,
+    error: false,
+    errorMessage: '',
+    
+    // 数据
     category: '',
-    categoryInfo: null,
-    loading: true
+    categoryInfo: null
   },
 
   onLoad(options) {

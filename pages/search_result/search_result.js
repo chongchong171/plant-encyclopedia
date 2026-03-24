@@ -9,6 +9,7 @@ Page({
     scientificName: '',  // 优先使用的学名（来自发现页面）
     loading: true,
     error: false,
+    errorMessage: '',
     plant: null,
     isFavorite: false
   },
