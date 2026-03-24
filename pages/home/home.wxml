@@ -1,45 +1,35 @@
 <!-- 养花助手 - 首页 -->
 <view class="container">
-  <!-- 顶部区域 -->
-  <view class="header">
-    <view class="logo-area">
-      <view class="logo-icon">🌳</view>
-      <text class="app-name">养花助手</text>
-    </view>
-    <text class="slogan">拍照识别植物，一键获取养护指南</text>
+  <!-- Logo -->
+  <view class="logo-section">
+    <text class="logo-icon">🌳</text>
+    <text class="app-name">养花助手</text>
+    <text class="slogan">拍照识别，一键养护</text>
   </view>
 
-  <!-- 主要操作区 -->
-  <view class="main-actions">
-    <view class="action-card camera-card" bindtap="takePhoto">
-      <view class="action-emoji">📷</view>
-      <text class="action-title">拍照识别</text>
-      <text class="action-desc">打开相机拍摄植物</text>
-    </view>
-
-    <view class="action-card album-card" bindtap="chooseFromAlbum">
-      <view class="action-emoji">🖼️</view>
-      <text class="action-title">相册上传</text>
-      <text class="action-desc">从相册选择植物图片</text>
-    </view>
-  </view>
-
-  <!-- 搜索植物入口 -->
-  <view class="search-section">
-    <view class="search-card" bindtap="goToSearch">
-      <view class="search-left">
-        <text class="search-emoji">🔍</text>
-        <view class="search-info">
-          <text class="search-title">搜索植物</text>
-          <text class="search-desc">查找植物百科和养护知识</text>
-        </view>
+  <!-- 主要功能 -->
+  <view class="main-section">
+    <!-- 拍照按钮 -->
+    <view class="primary-btn" bindtap="takePhoto">
+      <text class="btn-icon">📷</text>
+      <view class="btn-content">
+        <text class="btn-title">拍照识别</text>
+        <text class="btn-desc">拍摄植物，获取养护指南</text>
       </view>
-      <text class="search-arrow">›</text>
+    </view>
+
+    <!-- 相册按钮 -->
+    <view class="secondary-btn" bindtap="chooseFromAlbum">
+      <text class="btn-icon">🖼️</text>
+      <text class="btn-title">相册上传</text>
     </view>
   </view>
 
-  <!-- 底部提示 -->
-  <view class="footer-tip">
-    <text>🌸 让每个人都能养好花</text>
+  <!-- 快捷功能 -->
+  <view class="quick-section">
+    <view class="quick-item" bindtap="goToSearch">
+      <text class="quick-icon">🔍</text>
+      <text class="quick-text">搜索植物</text>
+    </view>
   </view>
 </view>

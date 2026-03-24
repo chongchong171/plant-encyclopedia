@@ -2,180 +2,120 @@
 
 .container {
   min-height: 100vh;
-  background: linear-gradient(180deg, #4CAF50 0%, #81C784 50%, #E8F5E9 100%);
+  background: linear-gradient(180deg, #4CAF50 0%, #81C784 100%);
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 40rpx;
-  padding-bottom: 120rpx;
+  padding: 80rpx 40rpx;
 }
 
-/* 顶部区域 */
-.header {
-  text-align: center;
-  margin-top: 60rpx;
-  margin-bottom: 60rpx;
-}
-
-.logo-area {
+/* Logo 区域 */
+.logo-section {
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-bottom: 20rpx;
+  margin-bottom: 80rpx;
 }
 
 .logo-icon {
-  font-size: 120rpx;
-  margin-bottom: 20rpx;
-  filter: drop-shadow(0 4rpx 8rpx rgba(0,0,0,0.2));
+  font-size: 100rpx;
+  margin-bottom: 16rpx;
 }
 
 .app-name {
-  font-size: 48rpx;
+  font-size: 44rpx;
   font-weight: bold;
   color: white;
-  letter-spacing: 4rpx;
-  text-shadow: 0 2rpx 4rpx rgba(0,0,0,0.2);
+  margin-bottom: 12rpx;
 }
 
 .slogan {
-  font-size: 28rpx;
-  color: rgba(255, 255, 255, 0.9);
-  margin-top: 10rpx;
+  font-size: 26rpx;
+  color: rgba(255, 255, 255, 0.85);
 }
 
-/* 主要操作区 */
-.main-actions {
+/* 主要功能区 */
+.main-section {
   width: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 30rpx;
   margin-bottom: 40rpx;
 }
 
-.action-card {
-  background: white;
-  border-radius: 24rpx;
-  padding: 40rpx;
+/* 主按钮 - 拍照 */
+.primary-btn {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  box-shadow: 0 8rpx 30rpx rgba(0, 0, 0, 0.1);
-}
-
-.camera-card {
-  background: linear-gradient(135deg, #4CAF50 0%, #66BB6A 100%);
-}
-
-.camera-card .action-emoji {
-  font-size: 100rpx;
-  filter: drop-shadow(0 4rpx 8rpx rgba(0,0,0,0.2));
-}
-
-.album-card {
   background: white;
-  border: 4rpx solid #4CAF50;
-}
-
-.album-card .action-emoji {
-  font-size: 100rpx;
-}
-
-.action-emoji {
-  font-size: 80rpx;
+  border-radius: 20rpx;
+  padding: 32rpx 36rpx;
   margin-bottom: 20rpx;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.1);
 }
 
-.action-title {
-  font-size: 36rpx;
-  font-weight: bold;
-  color: #333;
-  margin-bottom: 10rpx;
-}
-
-.camera-card .action-title {
-  color: white;
-}
-
-.action-desc {
-  font-size: 28rpx;
-  color: #999;
-}
-
-.camera-card .action-desc {
-  color: rgba(255, 255, 255, 0.8);
-}
-
-/* 测试按钮 */
-.test-section {
-  margin: 30rpx 0;
-}
-
-.test-btn {
-  background: #FF9800;
-  color: white;
-  font-size: 28rpx;
-  padding: 20rpx 40rpx;
-  border-radius: 20rpx;
-}
-
-/* 搜索植物入口 */
-.search-section {
-  width: 100%;
-  margin-bottom: 120rpx;
-}
-
-.search-card {
-  background: white;
-  border-radius: 20rpx;
-  padding: 30rpx 40rpx;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  box-shadow: 0 8rpx 30rpx rgba(0, 0, 0, 0.1);
-}
-
-.search-left {
-  display: flex;
-  align-items: center;
-}
-
-.search-emoji {
+.btn-icon {
   font-size: 56rpx;
   margin-right: 24rpx;
 }
 
-.search-info {
+.btn-content {
   display: flex;
   flex-direction: column;
 }
 
-.search-title {
+.btn-title {
   font-size: 32rpx;
   font-weight: bold;
   color: #333;
   margin-bottom: 6rpx;
 }
 
-.search-desc {
+.btn-desc {
   font-size: 24rpx;
-  color: #999;
+  color: #888;
 }
 
-.search-arrow {
-  font-size: 48rpx;
-  color: #4CAF50;
+/* 次按钮 - 相册 */
+.secondary-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 20rpx;
+  padding: 24rpx;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.08);
+}
+
+.secondary-btn .btn-icon {
+  font-size: 40rpx;
+  margin-right: 16rpx;
+}
+
+.secondary-btn .btn-title {
+  font-size: 28rpx;
   font-weight: bold;
+  color: #4CAF50;
 }
 
-/* 底部提示 */
-.footer-tip {
-  position: fixed;
-  bottom: 40rpx;
-  left: 0;
-  right: 0;
-  text-align: center;
-  font-size: 24rpx;
-  color: #999;
-  padding-bottom: env(safe-area-inset-bottom);
+/* 快捷功能 */
+.quick-section {
+  display: flex;
+  gap: 24rpx;
+}
+
+.quick-item {
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 20rpx 32rpx;
+  border-radius: 40rpx;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.06);
+}
+
+.quick-icon {
+  font-size: 32rpx;
+  margin-right: 10rpx;
+}
+
+.quick-text {
+  font-size: 26rpx;
+  color: #333;
 }
