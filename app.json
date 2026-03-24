@@ -51,10 +51,8 @@
     ]
   },
   "requiredPrivateInfos": [
-    "chooseImage",
-    "chooseVideo"
+    "chooseMedia"
   ],
-  "__usePrivacyCheck__": true,
   "cloud": true,
   "style": "v2",
   "sitemapLocation": "sitemap.json"
