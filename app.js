@@ -98,12 +98,17 @@ App({
   addFavorite(plant) {
     const favorites = this.globalData.favorites || [];
     const exists = favorites.find(f => f.id === plant.id);
+    console.log('📝 addFavorite 被调用, plant:', plant?.name, 'id:', plant?.id);
+    console.log('📝 当前收藏列表:', favorites.length, '条');
     if (!exists) {
       favorites.unshift({ ...plant, addTime: Date.now() });
       this.globalData.favorites = favorites;
       wx.setStorageSync('favorites', favorites);
+      console.log('✅ 收藏成功！当前收藏:', favorites.length, '条');
+      console.log('📝 收藏列表:', favorites.map(f => f.name));
       return true;
     }
+    console.log('⚠️ 已存在，跳过');
     return false;
   },
 
