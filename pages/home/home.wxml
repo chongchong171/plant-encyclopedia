@@ -1,35 +1,62 @@
 <!-- 养花助手 - 首页 -->
 <view class="container">
+  <!-- 顶部装饰 -->
+  <view class="header-decor">
+    <text class="decor-flower">🌸</text>
+    <text class="decor-flower">🌿</text>
+    <text class="decor-flower">🌺</text>
+  </view>
+
   <!-- Logo -->
   <view class="logo-section">
-    <text class="logo-icon">🌳</text>
+    <view class="logo-circle">
+      <text class="logo-icon">🌱</text>
+    </view>
     <text class="app-name">养花助手</text>
-    <text class="slogan">拍照识别，一键养护</text>
+    <text class="slogan">遇见植物的美好</text>
   </view>
 
-  <!-- 主要功能 -->
+  <!-- 主要功能卡片 -->
   <view class="main-section">
-    <!-- 拍照按钮 -->
-    <view class="primary-btn" bindtap="takePhoto">
-      <text class="btn-icon">📷</text>
-      <view class="btn-content">
-        <text class="btn-title">拍照识别</text>
-        <text class="btn-desc">拍摄植物，获取养护指南</text>
+    <!-- 拍照卡片 -->
+    <view class="func-card camera-card" bindtap="takePhoto">
+      <view class="card-icon-wrap">
+        <text class="card-icon">📷</text>
       </view>
+      <view class="card-content">
+        <text class="card-title">拍照识别</text>
+        <text class="card-desc">拍一拍，认识你的植物</text>
+      </view>
+      <text class="card-arrow">›</text>
     </view>
 
-    <!-- 相册按钮 -->
-    <view class="secondary-btn" bindtap="chooseFromAlbum">
-      <text class="btn-icon">🖼️</text>
-      <text class="btn-title">相册上传</text>
+    <!-- 相册卡片 -->
+    <view class="func-card album-card" bindtap="chooseFromAlbum">
+      <view class="card-icon-wrap">
+        <text class="card-icon">🖼️</text>
+      </view>
+      <view class="card-content">
+        <text class="card-title">相册上传</text>
+        <text class="card-desc">从相册选择植物照片</text>
+      </view>
+      <text class="card-arrow">›</text>
+    </view>
+
+    <!-- 搜索卡片 -->
+    <view class="func-card search-card" bindtap="goToSearch">
+      <view class="card-icon-wrap">
+        <text class="card-icon">🔍</text>
+      </view>
+      <view class="card-content">
+        <text class="card-title">搜索植物</text>
+        <text class="card-desc">查找植物百科和养护知识</text>
+      </view>
+      <text class="card-arrow">›</text>
     </view>
   </view>
 
-  <!-- 快捷功能 -->
-  <view class="quick-section">
-    <view class="quick-item" bindtap="goToSearch">
-      <text class="quick-icon">🔍</text>
-      <text class="quick-text">搜索植物</text>
-    </view>
+  <!-- 底部装饰 -->
+  <view class="footer-decor">
+    <text>✨ 让养花变得简单 ✨</text>
   </view>
 </view>
