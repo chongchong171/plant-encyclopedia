@@ -19,7 +19,7 @@
     "backgroundColor": "#E8F5E9"
   },
   "tabBar": {
-    "color": "#999999",
+    "color": "#666666",
     "selectedColor": "#4CAF50",
     "backgroundColor": "#ffffff",
     "borderStyle": "black",
@@ -27,25 +27,25 @@
       {
         "pagePath": "pages/home/home",
         "text": "识别",
-        "iconPath": "/image/tab/scan.png",
+        "iconPath": "/image/tab/scan-active.png",
         "selectedIconPath": "/image/tab/scan-active.png"
       },
       {
         "pagePath": "pages/discover/discover",
         "text": "发现",
-        "iconPath": "/image/tab/compass.png",
+        "iconPath": "/image/tab/compass-active.png",
         "selectedIconPath": "/image/tab/compass-active.png"
       },
       {
         "pagePath": "pages/favorites/favorites",
         "text": "收藏",
-        "iconPath": "/image/tab/heart.png",
+        "iconPath": "/image/tab/heart-active.png",
         "selectedIconPath": "/image/tab/heart-active.png"
       },
       {
         "pagePath": "pages/profile/profile",
         "text": "我的",
-        "iconPath": "/image/tab/user.png",
+        "iconPath": "/image/tab/user-active.png",
         "selectedIconPath": "/image/tab/user-active.png"
       }
     ]
