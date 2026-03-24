@@ -1,17 +1,17 @@
 <!-- 养花助手 - 发现页面 -->
 <view class="container">
-  <!-- 当季推荐 -->
+  <!-- 当季推荐（一行三个） -->
   <view class="section">
     <view class="section-header">
       <text class="section-title">🌸 当季推荐</text>
     </view>
-    <view class="season-grid">
-      <view class="season-card" wx:for="{{seasonPlants}}" wx:key="name" bindtap="goToSearch" data-name="{{item.name}}">
-        <view class="season-icon">🌿</view>
-        <text class="season-name">{{item.name}}</text>
-        <text class="season-desc">{{item.desc}}</text>
+    <scroll-view class="plant-scroll" scroll-x>
+      <view class="plant-card" wx:for="{{seasonPlants}}" wx:key="name" bindtap="goToSearch" data-name="{{item.name}}">
+        <image class="plant-img" src="{{item.image || '/image/default-plant.png'}}" mode="aspectFill"></image>
+        <text class="plant-name">{{item.name}}</text>
+        <text class="plant-desc">{{item.desc}}</text>
       </view>
-    </view>
+    </scroll-view>
   </view>
 
   <!-- 养护小贴士 -->
