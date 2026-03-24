@@ -25,31 +25,31 @@ Page({
   /**
    * 搜索植物信息（AI 文字 + 真实图片）
    */
-  searchPlant(keyword) {
+  async searchPlant(keyword) {
     wx.showLoading({ title: '查询中...' });
     
     const apiKey = app.globalData.qwenApiKey;
     
-    // 同时发起两个请求：AI 文字 + 真实图片
-    Promise.all([
-      this.getPlantInfoFromAI(keyword, apiKey),
-      this.getPlantImageFromWikimedia(keyword, '') // 先用关键词搜索，后续优化
-    ]).then(([aiResult, imageUrl]) => {
-      wx.hideLoading();
-      
-      if (aiResult) {
-        const plant = {
-          ...aiResult,
-          imageUrl: imageUrl || '' // 真实植物图片
-        };
-        this.setData({ loading: false, error: false, plant });
-      } else {
-        this.setData({ loading: false, error: true });
-      }
-    }).catch(() => {
+    // 先获取 AI 信息
+    const aiResult = await this.getPlantInfoFromAI(keyword, apiKey);
+    
+    if (!aiResult) {
       wx.hideLoading();
       this.setData({ loading: false, error: true });
-    });
+      return;
+    }
+    
+    // 使用学名搜索图片（更准确）
+    const imageUrl = await this.getPlantImageFromWikimedia(keyword, aiResult.scientificName);
+    
+    wx.hideLoading();
+    
+    const plant = {
+      ...aiResult,
+      imageUrl: imageUrl || ''
+    };
+    
+    this.setData({ loading: false, error: false, plant });
   },
 
   /**
@@ -130,45 +130,77 @@ Page({
 
   /**
    * 从 Wikimedia Commons 获取真实植物图片（免费）
+   * 改进：多次搜索确保找到图片
    */
-  getPlantImageFromWikimedia(keyword, scientificName) {
+  async getPlantImageFromWikimedia(keyword, scientificName) {
+    // 搜索策略：依次尝试
+    const searchTerms = [
+      scientificName,           // 1. 学名（最准确）
+      keyword + ' plant',       // 2. 关键词 + plant
+      keyword + ' flower',      // 3. 关键词 + flower
+      keyword                   // 4. 纯关键词
+    ].filter(Boolean);
+
+    for (const term of searchTerms) {
+      const imageUrl = await this.searchWikimediaImage(term);
+      if (imageUrl) {
+        console.log('✅ 找到图片:', term, imageUrl);
+        return imageUrl;
+      }
+    }
+    
+    console.log('⚠️ 未找到图片:', keyword);
+    return null;
+  },
+
+  /**
+   * 单次 Wikimedia 图片搜索
+   */
+  searchWikimediaImage(searchTerm) {
     return new Promise((resolve) => {
-      // 优先使用学名搜索，更准确
-      const searchTerm = scientificName || keyword;
-      
-      // 使用 Wikimedia API 搜索植物图片
-      const searchUrl = `https://commons.wikimedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(searchTerm + ' plant')}&srnamespace=6&srlimit=10&format=json&origin=*`;
+      const searchUrl = `https://commons.wikimedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(searchTerm)}&srnamespace=6&srlimit=20&format=json&origin=*`;
       
       wx.request({
         url: searchUrl,
         success: (res) => {
           const searchResults = res.data?.query?.search || [];
           
-          // 过滤出更准确的图片（标题包含植物名）
-          const validResults = searchResults.filter(r => {
-            const title = r.title.toLowerCase();
-            const searchLower = searchTerm.toLowerCase();
-            return title.includes(searchLower.split(' ')[0]) || title.includes(searchLower);
-          });
-          
-          if (validResults.length > 0) {
-            // 获取第一个有效图片的详细信息
-            const title = validResults[0].title;
-            const imageInfoUrl = `https://commons.wikimedia.org/w/api.php?action=query&titles=${encodeURIComponent(title)}&prop=imageinfo&iiprop=url&iiurlwidth=800&format=json&origin=*`;
+          // 尝试找到合适的图片
+          for (const result of searchResults) {
+            const title = result.title.toLowerCase();
             
-            wx.request({
-              url: imageInfoUrl,
-              success: (imgRes) => {
-                const pages = imgRes.data?.query?.pages || {};
-                const page = Object.values(pages)[0];
-                const imageUrl = page?.imageinfo?.[0]?.thumburl || page?.imageinfo?.[0]?.url;
-                resolve(imageUrl || null);
-              },
-              fail: () => resolve(null)
+            // 过滤掉不符合的图片（如地图、图标等）
+            if (title.includes('map') || title.includes('icon') || title.includes('logo')) {
+              continue;
+            }
+            
+            // 获取图片 URL
+            this.getImageUrl(result.title).then(url => {
+              if (url) resolve(url);
             });
-          } else {
-            resolve(null);
+            return;
           }
+          resolve(null);
+        },
+        fail: () => resolve(null)
+      });
+    });
+  },
+
+  /**
+   * 获取图片 URL
+   */
+  getImageUrl(title) {
+    return new Promise((resolve) => {
+      const imageInfoUrl = `https://commons.wikimedia.org/w/api.php?action=query&titles=${encodeURIComponent(title)}&prop=imageinfo&iiprop=url&iiurlwidth=800&format=json&origin=*`;
+      
+      wx.request({
+        url: imageInfoUrl,
+        success: (imgRes) => {
+          const pages = imgRes.data?.query?.pages || {};
+          const page = Object.values(pages)[0];
+          const imageUrl = page?.imageinfo?.[0]?.thumburl || page?.imageinfo?.[0]?.url;
+          resolve(imageUrl || null);
         },
         fail: () => resolve(null)
       });
