@@ -9,7 +9,8 @@ Page({
     scientificName: '',  // 优先使用的学名（来自发现页面）
     loading: true,
     error: false,
-    plant: null
+    plant: null,
+    isFavorite: false
   },
 
   onLoad(options) {
@@ -21,6 +22,39 @@ Page({
       this.searchPlant(searchText, scientificName);
     } else {
       this.setData({ loading: false, error: true });
+    }
+  },
+
+  /**
+   * 切换收藏状态
+   */
+  toggleFavorite() {
+    const { plant, isFavorite } = this.data;
+    
+    if (!plant) return;
+    
+    this.setData({ isFavorite: !isFavorite });
+    
+    if (!isFavorite && app.addFavorite) {
+      // 确保有 id
+      if (!plant.id) {
+        plant.id = 'search_' + Date.now();
+      }
+      app.addFavorite(plant);
+    } else if (isFavorite && app.removeFavorite) {
+      app.removeFavorite(plant.id);
+    }
+    
+    wx.showToast({ title: isFavorite ? '已取消收藏' : '已收藏', icon: 'success' });
+  },
+
+  /**
+   * 检查是否已收藏
+   */
+  checkFavorite() {
+    const { plant } = this.data;
+    if (plant && plant.id && app.isFavorite) {
+      this.setData({ isFavorite: app.isFavorite(plant.id) });
     }
   },
 
@@ -50,12 +84,16 @@ Page({
     wx.hideLoading();
     
     const plant = {
+      id: 'search_' + Date.now(),  // 确保有 id
       ...aiResult,
       scientificName: scientificNameToUse,  // 确保使用正确的学名
       imageUrl: imageUrl || ''
     };
     
     this.setData({ loading: false, error: false, plant });
+    
+    // 检查是否已收藏
+    this.checkFavorite();
   },
 
   /**

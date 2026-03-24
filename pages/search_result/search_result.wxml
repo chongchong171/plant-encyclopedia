@@ -10,10 +10,16 @@
     <!-- 植物图片 -->
     <view class="plant-image-section" wx:if="{{plant.imageUrl}}">
       <image class="plant-image" src="{{plant.imageUrl}}" mode="aspectFill"></image>
+      <view class="favorite-btn" bindtap="toggleFavorite">
+        <text>{{isFavorite ? '❤️' : '🤍'}}</text>
+      </view>
     </view>
     
     <!-- 无图片时的占位 -->
     <view class="plant-image-placeholder" wx:if="{{!plant.imageUrl}}">
+      <view class="favorite-btn-top" bindtap="toggleFavorite">
+        <text>{{isFavorite ? '❤️' : '🤍'}}</text>
+      </view>
       <text class="placeholder-icon">🌱</text>
       <text class="placeholder-text">{{plant.name}}</text>
     </view>

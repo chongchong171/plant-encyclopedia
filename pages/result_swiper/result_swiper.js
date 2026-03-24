@@ -85,6 +85,11 @@ Page({
         // 保存历史
         if (app.addHistory) app.addHistory(plant);
         
+        // 检查是否已收藏
+        if (app.isFavorite) {
+          this.setData({ isFavorite: app.isFavorite(plant.id) });
+        }
+        
       } else {
         this.setData({ 
           loading: false, 
