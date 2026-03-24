@@ -447,28 +447,32 @@ bash scripts/setup-hooks.sh
 
 ## 八、app.json 配置标准
 
-### 8.1 隐私协议配置
+### 8.1 隐私协议说明
 
-**必须在 app.json 中声明使用的隐私接口：**
+**重要：** `chooseMedia`（拍照/相册）**不需要**在 `requiredPrivateInfos` 中声明！
 
-```json
-{
-  "requiredPrivateInfos": [
-    "chooseMedia"
-  ]
-}
+`requiredPrivateInfos` 只支持以下**位置相关**接口：
+- `chooseAddress` - 选择地址
+- `chooseLocation` - 选择位置
+- `choosePoi` - 选择POI
+- `getFuzzyLocation` - 获取模糊位置
+- `getLocation` - 获取位置
+- `onLocationChange` - 位置变化监听
+- `startLocationUpdate` - 开始位置更新
+- `startLocationUpdateBackground` - 后台位置更新
+
+### 8.2 相册/相机权限处理
+
+**正确方式：** 使用 `<button open-type="chooseMedia">` 自动处理隐私协议
+
+```xml
+<!-- 拍照按钮 -->
+<button class="btn-primary" open-type="chooseMedia" bindchoosemedia="onTakePhoto">
+  📷 拍照识别
+</button>
 ```
 
-### 8.2 支持的隐私接口列表
-
-| 接口名称 | 用途 |
-|---------|------|
-| `chooseMedia` | 拍照、选择图片/视频 |
-| `chooseImage` | 选择图片（已废弃，使用 chooseMedia） |
-| `chooseVideo` | 选择视频（已废弃，使用 chooseMedia） |
-| `chooseLocation` | 选择位置 |
-| `chooseAddress` | 选择地址 |
-| `getLocation` | 获取位置 |
+微信会在用户首次点击时自动弹出隐私协议弹窗。
 
 ### 8.3 完整 app.json 模板
 
@@ -498,9 +502,6 @@ bash scripts/setup-hooks.sh
     "backgroundColor": "#ffffff",
     "list": [...]
   },
-  "requiredPrivateInfos": [
-    "chooseMedia"
-  ],
   "cloud": true,
   "style": "v2",
   "sitemapLocation": "sitemap.json"
