@@ -50,6 +50,10 @@
       }
     ]
   },
+  "requiredPrivateInfos": [
+    "chooseImage",
+    "chooseVideo"
+  ],
   "__usePrivacyCheck__": true,
   "cloud": true,
   "style": "v2",
