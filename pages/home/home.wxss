@@ -2,7 +2,7 @@
 
 .container {
   min-height: 100vh;
-  background: linear-gradient(180deg, #4CAF50 0%, #66BB6A 40%, #81C784 100%);
+  background: #4CAF50;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -11,32 +11,58 @@
   overflow: hidden;
 }
 
-/* 绿叶浮雕背景 */
+/* 大片绿叶浮雕背景 */
 .leaf-bg {
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
-  height: 50%;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-around;
-  align-content: flex-start;
-  padding: 40rpx;
-  opacity: 0.15;
+  bottom: 0;
+  overflow: hidden;
   pointer-events: none;
 }
 
 .leaf {
-  font-size: 120rpx;
-  transform: rotate(-15deg);
+  position: absolute;
+  font-size: 280rpx;
+  opacity: 0.12;
+  color: #2E7D32;
 }
 
-.leaf-1 { transform: rotate(-20deg); margin-top: 20rpx; }
-.leaf-2 { transform: rotate(15deg); margin-top: 80rpx; }
-.leaf-3 { transform: rotate(-10deg); margin-top: 40rpx; }
-.leaf-4 { transform: rotate(25deg); margin-top: 100rpx; }
-.leaf-5 { transform: rotate(-5deg); margin-top: 60rpx; }
+.leaf-1 {
+  top: -60rpx;
+  left: -80rpx;
+  transform: rotate(-30deg);
+  font-size: 320rpx;
+}
+
+.leaf-2 {
+  top: 100rpx;
+  right: -100rpx;
+  transform: rotate(20deg);
+  font-size: 260rpx;
+}
+
+.leaf-3 {
+  top: 400rpx;
+  left: -60rpx;
+  transform: rotate(-15deg);
+  font-size: 240rpx;
+}
+
+.leaf-4 {
+  bottom: 200rpx;
+  right: -40rpx;
+  transform: rotate(35deg);
+  font-size: 280rpx;
+}
+
+.leaf-5 {
+  bottom: -80rpx;
+  left: 40rpx;
+  transform: rotate(-25deg);
+  font-size: 300rpx;
+}
 
 /* Logo 区域 */
 .logo-section {

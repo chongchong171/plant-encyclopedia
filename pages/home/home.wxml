@@ -1,11 +1,11 @@
 <!-- 养花助手 - 首页 -->
 <view class="container">
-  <!-- 绿叶浮雕背景 -->
+  <!-- 大片绿叶浮雕背景 -->
   <view class="leaf-bg">
     <text class="leaf leaf-1">🌿</text>
-    <text class="leaf leaf-2">🍃</text>
+    <text class="leaf leaf-2">🌿</text>
     <text class="leaf leaf-3">🌿</text>
-    <text class="leaf leaf-4">🍃</text>
+    <text class="leaf leaf-4">🌿</text>
     <text class="leaf leaf-5">🌿</text>
   </view>
 
