@@ -28,10 +28,10 @@
 
     <!-- 相册和搜索 - 并列 -->
     <view class="sub-btns">
-      <view class="sub-btn album-btn" bindtap="chooseFromAlbum">
+      <button class="sub-btn album-btn" open-type="chooseMedia" bindchoosemedia="onChooseFromAlbum">
         <text class="sub-icon">🖼️</text>
         <text class="sub-title">相册上传</text>
-      </view>
+      </button>
       <view class="sub-btn search-btn" bindtap="goToSearch">
         <text class="sub-icon">🔍</text>
         <text class="sub-title">搜索植物</text>

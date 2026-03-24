@@ -168,3 +168,14 @@
   color: #4CAF50;
   box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.1);
 }
+
+/* 重置 button 默认样式 */
+.action-btn {
+  margin: 0;
+  padding: 40rpx;
+  line-height: normal;
+}
+
+.action-btn::after {
+  border: none;
+}

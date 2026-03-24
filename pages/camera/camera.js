@@ -38,73 +38,30 @@ Page({
   },
 
   /**
-   * 拍照 - 直接调用系统相机
+   * 拍照回调 - 从 button open-type 触发
    */
-  takePhoto() {
-    const that = this;
-    wx.chooseMedia({
-      count: 1,
-      mediaType: ['image'],
-      sourceType: ['camera'],
-      success(res) {
-        const tempFilePath = res.tempFiles[0].tempFilePath;
-        that.compressAndNavigate(tempFilePath);
-      },
-      fail(err) {
-        console.log('拍照失败', err);
-        if (err.errMsg && err.errMsg.indexOf('auth deny') !== -1) {
-          wx.showModal({
-            title: '需要相机权限',
-            content: '请在设置中开启相机权限',
-            confirmText: '去设置',
-            success(modalRes) {
-              if (modalRes.confirm) {
-                wx.openSetting();
-              }
-            }
-          });
-        } else {
-          wx.showToast({ title: '拍照失败', icon: 'none' });
-        }
+  onTakePhoto(e) {
+    console.log('拍照回调', e);
+    if (e.detail && e.detail.tempFiles && e.detail.tempFiles.length > 0) {
+      // 找到图片类型的文件
+      const imageFile = e.detail.tempFiles.find(f => f.fileType === 'image' || f.tempFilePath);
+      if (imageFile) {
+        this.compressAndNavigate(imageFile.tempFilePath);
       }
-    });
+    }
   },
 
   /**
-   * 从相册选择
+   * 相册选择回调 - 从 button open-type 触发
    */
-  chooseFromAlbum() {
-    const that = this;
-    console.log('点击相册选择');
-    wx.chooseMedia({
-      count: 1,
-      mediaType: ['image'],
-      sourceType: ['album'],
-      success(res) {
-        console.log('选择成功', res);
-        that.compressAndNavigate(res.tempFiles[0].tempFilePath);
-      },
-      fail(err) {
-        console.log('选择图片失败, 完整错误:', JSON.stringify(err));
-        wx.showToast({ 
-          title: '失败: ' + (err.errMsg || '未知'), 
-          icon: 'none',
-          duration: 3000
-        });
-        if (err.errMsg && err.errMsg.indexOf('auth deny') !== -1) {
-          wx.showModal({
-            title: '需要相册权限',
-            content: '请在设置中开启相册权限',
-            confirmText: '去设置',
-            success(modalRes) {
-              if (modalRes.confirm) {
-                wx.openSetting();
-              }
-            }
-          });
-        }
+  onChooseFromAlbum(e) {
+    console.log('相册选择回调', e);
+    if (e.detail && e.detail.tempFiles && e.detail.tempFiles.length > 0) {
+      const imageFile = e.detail.tempFiles.find(f => f.fileType === 'image' || f.tempFilePath);
+      if (imageFile) {
+        this.compressAndNavigate(imageFile.tempFilePath);
       }
-    });
+    }
   },
 
   /**

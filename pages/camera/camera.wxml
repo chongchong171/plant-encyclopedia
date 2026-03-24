@@ -25,19 +25,20 @@
     <view class="tip-close" bindtap="hideTips">✕</view>
   </view>
 
-  <!-- 操作按钮 -->
+  <!-- 操作按钮区 -->
   <view class="action-section">
-    <view class="action-btn camera-btn" bindtap="takePhoto">
+    <!-- 使用 button open-type 自动处理隐私协议 -->
+    <button class="action-btn camera-btn" open-type="chooseMedia" bindchoosemedia="onTakePhoto">
       <text class="action-icon">📷</text>
       <text class="action-title">拍照识别</text>
       <text class="action-desc">拍一张植物照片</text>
-    </view>
+    </button>
     
-    <view class="action-btn album-btn" bindtap="chooseFromAlbum">
+    <button class="action-btn album-btn" open-type="chooseMedia" bindchoosemedia="onChooseFromAlbum">
       <text class="action-icon">🖼️</text>
       <text class="action-title">相册上传</text>
       <text class="action-desc">从相册选择图片</text>
-    </view>
+    </button>
   </view>
 
   <!-- 返回按钮 -->
