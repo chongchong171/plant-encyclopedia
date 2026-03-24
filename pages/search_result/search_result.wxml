@@ -8,8 +8,12 @@
   <!-- 查询结果 -->
   <view class="result-container" wx:if="{{!loading && !error && plant}}">
     <!-- 植物图片 -->
-    <view class="plant-image-section" wx:if="{{plant.imageUrl}}">
-      <image class="plant-image" src="{{plant.imageUrl}}" mode="aspectFill" binderror="onImageError"></image>
+    <view class="plant-image-section">
+      <image 
+        class="plant-image" 
+        src="{{plant.imageUrl || 'https://source.unsplash.com/800x500/?' + (plant.name || searchText)}}" 
+        mode="aspectFill"
+      ></image>
     </view>
 
     <!-- 植物信息 -->
@@ -59,7 +63,7 @@
       <!-- 养护难度 -->
       <view class="difficulty-section">
         <view class="section-header">
-          <text class="section-title">📊 党护难度</text>
+          <text class="section-title">📊 养护难度</text>
           <view class="difficulty-stars">
             <text wx:for="{{[1,2,3,4,5]}}" wx:key="index" class="star {{item <= plant.difficultyLevel ? 'active' : ''}}">★</text>
           </view>
@@ -69,7 +73,7 @@
 
       <!-- 养护指南 -->
       <view class="care-section" wx:if="{{plant.careGuide}}">
-        <text class="care-section-title">🌿 党护指南</text>
+        <text class="care-section-title">🌿 养护指南</text>
         
         <view class="care-card" wx:if="{{plant.careGuide.light}}">
           <view class="care-card-header">
