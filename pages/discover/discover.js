@@ -5,23 +5,11 @@ const app = getApp();
 
 Page({
   data: {
-    // 当季推荐植物（预设真实图片）
+    // 当季推荐植物
     seasonPlants: [
-      { 
-        name: '绿萝', 
-        desc: '净化空气',
-        image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/33/Epipremnum_aureum_01.jpg/320px-Epipremnum_aureum_01.jpg'
-      },
-      { 
-        name: '多肉', 
-        desc: '萌萌可爱',
-        image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ab/Echeveria_elegans_RHS.jpg/320px-Echeveria_elegans_RHS.jpg'
-      },
-      { 
-        name: '蝴蝶兰', 
-        desc: '高雅美丽',
-        image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d9/Phalaenopsis_JPEG.jpg/320px-Phalaenopsis_JPEG.jpg'
-      }
+      { name: '绿萝', desc: '净化空气', image: '' },
+      { name: '多肉', desc: '萌萌可爱', image: '' },
+      { name: '蝴蝶兰', desc: '高雅美丽', image: '' }
     ],
     
     // 养护小贴士
@@ -47,11 +35,62 @@ Page({
     // 从全局配置获取热门植物
     if (app.globalData && app.globalData.hotPlants) {
       this.setData({ hotSearches: app.globalData.hotPlants });
-    } else {
-      this.setData({ 
-        hotSearches: ['绿萝', '多肉', '发财树', '君子兰', '吊兰', '龟背竹']
-      });
     }
+    
+    // 加载当季推荐图片
+    this.loadPlantImages();
+  },
+
+  /**
+   * 加载植物图片（GBIF API，与搜索结果页相同）
+   */
+  async loadPlantImages() {
+    const plants = [...this.data.seasonPlants];
+    
+    for (let i = 0; i < plants.length; i++) {
+      const image = await this.getPlantImage(plants[i].name);
+      plants[i].image = image;
+    }
+    
+    this.setData({ seasonPlants: plants });
+  },
+
+  /**
+   * 从 GBIF 获取植物图片（与搜索结果页相同）
+   */
+  getPlantImage(plantName) {
+    return new Promise((resolve) => {
+      wx.request({
+        url: `https://api.gbif.org/v1/species/match?name=${encodeURIComponent(plantName)}&strict=true`,
+        success: (res) => {
+          const speciesKey = res.data?.speciesKey;
+          
+          if (speciesKey) {
+            wx.request({
+              url: `https://api.gbif.org/v1/occurrence/search?taxonKey=${speciesKey}&mediaType=StillImage&limit=5`,
+              success: (mediaRes) => {
+                const results = mediaRes.data?.results || [];
+                
+                for (const result of results) {
+                  if (result.media && result.media.length > 0) {
+                    const img = result.media.find(m => m.identifier && m.type === 'StillImage');
+                    if (img) {
+                      resolve(img.identifier);
+                      return;
+                    }
+                  }
+                }
+                resolve('');
+              },
+              fail: () => resolve('')
+            });
+          } else {
+            resolve('');
+          }
+        },
+        fail: () => resolve('')
+      });
+    });
   },
 
   /**
