@@ -8,8 +8,8 @@ Page({
     // 当季推荐植物（学名用于 GBIF 搜索）
     seasonPlants: [
       { name: '绿萝', scientificName: 'Epipremnum aureum', desc: '净化空气', image: '' },
-      { name: '多肉', scientificName: 'Succulent', desc: '萌萌可爱', image: '' },
-      { name: '蝴蝶兰', scientificName: 'Phalaenopsis', desc: '高雅美丽', image: '' }
+      { name: '玉树', scientificName: 'Crassula ovata', desc: '萌萌可爱', image: '' },
+      { name: '蝴蝶兰', scientificName: 'Phalaenopsis aphrodite', desc: '高雅美丽', image: '' }
     ],
     
     // 养护小贴士

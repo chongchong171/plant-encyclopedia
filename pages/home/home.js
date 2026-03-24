@@ -58,7 +58,7 @@ Page({
    * 跳转到搜索页
    */
   goToSearch() {
-    wx.switchTab({
+    wx.navigateTo({
       url: '/pages/search_page/search_page'
     });
   }
