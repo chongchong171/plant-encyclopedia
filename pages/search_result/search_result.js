@@ -1,5 +1,5 @@
 /**
- * 养花助手 - 搜索结果页面
+ * 花草百科全书 - 搜索结果页面
  */
 const app = getApp();
 
@@ -191,7 +191,7 @@ Page({
    */
   onShareAppMessage() {
     return {
-      title: `养花助手 - ${this.data.searchText}`,
+      title: `花草百科全书 - ${this.data.searchText}`,
       path: `/pages/search_result/search_result?search_text=${encodeURIComponent(this.data.searchText)}`
     };
   }

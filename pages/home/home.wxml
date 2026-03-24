@@ -1,4 +1,4 @@
-<!-- 养花助手 - 首页 -->
+<!-- 花草百科全书 - 首页 -->
 <view class="container">
   <!-- 大片绿叶浮雕背景 -->
   <view class="leaf-bg">
@@ -11,7 +11,7 @@
   <!-- Logo -->
   <view class="logo-section">
     <text class="logo-icon">🌳</text>
-    <text class="app-name">养花助手</text>
+    <text class="app-name">花草百科全书</text>
     <text class="slogan">遇见植物的美好</text>
   </view>
 

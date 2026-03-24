@@ -1,5 +1,5 @@
 /**
- * 养花助手 - 主入口文件
+ * 花草百科全书 - 主入口文件
  * 
  * @description 拍照识别植物，一键获取养护指南
  * @version 1.0.0
@@ -36,7 +36,7 @@ App({
   },
 
   onLaunch() {
-    console.log('🌸 养花助手启动~');
+    console.log('🌸 花草百科全书启动~');
     
     if (wx.cloud) {
       wx.cloud.init({

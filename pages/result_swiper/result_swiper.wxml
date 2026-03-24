@@ -1,4 +1,4 @@
-<!-- 养花助手 - 识别结果页面 -->
+<!-- 花草百科全书 - 识别结果页面 -->
 <view class="container">
   <!-- 加载中 -->
   <view class="loading-container" wx:if="{{loading}}">

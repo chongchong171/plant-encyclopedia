@@ -1,5 +1,5 @@
 /**
- * 养花助手 - 识别结果页面
+ * 花草百科全书 - 识别结果页面
  */
 const app = getApp();
 const plantIdentify = require('../../utils/plantIdentify');

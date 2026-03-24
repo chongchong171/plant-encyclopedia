@@ -1,4 +1,4 @@
-<!-- 养花助手 - 分类列表页面 -->
+<!-- 花草百科全书 - 分类列表页面 -->
 <view class="container">
   <!-- 加载中 -->
   <view class="loading-section" wx:if="{{loading}}">

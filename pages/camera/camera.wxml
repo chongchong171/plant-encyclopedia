@@ -1,4 +1,4 @@
-<!-- 养花助手 - 拍照页面 -->
+<!-- 花草百科全书 - 拍照页面 -->
 <view class="container">
   <!-- 相机授权提示 -->
   <view class="auth-tip" wx:if="{{!hasCameraAuth}}">
