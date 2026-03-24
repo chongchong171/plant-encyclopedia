@@ -107,7 +107,6 @@ const identifyPlant = async (imageBase64) => {
           family: plantnetResult.data.family,
           confidence: plantnetResult.data.confidence,
           description: plantnetResult.data.description,
-          image: imagePath,
           // Qwen 返回的详细信息
           commonNames: detailInfo.commonNames,
           plantProfile: detailInfo.plantProfile,
