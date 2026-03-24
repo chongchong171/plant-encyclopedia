@@ -38,19 +38,25 @@ Page({
    * 从相册选择
    */
   chooseFromAlbum() {
+    console.log('首页点击相册选择');
     wx.chooseMedia({
       count: 1,
       mediaType: ['image'],
       sourceType: ['album'],
       success: (res) => {
+        console.log('选择成功', res);
         const tempFilePath = res.tempFiles[0].tempFilePath;
         wx.navigateTo({
           url: '/pages/result_swiper/result_swiper?tmp_filePath=' + encodeURIComponent(tempFilePath)
         });
       },
       fail: (err) => {
-        console.log('选择图片失败', err);
-        // 用户拒绝权限
+        console.log('选择图片失败, 完整错误:', JSON.stringify(err));
+        wx.showToast({ 
+          title: '失败: ' + (err.errMsg || '未知'), 
+          icon: 'none',
+          duration: 3000
+        });
         if (err.errMsg && err.errMsg.indexOf('auth deny') !== -1) {
           wx.showModal({
             title: '需要相册权限',

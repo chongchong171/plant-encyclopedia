@@ -75,15 +75,22 @@ Page({
    */
   chooseFromAlbum() {
     const that = this;
+    console.log('点击相册选择');
     wx.chooseMedia({
       count: 1,
       mediaType: ['image'],
       sourceType: ['album'],
       success(res) {
+        console.log('选择成功', res);
         that.compressAndNavigate(res.tempFiles[0].tempFilePath);
       },
       fail(err) {
-        console.log('选择图片失败', err);
+        console.log('选择图片失败, 完整错误:', JSON.stringify(err));
+        wx.showToast({ 
+          title: '失败: ' + (err.errMsg || '未知'), 
+          icon: 'none',
+          duration: 3000
+        });
         if (err.errMsg && err.errMsg.indexOf('auth deny') !== -1) {
           wx.showModal({
             title: '需要相册权限',
