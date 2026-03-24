@@ -24,16 +24,17 @@
     </view>
   </view>
 
-  <!-- 测试按钮 -->
-  <view class="test-section">
-    <button class="test-btn" bindtap="testAPI">🔧 测试API连接</button>
-  </view>
-
-  <!-- 快捷入口 -->
-  <view class="quick-entry">
-    <view class="entry-item" bindtap="goToSearch">
-      <image class="entry-icon" src="/image/tab/search-active.png"></image>
-      <text class="entry-text">搜索植物</text>
+  <!-- 搜索植物入口 -->
+  <view class="search-section">
+    <view class="search-card" bindtap="goToSearch">
+      <view class="search-left">
+        <text class="search-emoji">🔍</text>
+        <view class="search-info">
+          <text class="search-title">搜索植物</text>
+          <text class="search-desc">查找植物百科和养护知识</text>
+        </view>
+      </view>
+      <text class="search-arrow">›</text>
     </view>
   </view>
 

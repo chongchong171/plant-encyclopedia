@@ -118,7 +118,7 @@ Page({
   onShareAppMessage() {
     return {
       title: `养花助手 - ${this.data.searchText}`,
-      path: `/pages/search_result/seach_result?search_text=${encodeURIComponent(this.data.searchText)}`
+      path: `/pages/search_result/search_result?search_text=${encodeURIComponent(this.data.searchText)}`
     };
   }
 });

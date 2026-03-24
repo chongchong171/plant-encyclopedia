@@ -77,7 +77,7 @@ Page({
     
     this.saveHistory(keyword);
     wx.navigateTo({
-      url: `/pages/search_result/seach_result?search_text=${encodeURIComponent(keyword)}`
+      url: `/pages/search_result/search_result?search_text=${encodeURIComponent(keyword)}`
     });
   },
 
@@ -88,7 +88,7 @@ Page({
     const keyword = e.currentTarget.dataset.keyword;
     this.saveHistory(keyword);
     wx.navigateTo({
-      url: `/pages/search_result/seach_result?search_text=${encodeURIComponent(keyword)}`
+      url: `/pages/search_result/search_result?search_text=${encodeURIComponent(keyword)}`
     });
   },
 
@@ -99,7 +99,7 @@ Page({
     const keyword = e.currentTarget.dataset.keyword;
     this.saveHistory(keyword);
     wx.navigateTo({
-      url: `/pages/search_result/seach_result?search_text=${encodeURIComponent(keyword)}`
+      url: `/pages/search_result/search_result?search_text=${encodeURIComponent(keyword)}`
     });
   },
 

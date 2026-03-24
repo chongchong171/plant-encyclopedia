@@ -26,7 +26,7 @@ Page({
   searchPlant(e) {
     const text = e.currentTarget.dataset.text || e.currentTarget.dataset.category;
     wx.navigateTo({
-      url: '/pages/search_result/seach_result?search_text=' + encodeURIComponent(text)
+      url: '/pages/search_result/search_result?search_text=' + encodeURIComponent(text)
     });
   },
 
