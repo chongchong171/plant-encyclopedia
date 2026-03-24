@@ -82,6 +82,9 @@ Page({
         
         this.setData({ loading: false, plant });
         
+        // 记录识别次数
+        if (app.recordIdentify) app.recordIdentify();
+        
         // 保存历史
         if (app.addHistory) app.addHistory(plant);
         
