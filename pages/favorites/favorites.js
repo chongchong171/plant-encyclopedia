@@ -10,45 +10,27 @@ Page({
   },
 
   onLoad() {
-    console.log('📋 收藏页面 onLoad');
     this.loadFavorites();
   },
 
   onShow() {
-    console.log('📋 收藏页面 onShow');
-    // 每次显示时强制从 storage 重新加载
     this.loadFavorites();
-  },
-  
-  onReady() {
-    console.log('📋 收藏页面 onReady');
   },
 
   /**
    * 加载收藏列表
    */
   loadFavorites() {
-    // 强制从 storage 读取最新数据
     const storedFavorites = wx.getStorageSync('favorites') || [];
-    
-    console.log('📋 从 storage 读取收藏:', storedFavorites.length, '条');
-    console.log('📋 收藏数据:', storedFavorites.map(f => ({ name: f.name, id: f.id })));
-    
-    // 同步到 globalData
     app.globalData.favorites = storedFavorites;
     
-    // 格式化时间
     const formattedList = storedFavorites.map(item => ({
       ...item,
       addTimeStr: formatRelativeTime(item.addTime)
     }));
     
-    console.log('📋 设置到页面数据:', formattedList.length, '条');
-    
     this.setData({
       favorites: formattedList
-    }, () => {
-      console.log('📋 setData 完成, this.data.favorites:', this.data.favorites.length);
     });
   },
 

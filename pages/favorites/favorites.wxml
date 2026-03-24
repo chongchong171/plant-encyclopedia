@@ -1,10 +1,5 @@
 <!-- 收藏页面 -->
 <view class="container">
-  <!-- 调试信息 -->
-  <view style="padding: 20rpx; background: #f0f0f0; margin-bottom: 20rpx;">
-    <text style="font-size: 24rpx; color: #999;">调试: 收藏数量 = {{favorites.length}}</text>
-  </view>
-  
   <!-- 空状态 -->
   <view class="empty-state" wx:if="{{favorites.length === 0}}">
     <text class="empty-icon">❤️</text>
