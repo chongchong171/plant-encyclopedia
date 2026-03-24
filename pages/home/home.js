@@ -50,6 +50,19 @@ Page({
       },
       fail: (err) => {
         console.log('选择图片失败', err);
+        // 用户拒绝权限
+        if (err.errMsg && err.errMsg.indexOf('auth deny') !== -1) {
+          wx.showModal({
+            title: '需要相册权限',
+            content: '请在设置中开启相册权限',
+            confirmText: '去设置',
+            success: (modalRes) => {
+              if (modalRes.confirm) {
+                wx.openSetting();
+              }
+            }
+          });
+        }
       }
     });
   },
