@@ -5,6 +5,7 @@
     "pages/result_swiper/result_swiper",
     "pages/discover/discover",
     "pages/search_page/search_page",
+    "pages/category_list/category_list",
     "pages/search_result/search_result",
     "pages/search_detail/search_detail",
     "pages/favorites/favorites",

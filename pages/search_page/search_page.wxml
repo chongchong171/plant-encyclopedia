@@ -70,7 +70,7 @@
         wx:for="{{categories}}" 
         wx:key="id"
         data-category="{{item.name}}"
-        bindtap="searchPlant"
+        bindtap="selectCategory"
       >
         <text class="category-icon">{{item.icon}}</text>
         <text class="category-name">{{item.name}}</text>

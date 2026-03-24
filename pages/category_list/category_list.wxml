@@ -1,0 +1,40 @@
+<!-- 养花助手 - 分类列表页面 -->
+<view class="container">
+  <!-- 加载中 -->
+  <view class="loading-section" wx:if="{{loading}}">
+    <text class="loading-text">加载中...</text>
+  </view>
+
+  <!-- 分类信息 -->
+  <view class="category-header" wx:if="{{categoryInfo}}">
+    <text class="category-icon">{{categoryInfo.icon}}</text>
+    <view class="category-info">
+      <text class="category-name">{{category}}</text>
+      <text class="category-desc">{{categoryInfo.desc}}</text>
+    </view>
+  </view>
+
+  <!-- 植物列表 -->
+  <view class="plant-list" wx:if="{{categoryInfo}}">
+    <view 
+      class="plant-item" 
+      wx:for="{{categoryInfo.plants}}" 
+      wx:key="name"
+      data-name="{{item.name}}"
+      data-scientific-name="{{item.scientificName}}"
+      bindtap="goToDetail"
+    >
+      <view class="plant-info">
+        <text class="plant-name">{{item.name}}</text>
+        <text class="plant-desc">{{item.desc}}</text>
+      </view>
+      <text class="plant-arrow">›</text>
+    </view>
+  </view>
+
+  <!-- 无数据 -->
+  <view class="empty-section" wx:if="{{!loading && !categoryInfo}}">
+    <text class="empty-icon">🌿</text>
+    <text class="empty-text">暂无该分类数据</text>
+  </view>
+</view>

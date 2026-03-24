@@ -122,6 +122,17 @@ Page({
   },
 
   /**
+   * 点击植物分类
+   */
+  selectCategory(e) {
+    const category = e.currentTarget.dataset.category;
+    // 分类跳转到分类列表页
+    wx.navigateTo({
+      url: '/pages/category_list/category_list?category=' + encodeURIComponent(category)
+    });
+  },
+
+  /**
    * 保存搜索历史
    */
   saveHistory(keyword) {
