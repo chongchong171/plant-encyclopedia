@@ -5,11 +5,11 @@ const app = getApp();
 
 Page({
   data: {
-    // 当季推荐植物
+    // 当季推荐植物（学名用于 GBIF 搜索）
     seasonPlants: [
-      { name: '绿萝', desc: '净化空气', image: '' },
-      { name: '多肉', desc: '萌萌可爱', image: '' },
-      { name: '蝴蝶兰', desc: '高雅美丽', image: '' }
+      { name: '绿萝', scientificName: 'Epipremnum aureum', desc: '净化空气', image: '' },
+      { name: '多肉', scientificName: 'Succulent', desc: '萌萌可爱', image: '' },
+      { name: '蝴蝶兰', scientificName: 'Phalaenopsis', desc: '高雅美丽', image: '' }
     ],
     
     // 养护小贴士
@@ -48,7 +48,8 @@ Page({
     const plants = [...this.data.seasonPlants];
     
     for (let i = 0; i < plants.length; i++) {
-      const imageUrl = await this.getPlantImageFromGBIF(plants[i].name);
+      // 使用学名搜索（GBIF 不支持中文名）
+      const imageUrl = await this.getPlantImageFromGBIF(plants[i].scientificName || plants[i].name);
       plants[i].image = imageUrl || '';
       console.log(`🌸 ${plants[i].name} 图片:`, imageUrl || '未找到');
     }
