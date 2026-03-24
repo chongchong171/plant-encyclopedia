@@ -106,12 +106,15 @@ Page({
    * 从相册选择
    */
   chooseFromAlbum() {
-    wx.chooseImage({
+    wx.chooseMedia({
       count: 1,
-      sizeType: ['compressed'],
+      mediaType: ['image'],
       sourceType: ['album'],
       success: (res) => {
-        this.compressAndNavigate(res.tempFilePaths[0]);
+        this.compressAndNavigate(res.tempFiles[0].tempFilePath);
+      },
+      fail: (err) => {
+        console.log('选择图片失败', err);
       }
     });
   },

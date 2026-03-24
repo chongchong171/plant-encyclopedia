@@ -38,17 +38,18 @@ Page({
    * 从相册选择
    */
   chooseFromAlbum() {
-    wx.chooseImage({
+    wx.chooseMedia({
       count: 1,
-      sizeType: ['compressed'],
+      mediaType: ['image'],
       sourceType: ['album'],
       success: (res) => {
-        const tempFilePaths = res.tempFilePaths;
+        const tempFilePath = res.tempFiles[0].tempFilePath;
         wx.navigateTo({
-          url: '/pages/result_swiper/result_swiper?tmp_filePath=' + encodeURIComponent(tempFilePaths[0])
+          url: '/pages/result_swiper/result_swiper?tmp_filePath=' + encodeURIComponent(tempFilePath)
         });
       },
       fail: (err) => {
+        console.log('选择图片失败', err);
       }
     });
   },
