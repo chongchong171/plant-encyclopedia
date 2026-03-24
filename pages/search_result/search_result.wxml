@@ -125,7 +125,7 @@
 
       <!-- 养护禁忌 -->
       <view class="taboos-section" wx:if="{{plant.taboos}}">
-        <text class="taboos-title">⚠️ 党护禁忌</text>
+        <text class="taboos-title">⚠️ 养护禁忌</text>
         <text class="taboos-content">{{plant.taboos}}</text>
       </view>
     </view>

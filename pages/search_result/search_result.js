@@ -33,7 +33,7 @@ Page({
     // 同时发起两个请求：AI 文字 + 真实图片
     Promise.all([
       this.getPlantInfoFromAI(keyword, apiKey),
-      this.getPlantImageFromWikimedia(keyword)
+      this.getPlantImageFromWikimedia(keyword, '') // 先用关键词搜索，后续优化
     ]).then(([aiResult, imageUrl]) => {
       wx.hideLoading();
       
@@ -131,26 +131,37 @@ Page({
   /**
    * 从 Wikimedia Commons 获取真实植物图片（免费）
    */
-  getPlantImageFromWikimedia(keyword) {
+  getPlantImageFromWikimedia(keyword, scientificName) {
     return new Promise((resolve) => {
+      // 优先使用学名搜索，更准确
+      const searchTerm = scientificName || keyword;
+      
       // 使用 Wikimedia API 搜索植物图片
-      const searchUrl = `https://commons.wikimedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(keyword)}&srnamespace=6&srlimit=5&format=json&origin=*`;
+      const searchUrl = `https://commons.wikimedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(searchTerm + ' plant')}&srnamespace=6&srlimit=10&format=json&origin=*`;
       
       wx.request({
         url: searchUrl,
         success: (res) => {
           const searchResults = res.data?.query?.search || [];
-          if (searchResults.length > 0) {
-            // 获取第一个图片的详细信息
-            const title = searchResults[0].title;
-            const imageInfoUrl = `https://commons.wikimedia.org/w/api.php?action=query&titles=${encodeURIComponent(title)}&prop=imageinfo&iiprop=url&format=json&origin=*`;
+          
+          // 过滤出更准确的图片（标题包含植物名）
+          const validResults = searchResults.filter(r => {
+            const title = r.title.toLowerCase();
+            const searchLower = searchTerm.toLowerCase();
+            return title.includes(searchLower.split(' ')[0]) || title.includes(searchLower);
+          });
+          
+          if (validResults.length > 0) {
+            // 获取第一个有效图片的详细信息
+            const title = validResults[0].title;
+            const imageInfoUrl = `https://commons.wikimedia.org/w/api.php?action=query&titles=${encodeURIComponent(title)}&prop=imageinfo&iiprop=url&iiurlwidth=800&format=json&origin=*`;
             
             wx.request({
               url: imageInfoUrl,
               success: (imgRes) => {
                 const pages = imgRes.data?.query?.pages || {};
                 const page = Object.values(pages)[0];
-                const imageUrl = page?.imageinfo?.[0]?.url;
+                const imageUrl = page?.imageinfo?.[0]?.thumburl || page?.imageinfo?.[0]?.url;
                 resolve(imageUrl || null);
               },
               fail: () => resolve(null)
