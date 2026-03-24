@@ -2,8 +2,48 @@
 <view class="container">
   <!-- 搜索框 -->
   <view class="search-section">
-    <view class="search-box" bindtap="goToSearchDetail">
-      <text class="search-placeholder">🔍 搜索植物名称...</text>
+    <view class="search-box">
+      <text class="search-icon">🔍</text>
+      <input 
+        class="search-input" 
+        placeholder="搜索植物名称..." 
+        value="{{keyword}}"
+        bindinput="onInput"
+        bindconfirm="onSearch"
+        confirm-type="search"
+        focus="{{focus}}"
+      />
+    </view>
+  </view>
+
+  <!-- 搜索建议 -->
+  <view class="suggest-section" wx:if="{{showSuggest}}">
+    <view 
+      class="suggest-item" 
+      wx:for="{{suggestList}}" 
+      wx:key="index"
+      data-keyword="{{item}}"
+      bindtap="selectSuggest"
+    >
+      <text class="suggest-icon">🔍</text>
+      <text class="suggest-text">{{item}}</text>
+    </view>
+  </view>
+
+  <!-- 搜索历史 -->
+  <view class="history-section" wx:if="{{showHistory && historyList.length > 0}}">
+    <view class="section-header">
+      <text class="section-title">🕐 搜索历史</text>
+      <text class="clear-btn" bindtap="clearHistory">清空</text>
+    </view>
+    <view class="history-tags">
+      <view 
+        class="history-tag" 
+        wx:for="{{historyList}}" 
+        wx:key="index"
+        data-keyword="{{item}}"
+        bindtap="selectHistory"
+      >{{item}}</view>
     </view>
   </view>
 
