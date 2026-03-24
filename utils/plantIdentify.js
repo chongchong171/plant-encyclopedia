@@ -107,6 +107,7 @@ const identifyPlant = async (imageBase64) => {
           family: plantnetResult.data.family,
           confidence: plantnetResult.data.confidence,
           description: plantnetResult.data.description,
+          imageUrl: plantnetResult.data.imageUrl || '',  // PlantNet 提供的真实图片
           // Qwen 返回的详细信息
           commonNames: detailInfo.commonNames,
           plantProfile: detailInfo.plantProfile,
@@ -197,6 +198,13 @@ async function identifyWithPlantNet(imageBase64) {
                     console.log(`🎯 最佳匹配: ${bestMatch.species?.scientificNameWithoutAuthor}`);
                     console.log(`📊 置信度: ${Math.round(score * 100)}%`);
                     
+                    // 提取图片（PlantNet 返回的示例图片）
+                    let imageUrl = '';
+                    if (bestMatch.images && bestMatch.images.length > 0) {
+                      imageUrl = bestMatch.images[0].url?.m || bestMatch.images[0].url?.o || '';
+                      console.log('📸 找到 PlantNet 图片:', imageUrl ? '是' : '否');
+                    }
+                    
                     if (score > 0.3) {  // 置信度阈值 30%
                       const species = bestMatch.species;
                       resolve({
@@ -207,7 +215,8 @@ async function identifyWithPlantNet(imageBase64) {
                           scientificName: species.scientificNameWithoutAuthor,
                           family: species.family?.scientificNameWithoutAuthor || '未知',
                           confidence: Math.round(score * 100),
-                          description: `识别置信度：${Math.round(score * 100)}%\n学名：${species.scientificNameWithoutAuthor}`
+                          description: `识别置信度：${Math.round(score * 100)}%\n学名：${species.scientificNameWithoutAuthor}`,
+                          imageUrl: imageUrl  // PlantNet 提供的真实植物图片
                         }
                       });
                     } else {

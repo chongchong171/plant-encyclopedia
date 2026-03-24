@@ -39,8 +39,8 @@ Page({
       return;
     }
     
-    // 使用学名搜索图片（更准确）
-    const imageUrl = await this.getPlantImageFromWikimedia(keyword, aiResult.scientificName);
+    // 使用 GBIF 专业数据库搜索图片
+    const imageUrl = await this.getPlantImageFromGBIF(aiResult.scientificName, keyword);
     
     wx.hideLoading();
     
@@ -129,78 +129,45 @@ Page({
   },
 
   /**
-   * 从 Wikimedia Commons 获取真实植物图片（免费）
-   * 改进：多次搜索确保找到图片
+   * 从 GBIF 获取真实植物图片（专业植物数据库，免费）
    */
-  async getPlantImageFromWikimedia(keyword, scientificName) {
-    // 搜索策略：依次尝试
-    const searchTerms = [
-      scientificName,           // 1. 学名（最准确）
-      keyword + ' plant',       // 2. 关键词 + plant
-      keyword + ' flower',      // 3. 关键词 + flower
-      keyword                   // 4. 纯关键词
-    ].filter(Boolean);
-
-    for (const term of searchTerms) {
-      const imageUrl = await this.searchWikimediaImage(term);
-      if (imageUrl) {
-        console.log('✅ 找到图片:', term, imageUrl);
-        return imageUrl;
-      }
-    }
+  async getPlantImageFromGBIF(scientificName, keyword) {
+    // 1. 先在 GBIF 搜索植物
+    const searchUrl = `https://api.gbif.org/v1/species/match?name=${encodeURIComponent(scientificName || keyword)}&strict=true`;
     
-    console.log('⚠️ 未找到图片:', keyword);
-    return null;
-  },
-
-  /**
-   * 单次 Wikimedia 图片搜索
-   */
-  searchWikimediaImage(searchTerm) {
     return new Promise((resolve) => {
-      const searchUrl = `https://commons.wikimedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(searchTerm)}&srnamespace=6&srlimit=20&format=json&origin=*`;
-      
       wx.request({
         url: searchUrl,
         success: (res) => {
-          const searchResults = res.data?.query?.search || [];
+          const speciesKey = res.data?.speciesKey;
           
-          // 尝试找到合适的图片
-          for (const result of searchResults) {
-            const title = result.title.toLowerCase();
+          if (speciesKey) {
+            // 2. 获取该物种的媒体资源（图片）
+            const mediaUrl = `https://api.gbif.org/v1/occurrence/search?taxonKey=${speciesKey}&mediaType=StillImage&limit=5`;
             
-            // 过滤掉不符合的图片（如地图、图标等）
-            if (title.includes('map') || title.includes('icon') || title.includes('logo')) {
-              continue;
-            }
-            
-            // 获取图片 URL
-            this.getImageUrl(result.title).then(url => {
-              if (url) resolve(url);
+            wx.request({
+              url: mediaUrl,
+              success: (mediaRes) => {
+                const results = mediaRes.data?.results || [];
+                
+                if (results.length > 0 && results[0].media) {
+                  const images = results[0].media;
+                  // 找到第一张可用图片
+                  for (const img of images) {
+                    if (img.identifier && img.type === 'StillImage') {
+                      console.log('✅ GBIF 找到图片:', img.identifier);
+                      resolve(img.identifier);
+                      return;
+                    }
+                  }
+                }
+                resolve(null);
+              },
+              fail: () => resolve(null)
             });
-            return;
+          } else {
+            resolve(null);
           }
-          resolve(null);
-        },
-        fail: () => resolve(null)
-      });
-    });
-  },
-
-  /**
-   * 获取图片 URL
-   */
-  getImageUrl(title) {
-    return new Promise((resolve) => {
-      const imageInfoUrl = `https://commons.wikimedia.org/w/api.php?action=query&titles=${encodeURIComponent(title)}&prop=imageinfo&iiprop=url&iiurlwidth=800&format=json&origin=*`;
-      
-      wx.request({
-        url: imageInfoUrl,
-        success: (imgRes) => {
-          const pages = imgRes.data?.query?.pages || {};
-          const page = Object.values(pages)[0];
-          const imageUrl = page?.imageinfo?.[0]?.thumburl || page?.imageinfo?.[0]?.url;
-          resolve(imageUrl || null);
         },
         fail: () => resolve(null)
       });
