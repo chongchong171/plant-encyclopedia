@@ -438,7 +438,7 @@
   color: #4CAF50;
 }
 
-/* 党护指南 */
+/* 养护指南 */
 .care-section {
   margin-bottom: 20rpx;
 }
