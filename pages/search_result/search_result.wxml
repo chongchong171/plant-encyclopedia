@@ -8,12 +8,14 @@
   <!-- 查询结果 -->
   <view class="result-container" wx:if="{{!loading && !error && plant}}">
     <!-- 植物图片 -->
-    <view class="plant-image-section">
-      <image 
-        class="plant-image" 
-        src="{{plant.imageUrl || 'https://source.unsplash.com/800x500/?' + (plant.name || searchText)}}" 
-        mode="aspectFill"
-      ></image>
+    <view class="plant-image-section" wx:if="{{plant.imageUrl}}">
+      <image class="plant-image" src="{{plant.imageUrl}}" mode="aspectFill"></image>
+    </view>
+    
+    <!-- 无图片时的占位 -->
+    <view class="plant-image-placeholder" wx:if="{{!plant.imageUrl}}">
+      <text class="placeholder-icon">🌱</text>
+      <text class="placeholder-text">{{plant.name}}</text>
     </view>
 
     <!-- 植物信息 -->
