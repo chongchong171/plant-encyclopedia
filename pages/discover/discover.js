@@ -1,16 +1,27 @@
 /**
  * 养花助手 - 发现页面
- * 当季推荐使用真实植物图片（GBIF 免费 API）
  */
 const app = getApp();
 
 Page({
   data: {
-    // 当季推荐植物（一行三个）
+    // 当季推荐植物（预设真实图片）
     seasonPlants: [
-      { name: '绿萝', desc: '净化空气' },
-      { name: '多肉', desc: '萌萌可爱' },
-      { name: '蝴蝶兰', desc: '高雅美丽' }
+      { 
+        name: '绿萝', 
+        desc: '净化空气',
+        image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/33/Epipremnum_aureum_01.jpg/320px-Epipremnum_aureum_01.jpg'
+      },
+      { 
+        name: '多肉', 
+        desc: '萌萌可爱',
+        image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ab/Echeveria_elegans_RHS.jpg/320px-Echeveria_elegans_RHS.jpg'
+      },
+      { 
+        name: '蝴蝶兰', 
+        desc: '高雅美丽',
+        image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d9/Phalaenopsis_JPEG.jpg/320px-Phalaenopsis_JPEG.jpg'
+      }
     ],
     
     // 养护小贴士
@@ -41,59 +52,6 @@ Page({
         hotSearches: ['绿萝', '多肉', '发财树', '君子兰', '吊兰', '龟背竹']
       });
     }
-    
-    // 获取当季推荐植物的真实图片
-    this.loadPlantImages();
-  },
-
-  /**
-   * 加载植物真实图片（GBIF 免费 API）
-   */
-  async loadPlantImages() {
-    const plants = this.data.seasonPlants;
-    
-    for (let i = 0; i < plants.length; i++) {
-      const imageUrl = await this.getPlantImage(plants[i].name);
-      if (imageUrl) {
-        plants[i].image = imageUrl;
-      }
-    }
-    
-    this.setData({ seasonPlants: plants });
-  },
-
-  /**
-   * 从 GBIF 获取植物图片（免费）
-   */
-  getPlantImage(plantName) {
-    return new Promise((resolve) => {
-      // GBIF species match API
-      wx.request({
-        url: `https://api.gbif.org/v1/species/match?name=${encodeURIComponent(plantName)}&strict=true`,
-        success: (res) => {
-          const speciesKey = res.data?.speciesKey;
-          
-          if (speciesKey) {
-            // 获取该物种的图片
-            wx.request({
-              url: `https://api.gbif.org/v1/occurrence/search?taxonKey=${speciesKey}&mediaType=StillImage&limit=1`,
-              success: (mediaRes) => {
-                const results = mediaRes.data?.results || [];
-                if (results.length > 0 && results[0].media && results[0].media.length > 0) {
-                  resolve(results[0].media[0].identifier);
-                } else {
-                  resolve(null);
-                }
-              },
-              fail: () => resolve(null)
-            });
-          } else {
-            resolve(null);
-          }
-        },
-        fail: () => resolve(null)
-      });
-    });
   },
 
   /**
