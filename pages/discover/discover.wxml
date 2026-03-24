@@ -1,0 +1,62 @@
+<!-- 养花助手 - 发现页面 -->
+<view class="container">
+  <!-- 当季推荐 -->
+  <view class="section">
+    <view class="section-header">
+      <text class="section-title">🌸 当季推荐</text>
+      <text class="section-more">更多 ›</text>
+    </view>
+    <scroll-view class="plant-scroll" scroll-x>
+      <view class="plant-card" wx:for="{{seasonPlants}}" wx:key="name" bindtap="goToSearch" data-name="{{item.name}}">
+        <image class="plant-img" src="{{item.image}}" mode="aspectFill"></image>
+        <text class="plant-name">{{item.name}}</text>
+        <text class="plant-desc">{{item.desc}}</text>
+      </view>
+    </scroll-view>
+  </view>
+
+  <!-- 养护小贴士 -->
+  <view class="section">
+    <view class="section-header">
+      <text class="section-title">💡 党护小贴士</text>
+    </view>
+    <view class="tips-list">
+      <view class="tip-card" wx:for="{{careTips}}" wx:key="index">
+        <text class="tip-icon">{{item.icon}}</text>
+        <view class="tip-content">
+          <text class="tip-title">{{item.title}}</text>
+          <text class="tip-desc">{{item.desc}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 热门搜索 -->
+  <view class="section">
+    <view class="section-header">
+      <text class="section-title">🔥 热门搜索</text>
+    </view>
+    <view class="hot-tags">
+      <view class="hot-tag" wx:for="{{hotSearches}}" wx:key="index" bindtap="goToSearch" data-name="{{item}}">
+        <text>{{item}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 新手推荐 -->
+  <view class="section">
+    <view class="section-header">
+      <text class="section-title">🌱 新手友好</text>
+    </view>
+    <view class="beginner-list">
+      <view class="beginner-item" wx:for="{{beginnerPlants}}" wx:key="name" bindtap="goToSearch" data-name="{{item.name}}">
+        <text class="beginner-icon">{{item.icon}}</text>
+        <view class="beginner-info">
+          <text class="beginner-name">{{item.name}}</text>
+          <text class="beginner-diff">难度：{{item.difficulty}}</text>
+        </view>
+        <text class="beginner-arrow">›</text>
+      </view>
+    </view>
+  </view>
+</view>

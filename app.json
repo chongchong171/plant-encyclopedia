@@ -3,6 +3,7 @@
     "pages/home/home",
     "pages/camera/camera",
     "pages/result_swiper/result_swiper",
+    "pages/discover/discover",
     "pages/search_page/search_page",
     "pages/search_result/search_result",
     "pages/search_detail/search_detail",
@@ -30,10 +31,10 @@
         "selectedIconPath": "/image/tab/scan-active.png"
       },
       {
-        "pagePath": "pages/search_page/search_page",
-        "text": "搜索",
-        "iconPath": "/image/tab/search.png",
-        "selectedIconPath": "/image/tab/search-active.png"
+        "pagePath": "pages/discover/discover",
+        "text": "发现",
+        "iconPath": "/image/tab/compass.png",
+        "selectedIconPath": "/image/tab/compass-active.png"
       },
       {
         "pagePath": "pages/favorites/favorites",
