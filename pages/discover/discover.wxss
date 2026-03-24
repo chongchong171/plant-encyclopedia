@@ -26,47 +26,37 @@
   color: #333;
 }
 
-.section-more {
-  font-size: 26rpx;
-  color: #999;
+/* 当季推荐网格 */
+.season-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16rpx;
 }
 
-/* 当季推荐横向滚动 */
-.plant-scroll {
-  white-space: nowrap;
-}
-
-.plant-card {
-  display: inline-block;
-  width: 220rpx;
-  margin-right: 20rpx;
-  vertical-align: top;
-}
-
-.plant-card:last-child {
-  margin-right: 0;
-}
-
-.plant-img {
-  width: 220rpx;
-  height: 180rpx;
+.season-card {
+  width: calc(50% - 8rpx);
+  background: linear-gradient(135deg, #E8F5E9 0%, #C8E6C9 100%);
   border-radius: 16rpx;
+  padding: 24rpx;
+  text-align: center;
+}
+
+.season-icon {
+  font-size: 48rpx;
   margin-bottom: 12rpx;
 }
 
-.plant-name {
+.season-name {
   display: block;
-  font-size: 28rpx;
+  font-size: 30rpx;
   font-weight: bold;
-  color: #333;
+  color: #2E7D32;
   margin-bottom: 6rpx;
 }
 
-.plant-desc {
-  display: block;
-  font-size: 22rpx;
-  color: #999;
-  white-space: normal;
+.season-desc {
+  font-size: 24rpx;
+  color: #666;
 }
 
 /* 养护小贴士 */
