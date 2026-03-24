@@ -6,7 +6,7 @@
       <text class="section-title">🌸 当季推荐</text>
     </view>
     <scroll-view class="plant-scroll" scroll-x>
-      <view class="plant-card" wx:for="{{seasonPlants}}" wx:key="name" bindtap="goToSearch" data-name="{{item.name}}">
+      <view class="plant-card" wx:for="{{seasonPlants}}" wx:key="name" bindtap="goToSearch" data-name="{{item.name}}" data-scientific-name="{{item.scientificName}}">
         <image class="plant-img" src="{{item.image}}" mode="aspectFill" wx:if="{{item.image}}"></image>
         <view class="plant-img-placeholder" wx:else>
           <text class="placeholder-text">🌿</text>

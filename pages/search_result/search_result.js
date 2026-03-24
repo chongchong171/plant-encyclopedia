@@ -6,6 +6,7 @@ const app = getApp();
 Page({
   data: {
     searchText: '',
+    scientificName: '',  // 优先使用的学名（来自发现页面）
     loading: true,
     error: false,
     plant: null
@@ -13,10 +14,11 @@ Page({
 
   onLoad(options) {
     const searchText = decodeURIComponent(options.search_text || '');
-    this.setData({ searchText });
+    const scientificName = decodeURIComponent(options.scientific_name || '');
+    this.setData({ searchText, scientificName });
     
     if (searchText) {
-      this.searchPlant(searchText);
+      this.searchPlant(searchText, scientificName);
     } else {
       this.setData({ loading: false, error: true });
     }
@@ -25,7 +27,7 @@ Page({
   /**
    * 搜索植物信息（AI 文字 + 真实图片）
    */
-  async searchPlant(keyword) {
+  async searchPlant(keyword, providedScientificName) {
     wx.showLoading({ title: '查询中...' });
     
     const apiKey = app.globalData.qwenApiKey;
@@ -39,13 +41,17 @@ Page({
       return;
     }
     
+    // 优先使用传入的学名（来自发现页面的当季推荐），否则用 AI 返回的学名
+    const scientificNameToUse = providedScientificName || aiResult.scientificName;
+    
     // 使用 GBIF 专业数据库搜索图片
-    const imageUrl = await this.getPlantImageFromGBIF(aiResult.scientificName, keyword);
+    const imageUrl = await this.getPlantImageFromGBIF(scientificNameToUse, keyword);
     
     wx.hideLoading();
     
     const plant = {
       ...aiResult,
+      scientificName: scientificNameToUse,  // 确保使用正确的学名
       imageUrl: imageUrl || ''
     };
     

@@ -103,8 +103,13 @@ Page({
    */
   goToSearch(e) {
     const name = e.currentTarget.dataset.name;
-    wx.navigateTo({
-      url: `/pages/search_result/search_result?search_text=${encodeURIComponent(name)}`
-    });
+    const scientificName = e.currentTarget.dataset.scientificName || '';
+    
+    // 如果有学名，同时传递（用于 GBIF 图片搜索）
+    const url = scientificName 
+      ? `/pages/search_result/search_result?search_text=${encodeURIComponent(name)}&scientific_name=${encodeURIComponent(scientificName)}`
+      : `/pages/search_result/search_result?search_text=${encodeURIComponent(name)}`;
+    
+    wx.navigateTo({ url });
   }
 });
