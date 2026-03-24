@@ -7,6 +7,7 @@
   flex-direction: column;
   align-items: center;
   padding: 40rpx;
+  padding-bottom: 120rpx;
 }
 
 /* 顶部区域 */
@@ -118,30 +119,53 @@
   border-radius: 20rpx;
 }
 
-/* 快捷入口 */
-.quick-entry {
-  display: flex;
-  justify-content: center;
-  gap: 40rpx;
-  margin-bottom: 60rpx;
+/* 搜索植物入口 */
+.search-section {
+  width: 100%;
+  margin-bottom: 120rpx;
 }
 
-.entry-item {
+.search-card {
+  background: white;
+  border-radius: 20rpx;
+  padding: 30rpx 40rpx;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 8rpx 30rpx rgba(0, 0, 0, 0.1);
+}
+
+.search-left {
+  display: flex;
+  align-items: center;
+}
+
+.search-emoji {
+  font-size: 56rpx;
+  margin-right: 24rpx;
+}
+
+.search-info {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  padding: 20rpx 40rpx;
 }
 
-.entry-icon {
-  width: 60rpx;
-  height: 60rpx;
-  margin-bottom: 10rpx;
+.search-title {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 6rpx;
 }
 
-.entry-text {
+.search-desc {
   font-size: 24rpx;
-  color: #666;
+  color: #999;
+}
+
+.search-arrow {
+  font-size: 48rpx;
+  color: #4CAF50;
+  font-weight: bold;
 }
 
 /* 底部提示 */
@@ -153,4 +177,5 @@
   text-align: center;
   font-size: 24rpx;
   color: #999;
+  padding-bottom: env(safe-area-inset-bottom);
 }
