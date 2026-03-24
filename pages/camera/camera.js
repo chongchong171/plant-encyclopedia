@@ -2,7 +2,59 @@
  * 养花助手 - 拍照页面
  */
 Page({
-  data: {},
+  data: {
+    hasCameraAuth: false
+  },
+
+  onLoad() {
+    this.checkCameraAuth();
+  },
+
+  /**
+   * 检查相机授权
+   */
+  checkCameraAuth() {
+    wx.getSetting({
+      success: (res) => {
+        if (res.authSetting['scope.camera']) {
+          // 已授权
+          this.setData({ hasCameraAuth: true });
+        } else {
+          // 未授权，尝试授权
+          wx.authorize({
+            scope: 'scope.camera',
+            success: () => {
+              this.setData({ hasCameraAuth: true });
+            },
+            fail: () => {
+              // 用户拒绝授权
+              this.setData({ hasCameraAuth: false });
+            }
+          });
+        }
+      },
+      fail: () => {
+        this.setData({ hasCameraAuth: false });
+      }
+    });
+  },
+
+  /**
+   * 请求相机授权
+   */
+  requestCameraAuth() {
+    wx.openSetting({
+      success: (res) => {
+        if (res.authSetting['scope.camera']) {
+          this.setData({ hasCameraAuth: true });
+          wx.showToast({
+            title: '授权成功',
+            icon: 'success'
+          });
+        }
+      }
+    });
+  },
 
   /**
    * 拍照
@@ -14,7 +66,6 @@ Page({
       quality: 'low',
       success: (res) => {
         const tempImagePath = res.tempImagePath;
-        // 压缩图片
         this.compressAndNavigate(tempImagePath);
       },
       fail: (err) => {
@@ -37,7 +88,6 @@ Page({
       sourceType: ['album'],
       success: (res) => {
         const tempImagePath = res.tempFilePaths[0];
-        // 压缩图片
         this.compressAndNavigate(tempImagePath);
       }
     });
@@ -62,7 +112,6 @@ Page({
       fail: (err) => {
         wx.hideLoading();
         console.log('压缩失败，使用原图:', err);
-        // 压缩失败就直接用原图
         wx.navigateTo({
           url: `/pages/result_swiper/result_swiper?tmp_filePath=${encodeURIComponent(imagePath)}`
         });
@@ -86,5 +135,12 @@ Page({
       title: '相机打开失败',
       icon: 'none'
     });
+  },
+
+  /**
+   * 相机停止
+   */
+  onStop() {
+    console.log('相机已停止');
   }
 });

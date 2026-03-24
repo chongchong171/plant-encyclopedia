@@ -1,15 +1,25 @@
 <!-- 养花助手 - 拍照页面 -->
 <view class="container">
+  <!-- 相机授权提示 -->
+  <view class="auth-tip" wx:if="{{!hasCameraAuth}}">
+    <text class="auth-icon">📷</text>
+    <text class="auth-title">需要相机权限</text>
+    <text class="auth-desc">请允许使用相机来拍摄植物</text>
+    <button class="auth-btn" bindtap="requestCameraAuth">授权相机</button>
+  </view>
+
   <!-- 相机 -->
   <camera 
+    wx:if="{{hasCameraAuth}}"
     class="camera" 
     device-position="back" 
     flash="auto"
     binderror="onError"
+    bindstop="onStop"
   ></camera>
 
   <!-- 拍照按钮 -->
-  <view class="controls">
+  <view class="controls" wx:if="{{hasCameraAuth}}">
     <view class="btn-back" bindtap="goBack">
       <text>✕</text>
     </view>
