@@ -31,7 +31,7 @@
 .loading-box {
   background: white;
   padding: 60rpx 80rpx;
-  border-radius: 30rpx;
+  border-radius: 20rpx;
   text-align: center;
 }
 
@@ -48,7 +48,7 @@
 @keyframes spin { to { transform: rotate(360deg); } }
 
 .loading-text {
-  font-size: 30rpx;
+  font-size: 28rpx;
   color: #4CAF50;
 }
 
@@ -92,8 +92,8 @@
 .retry-btn {
   background: #4CAF50;
   color: white;
-  border-radius: 50rpx;
-  font-size: 30rpx;
+  border-radius: 40rpx;
+  font-size: 28rpx;
   padding: 24rpx 60rpx;
 }
 
@@ -120,7 +120,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 40rpx;
+  font-size: 36rpx;
   box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.1);
 }
 
@@ -140,7 +140,7 @@
 .plant-card {
   background: white;
   margin: -60rpx 24rpx 0;
-  border-radius: 30rpx;
+  border-radius: 20rpx;
   padding: 40rpx;
   box-shadow: 0 8rpx 40rpx rgba(0, 0, 0, 0.08);
 }
@@ -158,12 +158,20 @@
   font-size: 48rpx;
   font-weight: bold;
   color: #1B5E20;
-  margin-bottom: 10rpx;
+  margin-bottom: 8rpx;
+}
+
+.plant-common-names {
+  display: block;
+  font-size: 32rpx;
+  color: #4CAF50;
+  font-weight: bold;
+  margin-bottom: 8rpx;
 }
 
 .plant-scientific {
   display: block;
-  font-size: 26rpx;
+  font-size: 28rpx;
   color: #999;
   font-style: italic;
   margin-bottom: 20rpx;
@@ -187,14 +195,14 @@
   width: 200rpx;
   height: 16rpx;
   background: #E0E0E0;
-  border-radius: 8rpx;
+  border-radius: 12rpx;
   overflow: hidden;
 }
 
 .confidence-fill {
   height: 100%;
   background: linear-gradient(90deg, #81C784, #4CAF50);
-  border-radius: 8rpx;
+  border-radius: 12rpx;
 }
 
 .confidence-value {
@@ -212,11 +220,173 @@
 
 .tag {
   padding: 10rpx 24rpx;
-  border-radius: 30rpx;
+  border-radius: 20rpx;
   font-size: 24rpx;
 }
 
 .tag-green { background: #E8F5E9; color: #4CAF50; }
+
+/* 信息卡片 */
+.info-card {
+  background: #F5F5F5;
+  border-radius: 16rpx;
+  padding: 20rpx;
+  margin-bottom: 16rpx;
+}
+
+.info-card.highlight {
+  background: linear-gradient(135deg, #FFF8E1 0%, #FFECB3 100%);
+}
+
+.info-card-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12rpx;
+}
+
+.info-card-icon {
+  font-size: 32rpx;
+  margin-right: 12rpx;
+}
+
+.info-card-title {
+  font-size: 28rpx;
+  font-weight: bold;
+  color: #333;
+}
+
+.info-card-content {
+  font-size: 28rpx;
+  color: #555;
+  line-height: 1.6;
+}
+
+/* 养护难度 */
+.difficulty-section {
+  background: linear-gradient(135deg, #E8F5E9 0%, #C8E6C9 100%);
+  border-radius: 16rpx;
+  padding: 20rpx;
+  margin-bottom: 20rpx;
+}
+
+.difficulty-section .section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10rpx;
+}
+
+.difficulty-section .section-title {
+  font-size: 28rpx;
+  font-weight: bold;
+  color: #2E7D32;
+}
+
+.difficulty-stars {
+  display: flex;
+  gap: 8rpx;
+}
+
+.star {
+  font-size: 32rpx;
+  color: #BDBDBD;
+}
+
+.star.active {
+  color: #FFC107;
+}
+
+.difficulty-text {
+  display: block;
+  font-size: 26rpx;
+  color: #4CAF50;
+}
+
+/* 党护指南 */
+.care-section {
+  margin-bottom: 20rpx;
+}
+
+.care-section-title {
+  display: block;
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 16rpx;
+  padding-left: 10rpx;
+  border-left: 6rpx solid #4CAF50;
+}
+
+.care-section .care-card {
+  background: #F5F5F5;
+  margin-top: 0;
+  margin-bottom: 12rpx;
+  border-radius: 16rpx;
+  padding: 20rpx;
+}
+
+.care-section .care-card-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10rpx;
+}
+
+.care-section .care-card-icon {
+  font-size: 36rpx;
+  margin-right: 12rpx;
+}
+
+.care-section .care-card-title {
+  font-size: 28rpx;
+  font-weight: bold;
+  color: #333;
+}
+
+.care-section .care-card-content {
+  font-size: 28rpx;
+  color: #555;
+  line-height: 1.6;
+}
+
+/* 快速要点 */
+.quick-tips {
+  background: #FFF8E1;
+  border-radius: 16rpx;
+  padding: 20rpx;
+  margin-top: 20rpx;
+}
+
+.tips-title {
+  display: block;
+  font-size: 28rpx;
+  font-weight: bold;
+  color: #F57C00;
+  margin-bottom: 15rpx;
+}
+
+.tips-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12rpx;
+}
+
+.tip-item {
+  display: flex;
+  align-items: center;
+  background: white;
+  padding: 10rpx 16rpx;
+  border-radius: 20rpx;
+  font-size: 26rpx;
+}
+
+.tip-dot {
+  color: #F57C00;
+  margin-right: 8rpx;
+}
+
+.tip-text {
+  color: #555;
+}
 
 /* 信息区块 */
 .section { margin-bottom: 30rpx; }
@@ -296,7 +466,7 @@
 }
 
 .care-title text:last-child {
-  font-size: 30rpx;
+  font-size: 28rpx;
   font-weight: bold;
   color: #2E7D32;
 }
@@ -326,7 +496,7 @@
 }
 
 .care-label {
-  font-size: 26rpx;
+  font-size: 28rpx;
   color: #666;
   width: 80rpx;
 }
@@ -369,7 +539,7 @@
   background: white;
   color: #4CAF50;
   border: 4rpx solid #4CAF50;
-  border-radius: 50rpx;
+  border-radius: 40rpx;
   font-size: 32rpx;
   font-weight: bold;
 }

@@ -19,7 +19,7 @@
 }
 
 .search-placeholder {
-  font-size: 30rpx;
+  font-size: 28rpx;
   color: #999;
 }
 
@@ -46,7 +46,7 @@
 .hot-tag {
   background: white;
   padding: 16rpx 30rpx;
-  border-radius: 30rpx;
+  border-radius: 20rpx;
   font-size: 28rpx;
   color: #4CAF50;
   box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.05);
@@ -79,6 +79,6 @@
 }
 
 .category-name {
-  font-size: 30rpx;
+  font-size: 28rpx;
   color: #333;
 }

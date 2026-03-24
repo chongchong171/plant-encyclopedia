@@ -23,14 +23,13 @@
   </view>
 
   <!-- 识别成功 -->
-  <view class="result-container" wx:if="{{!loading && !identifyError}}">
+  <view class="result-container" wx:if="{{!loading && !identifyError && plant}}">
     <!-- 顶部图片 -->
     <view class="plant-header">
       <image class="plant-image" src="{{imagePath}}" mode="aspectFill"></image>
       <view class="favorite-btn" bindtap="toggleFavorite">
         <text>{{isFavorite ? '❤️' : '🤍'}}</text>
       </view>
-      <!-- 来源标签 -->
       <view class="source-tag">{{plant.source}}</view>
     </view>
 
@@ -39,9 +38,10 @@
       <!-- 名称 -->
       <view class="name-area">
         <text class="plant-name">{{plant.name}}</text>
-        <text class="plant-scientific" wx:if="{{plant.scientificName}}">{{plant.scientificName}}</text>
+        <text class="plant-common-names" wx:if="{{plant.commonNames}}">{{plant.commonNames}}</text>
+        <text class="plant-scientific" wx:if="{{plant.scientificName}}">学名：{{plant.scientificName}}</text>
         
-        <!-- 置信度（仅 PlantNet 显示） -->
+        <!-- 置信度 -->
         <view class="confidence-bar" wx:if="{{plant.confidence > 0}}">
           <text class="confidence-label">置信度</text>
           <view class="confidence-track">
@@ -49,47 +49,91 @@
           </view>
           <text class="confidence-value">{{plant.confidence}}%</text>
         </view>
-        
-        <view class="tag-row">
-          <view class="tag tag-green">养护难度：中等</view>
-        </view>
       </view>
 
-      <!-- AI 识别结果 - 逐行显示 -->
-      <view class="section" wx:if="{{plant.descriptionLines.length > 0}}">
+      <!-- 植物档案 -->
+      <view class="info-card" wx:if="{{plant.plantProfile}}">
+        <view class="info-card-header">
+          <text class="info-card-icon">📋</text>
+          <text class="info-card-title">植物档案</text>
+        </view>
+        <text class="info-card-content">{{plant.plantProfile}}</text>
+      </view>
+
+      <!-- 生长习性 -->
+      <view class="info-card" wx:if="{{plant.growthHabit}}">
+        <view class="info-card-header">
+          <text class="info-card-icon">🌿</text>
+          <text class="info-card-title">生长习性</text>
+        </view>
+        <text class="info-card-content">{{plant.growthHabit}}</text>
+      </view>
+
+      <!-- 分布范围 -->
+      <view class="info-card" wx:if="{{plant.distribution}}">
+        <view class="info-card-header">
+          <text class="info-card-icon">🗺️</text>
+          <text class="info-card-title">分布范围</text>
+        </view>
+        <text class="info-card-content">{{plant.distribution}}</text>
+      </view>
+
+      <!-- 主要价值 -->
+      <view class="info-card highlight" wx:if="{{plant.mainValue}}">
+        <view class="info-card-header">
+          <text class="info-card-icon">💎</text>
+          <text class="info-card-title">主要价值</text>
+        </view>
+        <text class="info-card-content">{{plant.mainValue}}</text>
+      </view>
+
+      <!-- 养护难度 -->
+      <view class="difficulty-section">
         <view class="section-header">
-          <text class="section-icon">🤖</text>
-          <text class="section-title">识别详情</text>
-        </view>
-        <view class="result-lines">
-          <view class="result-line {{item.type}}" wx:for="{{plant.descriptionLines}}" wx:key="index">
-            <text class="line-dot">{{item.type === 'care' ? '🌿' : '•'}}</text>
-            <text class="line-text">{{item.text}}</text>
+          <text class="section-title">📊 党护难度</text>
+          <view class="difficulty-stars">
+            <text wx:for="{{[1,2,3,4,5]}}" wx:key="index" class="star {{item <= plant.difficultyLevel ? 'active' : ''}}">★</text>
           </view>
+        </view>
+        <text class="difficulty-text">{{plant.difficultyText}}</text>
+      </view>
+
+      <!-- 养护指南 -->
+      <view class="care-section" wx:if="{{plant.careGuide}}">
+        <text class="care-section-title">🌿 党护指南</text>
+        
+        <view class="care-card" wx:if="{{plant.careGuide.light}}">
+          <view class="care-card-header">
+            <text class="care-card-icon">☀️</text>
+            <text class="care-card-title">光照</text>
+          </view>
+          <text class="care-card-content">{{plant.careGuide.light}}</text>
+        </view>
+        
+        <view class="care-card" wx:if="{{plant.careGuide.water}}">
+          <view class="care-card-header">
+            <text class="care-card-icon">💧</text>
+            <text class="care-card-title">浇水</text>
+          </view>
+          <text class="care-card-content">{{plant.careGuide.water}}</text>
+        </view>
+        
+        <view class="care-card" wx:if="{{plant.careGuide.temperature}}">
+          <view class="care-card-header">
+            <text class="care-card-icon">🌡️</text>
+            <text class="care-card-title">温度</text>
+          </view>
+          <text class="care-card-content">{{plant.careGuide.temperature}}</text>
         </view>
       </view>
 
-      <!-- 养护指南卡片 -->
-      <view class="care-card">
-        <view class="care-title">
-          <text class="care-icon">🌿</text>
-          <text>养护指南</text>
-        </view>
-        <view class="care-items">
-          <view class="care-row">
-            <text class="care-emoji">☀️</text>
-            <text class="care-label">光照</text>
-            <text class="care-value">{{plant.careGuide.light}}</text>
-          </view>
-          <view class="care-row">
-            <text class="care-emoji">💧</text>
-            <text class="care-label">浇水</text>
-            <text class="care-value">{{plant.careGuide.water}}</text>
-          </view>
-          <view class="care-row">
-            <text class="care-emoji">🌡️</text>
-            <text class="care-label">温度</text>
-            <text class="care-value">{{plant.careGuide.temperature}}</text>
+      <!-- 快速要点 -->
+      <view class="quick-tips" wx:if="{{plant.quickTips && plant.quickTips.length > 0}}">
+        <text class="tips-title">⚡ 快速要点</text>
+        <view class="tips-list">
+          <view class="tip-item" wx:for="{{plant.quickTips}}" wx:key="index">
+            <text class="tip-dot">•</text>
+            <text class="tip-text">{{item}}</text>
           </view>
         </view>
       </view>

@@ -8,16 +8,7 @@ Page({
   data: {
     loading: true,
     imagePath: '',
-    plant: {
-      name: '',
-      scientificName: '',
-      family: '',
-      description: '',
-      descriptionLines: [],
-      careGuide: {},
-      confidence: 0,
-      source: ''
-    },
+    plant: null,
     isFavorite: false,
     identifyError: false,
     errorMessage: ''
@@ -43,21 +34,42 @@ Page({
       wx.hideLoading();
       
       if (result.success && result.data) {
+        // 使用符合设计规范的数据结构
         const plant = {
+          // 基本信息
           id: result.data.id || 'plant_' + Date.now(),
-          image: imagePath,
           name: result.data.name || '植物',
+          commonNames: result.data.commonNames || '',
           scientificName: result.data.scientificName || '',
           family: result.data.family || '未知',
+          
+          // 详细信息
+          plantProfile: result.data.plantProfile || '',
+          growthHabit: result.data.growthHabit || '',
+          distribution: result.data.distribution || '',
+          mainValue: result.data.mainValue || '',
           description: result.data.description || '',
-          careGuide: result.data.careGuide || { light: '适中', water: '适量', temperature: '室温' },
+          
+          // 养护指南
+          careGuide: result.data.careGuide || {
+            light: '适中光照',
+            water: '适量浇水',
+            temperature: '室温'
+          },
+          
+          // 难度评估
+          difficultyLevel: result.data.difficultyLevel || 3,
+          difficultyText: result.data.difficultyText || '适合有一定经验的养护者',
+          
+          // 快速信息
+          quickTips: result.data.quickTips || [],
+          
+          // 元数据
+          image: imagePath,
           confidence: result.data.confidence || 0,
-          source: result.data.source || '未知',
+          source: result.data.source || 'AI识别',
           quotaRemaining: result.data.quotaRemaining
         };
-        
-        // 拆分描述为多行
-        plant.descriptionLines = this.splitDescription(plant.description);
         
         console.log('✅ 识别成功:', plant.name);
         console.log('📊 来源:', plant.source);
@@ -84,24 +96,6 @@ Page({
         errorMessage: error.message || '识别出错' 
       });
     }
-  },
-
-  /**
-   * 拆分描述为多行
-   */
-  splitDescription(description) {
-    if (!description) return [];
-    
-    const lines = description.split(/[。\n]/).filter(line => line.trim());
-    
-    return lines.map(line => {
-      const trimmed = line.trim();
-      if (trimmed.includes('光照') || trimmed.includes('浇水') || 
-          trimmed.includes('温度') || trimmed.includes('养护')) {
-        return { type: 'care', text: trimmed };
-      }
-      return { type: 'info', text: trimmed };
-    });
   },
 
   readImageAsBase64(imagePath) {

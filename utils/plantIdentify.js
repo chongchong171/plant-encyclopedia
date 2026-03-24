@@ -95,14 +95,30 @@ const identifyPlant = async (imageBase64) => {
       
       // 用 Qwen-Turbo 获取养护建议
       console.log('🤖 调用 Qwen-Turbo 获取养护建议...');
-      const careGuide = await getCareGuideFromQwen(plantnetResult.data.name);
+      const detailInfo = await getCareGuideFromQwen(plantnetResult.data.name);
       
       console.log('🎉 混合识别完成！');
       return {
         success: true,
         data: {
-          ...plantnetResult.data,
-          careGuide: careGuide,
+          id: plantnetResult.data.id,
+          name: plantnetResult.data.name,
+          scientificName: plantnetResult.data.scientificName,
+          family: plantnetResult.data.family,
+          confidence: plantnetResult.data.confidence,
+          description: plantnetResult.data.description,
+          image: imagePath,
+          // Qwen 返回的详细信息
+          commonNames: detailInfo.commonNames,
+          plantProfile: detailInfo.plantProfile,
+          growthHabit: detailInfo.growthHabit,
+          distribution: detailInfo.distribution,
+          mainValue: detailInfo.mainValue,
+          careGuide: detailInfo.careGuide,
+          difficultyLevel: detailInfo.difficultyLevel,
+          difficultyText: detailInfo.difficultyText,
+          quickTips: detailInfo.quickTips,
+          // 元数据
           source: 'PlantNet + Qwen-Turbo',
           quotaRemaining: PLANTNET_DAILY_LIMIT - plantnetDailyCount
         }
@@ -231,7 +247,7 @@ async function identifyWithPlantNet(imageBase64) {
 }
 
 /**
- * Qwen-Turbo 获取养护建议（便宜）
+ * Qwen-Turbo 获取养护建议（返回完整数据结构）
  */
 async function getCareGuideFromQwen(plantName) {
   console.log('🤖 调用 Qwen-Turbo 获取养护建议...');
@@ -250,11 +266,20 @@ async function getCareGuideFromQwen(plantName) {
         model: 'qwen-turbo',
         messages: [{
           role: 'user',
-          content: `请为"${plantName}"提供简短的养护建议，格式如下：
-光照：xxx
-浇水：xxx
-温度：xxx
-每种建议一句话即可。`
+          content: `请为"${plantName}"提供详细的植物信息，格式如下：
+
+【常用名】老百姓日常叫法
+【植物档案】茎叶花种子特点（50字内）
+【生长习性】一句话描述
+【分布范围】一句话描述
+【主要价值】一句话描述
+【光照】具体需求
+【浇水】具体方法
+【温度】适宜范围
+【养护难度】1-5星
+【快速要点】3个关键词，用顿号分隔
+
+每项一句话即可，简洁明了。`
         }]
       },
       timeout: 30000,
@@ -262,27 +287,81 @@ async function getCareGuideFromQwen(plantName) {
         const content = res.data?.choices?.[0]?.message?.content || '';
         console.log('📝 Qwen-Turbo 返回:', content.substring(0, 100));
         
-        // 解析养护建议
-        const careGuide = {
-          light: '适中光照',
-          water: '适量浇水',
-          temperature: '室温'
+        // 解析内容，返回符合设计规范的数据结构
+        const result = {
+          commonNames: '',
+          plantProfile: '',
+          growthHabit: '',
+          distribution: '',
+          mainValue: '',
+          careGuide: {
+            light: '适中光照',
+            water: '适量浇水',
+            temperature: '室温',
+            humidity: '',
+            fertilizer: '',
+            tips: ''
+          },
+          difficultyLevel: 3,
+          difficultyText: '适合有一定经验的养护者',
+          quickTips: []
         };
         
-        const lightMatch = content.match(/光照[是为：:]*\s*([^\n，,。]+)/);
-        if (lightMatch) careGuide.light = lightMatch[1].trim();
+        // 解析各项
+        const commonMatch = content.match(/【常用名】\s*([^\n【]+)/);
+        if (commonMatch) result.commonNames = commonMatch[1].trim();
         
-        const waterMatch = content.match(/浇水?[是为：:]*\s*([^\n，,。]+)/);
-        if (waterMatch) careGuide.water = waterMatch[1].trim();
+        const profileMatch = content.match(/【植物档案】\s*([^\n【]+)/);
+        if (profileMatch) result.plantProfile = profileMatch[1].trim();
         
-        const tempMatch = content.match(/温度[是为：:]*\s*([^\n，,。]+)/);
-        if (tempMatch) careGuide.temperature = tempMatch[1].trim();
+        const habitMatch = content.match(/【生长习性】\s*([^\n【]+)/);
+        if (habitMatch) result.growthHabit = habitMatch[1].trim();
         
-        resolve(careGuide);
+        const distMatch = content.match(/【分布范围】\s*([^\n【]+)/);
+        if (distMatch) result.distribution = distMatch[1].trim();
+        
+        const valueMatch = content.match(/【主要价值】\s*([^\n【]+)/);
+        if (valueMatch) result.mainValue = valueMatch[1].trim();
+        
+        const lightMatch = content.match(/【光照】\s*([^\n【]+)/);
+        if (lightMatch) result.careGuide.light = lightMatch[1].trim();
+        
+        const waterMatch = content.match(/【浇水】\s*([^\n【]+)/);
+        if (waterMatch) result.careGuide.water = waterMatch[1].trim();
+        
+        const tempMatch = content.match(/【温度】\s*([^\n【]+)/);
+        if (tempMatch) result.careGuide.temperature = tempMatch[1].trim();
+        
+        const diffMatch = content.match(/【养护难度】\s*(\d)/);
+        if (diffMatch) result.difficultyLevel = parseInt(diffMatch[1]);
+        
+        const tipsMatch = content.match(/【快速要点】\s*([^\n【]+)/);
+        if (tipsMatch) {
+          result.quickTips = tipsMatch[1].trim().split(/[、，,]/).slice(0, 3);
+        }
+        
+        resolve(result);
       },
       fail: (err) => {
         console.log('⚠️ Qwen-Turbo 调用失败，使用默认建议');
-        resolve({ light: '适中光照', water: '适量浇水', temperature: '室温' });
+        resolve({
+          commonNames: '',
+          plantProfile: '',
+          growthHabit: '',
+          distribution: '',
+          mainValue: '',
+          careGuide: {
+            light: '适中光照',
+            water: '适量浇水',
+            temperature: '室温',
+            humidity: '',
+            fertilizer: '',
+            tips: ''
+          },
+          difficultyLevel: 3,
+          difficultyText: '适合有一定经验的养护者',
+          quickTips: []
+        });
       }
     });
   });
