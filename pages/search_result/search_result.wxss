@@ -2,7 +2,7 @@
 
 .container {
   min-height: 100vh;
-  background: #E8F5E9;
+  background: linear-gradient(180deg, #E8F5E9 0%, #F5F5F5 100%);
   padding-bottom: 140rpx;
 }
 
@@ -21,132 +21,274 @@
 
 /* 结果展示 */
 .result-container {
-  padding: 30rpx;
+  padding-bottom: 30rpx;
 }
 
-/* 图片区域 */
-.image-section {
+/* 植物图片 */
+.plant-image-section {
   width: 100%;
-  height: 400rpx;
-  border-radius: 20rpx;
-  overflow: hidden;
-  margin-bottom: 30rpx;
+  height: 380rpx;
 }
 
 .plant-image {
   width: 100%;
   height: 100%;
+  object-fit: cover;
 }
 
 /* 信息区域 */
 .info-section {
   background: white;
-  border-radius: 20rpx;
+  margin: -40rpx 24rpx 0;
+  border-radius: 24rpx;
   padding: 30rpx;
+  box-shadow: 0 8rpx 30rpx rgba(0, 0, 0, 0.08);
+  position: relative;
+  z-index: 10;
 }
 
+/* 名称区域 */
 .name-box {
   text-align: center;
-  padding-bottom: 20rpx;
-  border-bottom: 2rpx solid #E8F5E9;
-  margin-bottom: 20rpx;
+  padding-bottom: 24rpx;
+  border-bottom: 2rpx solid #F0F0F0;
+  margin-bottom: 24rpx;
 }
 
 .plant-name {
   display: block;
-  font-size: 36rpx;
+  font-size: 44rpx;
   font-weight: bold;
-  color: #333;
+  color: #2E7D32;
+  margin-bottom: 10rpx;
+}
+
+.plant-common-names {
+  display: block;
+  font-size: 30rpx;
+  color: #4CAF50;
+  font-weight: 600;
+  margin-bottom: 8rpx;
 }
 
 .plant-scientific {
   display: block;
-  font-size: 28rpx;
+  font-size: 26rpx;
   color: #999;
   font-style: italic;
-  margin-top: 10rpx;
+  margin-bottom: 6rpx;
 }
 
-.info-box, .care-box {
+.plant-family, .plant-origin {
+  display: block;
+  font-size: 24rpx;
+  color: #666;
+  margin-top: 6rpx;
+}
+
+/* 区块卡片 */
+.section-card {
   background: #F5F5F5;
   border-radius: 16rpx;
   padding: 20rpx;
   margin-bottom: 20rpx;
 }
 
-.info-title {
+.section-title {
   display: block;
+  font-size: 30rpx;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 12rpx;
+}
+
+.section-content {
+  font-size: 28rpx;
+  color: #555;
+  line-height: 1.7;
+}
+
+/* 信息卡片 */
+.info-card {
+  background: #F5F5F5;
+  border-radius: 16rpx;
+  padding: 20rpx;
+  margin-bottom: 16rpx;
+}
+
+.info-card.highlight {
+  background: linear-gradient(135deg, #FFF8E1 0%, #FFECB3 100%);
+}
+
+.info-card-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12rpx;
+}
+
+.info-card-icon {
+  font-size: 32rpx;
+  margin-right: 12rpx;
+}
+
+.info-card-title {
   font-size: 28rpx;
   font-weight: bold;
   color: #333;
-  margin-bottom: 15rpx;
 }
 
-.info-item {
+.info-card-content {
+  font-size: 28rpx;
+  color: #555;
+  line-height: 1.6;
+}
+
+/* 养护难度 */
+.difficulty-section {
+  background: linear-gradient(135deg, #E8F5E9 0%, #C8E6C9 100%);
+  border-radius: 16rpx;
+  padding: 20rpx;
+  margin-bottom: 20rpx;
+}
+
+.difficulty-section .section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 10rpx;
 }
 
-.info-item .label {
-  color: #666;
+.difficulty-section .section-title {
   font-size: 28rpx;
+  font-weight: bold;
+  color: #2E7D32;
 }
 
-.info-item .value {
-  color: #333;
-  font-size: 28rpx;
-}
-
-/* 养殖指南 */
-.care-item {
+.difficulty-stars {
   display: flex;
-  align-items: flex-start;
-  padding: 15rpx 0;
-  border-bottom: 2rpx solid #E0E0E0;
+  gap: 8rpx;
 }
 
-.care-item:last-child {
-  border-bottom: none;
-}
-
-.care-icon {
+.star {
   font-size: 32rpx;
-  margin-right: 15rpx;
+  color: #BDBDBD;
 }
 
-.care-text {
-  flex: 1;
+.star.active {
+  color: #FFC107;
+}
+
+.difficulty-text {
+  display: block;
+  font-size: 26rpx;
+  color: #4CAF50;
+}
+
+/* 养护指南 */
+.care-section {
+  margin-bottom: 20rpx;
+}
+
+.care-section-title {
+  display: block;
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 16rpx;
+  padding-left: 10rpx;
+  border-left: 6rpx solid #4CAF50;
+}
+
+.care-card {
+  background: #F5F5F5;
+  border-radius: 16rpx;
+  padding: 20rpx;
+  margin-bottom: 12rpx;
+}
+
+.care-card-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10rpx;
+}
+
+.care-card-icon {
+  font-size: 36rpx;
+  margin-right: 12rpx;
+}
+
+.care-card-title {
   font-size: 28rpx;
+  font-weight: bold;
   color: #333;
 }
 
-/* 标签 */
-.tags-box {
+.care-card-content {
+  font-size: 28rpx;
+  color: #555;
+  line-height: 1.6;
+}
+
+/* 快速要点 */
+.quick-tips {
+  background: #FFF8E1;
+  border-radius: 16rpx;
+  padding: 20rpx;
+  margin-bottom: 20rpx;
+}
+
+.tips-title {
+  display: block;
+  font-size: 28rpx;
+  font-weight: bold;
+  color: #F57C00;
+  margin-bottom: 12rpx;
+}
+
+.tips-list {
   display: flex;
-  justify-content: center;
-  gap: 20rpx;
-  padding-top: 20rpx;
-  border-top: 2rpx solid #E8F5E9;
+  flex-wrap: wrap;
+  gap: 12rpx;
 }
 
-.tag {
-  padding: 10rpx 24rpx;
+.tip-item {
+  display: flex;
+  align-items: center;
+  background: white;
+  padding: 10rpx 16rpx;
   border-radius: 20rpx;
-  font-size: 24rpx;
+  font-size: 26rpx;
 }
 
-.tag.difficulty {
-  background: #E8F5E9;
-  color: #4CAF50;
+.tip-dot {
+  color: #F57C00;
+  margin-right: 8rpx;
 }
 
-.tag.toxicity {
-  background: #FFEBEE;
-  color: #f44336;
+.tip-text {
+  color: #555;
 }
 
-.tag.safe {
-  background: #E8F5E9;
-  color: #4CAF50;
+/* 养护禁忌 */
+.taboos-section {
+  background: linear-gradient(135deg, #FFEBEE 0%, #FFCDD2 100%);
+  border-radius: 16rpx;
+  padding: 20rpx;
+  margin-bottom: 20rpx;
+}
+
+.taboos-title {
+  display: block;
+  font-size: 28rpx;
+  font-weight: bold;
+  color: #C62828;
+  margin-bottom: 10rpx;
+}
+
+.taboos-content {
+  font-size: 28rpx;
+  color: #555;
+  line-height: 1.6;
 }
 
 /* 错误状态 */
@@ -193,7 +335,7 @@
   right: 0;
   padding: 30rpx;
   background: white;
-  box-shadow: 0 -4rpx 20rpx rgba(0, 0, 0, 0.1);
+  box-shadow: 0 -4rpx 20rpx rgba(0, 0, 0, 0.08);
 }
 
 .action-btn {
@@ -201,6 +343,7 @@
   height: 90rpx;
   background: #4CAF50;
   color: white;
-  border-radius: 40rpx;
+  border-radius: 45rpx;
   font-size: 32rpx;
+  font-weight: bold;
 }
