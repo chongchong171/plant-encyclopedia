@@ -2,15 +2,16 @@
 <view class="container">
   <!-- 大片绿叶浮雕背景 -->
   <view class="leaf-bg">
-    <text class="leaf leaf-1">🌿</text>
-    <text class="leaf leaf-2">🌿</text>
-    <text class="leaf leaf-3">🌿</text>
-    <text class="leaf leaf-4">🌿</text>
-    <text class="leaf leaf-5">🌿</text>
+    <view class="leaf-shape leaf-1"></view>
+    <view class="leaf-shape leaf-2"></view>
+    <view class="leaf-shape leaf-3"></view>
+    <view class="leaf-shape leaf-4"></view>
+    <view class="leaf-shape leaf-5"></view>
   </view>
 
   <!-- Logo -->
   <view class="logo-section">
+    <view class="logo-icon">🌳</view>
     <text class="app-name">养花助手</text>
     <text class="slogan">遇见植物的美好</text>
   </view>
@@ -19,18 +20,23 @@
   <view class="func-section">
     <!-- 拍照识别 - 大按钮 -->
     <view class="main-btn" bindtap="takePhoto">
-      <text class="main-icon">📷</text>
-      <text class="main-title">拍照识别</text>
-      <text class="main-desc">拍一拍，认识你的植物</text>
+      <view class="btn-left">
+        <text class="btn-icon">📷</text>
+        <view class="btn-text">
+          <text class="btn-title">拍照识别</text>
+          <text class="btn-desc">拍一拍，认识你的植物</text>
+        </view>
+      </view>
+      <text class="btn-arrow">›</text>
     </view>
 
     <!-- 相册和搜索 - 并列 -->
     <view class="sub-btns">
-      <view class="sub-btn" bindtap="chooseFromAlbum">
+      <view class="sub-btn album-btn" bindtap="chooseFromAlbum">
         <text class="sub-icon">🖼️</text>
         <text class="sub-title">相册上传</text>
       </view>
-      <view class="sub-btn" bindtap="goToSearch">
+      <view class="sub-btn search-btn" bindtap="goToSearch">
         <text class="sub-icon">🔍</text>
         <text class="sub-title">搜索植物</text>
       </view>
