@@ -50,11 +50,6 @@
       }
     ]
   },
-  "permission": {
-    "scope.camera": {
-      "desc": "用于拍照识别植物"
-    }
-  },
   "cloud": true,
   "style": "v2",
   "sitemapLocation": "sitemap.json"
