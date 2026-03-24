@@ -64,6 +64,11 @@ Page({
           // 快速信息
           quickTips: result.data.quickTips || [],
           
+          // 健康诊断
+          healthStatus: result.data.healthStatus || '健康',
+          issues: result.data.issues || [],
+          overallAdvice: result.data.overallAdvice || '',
+          
           // 元数据
           image: imagePath,
           confidence: result.data.confidence || 0,

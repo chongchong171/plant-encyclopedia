@@ -3,11 +3,62 @@
  */
 Page({
   data: {
-    hasCameraAuth: false
+    hasCameraAuth: false,
+    showTips: true,
+    currentIndex: 0,
+    tips: [
+      {
+        icon: '🌿',
+        title: '拍整株',
+        desc: '拍一张植物整体照片，便于识别品种'
+      },
+      {
+        icon: '🍃',
+        title: '拍叶片',
+        desc: '近距离拍摄叶子，可诊断黄叶、斑点等问题'
+      },
+      {
+        icon: '🪴',
+        title: '拍土壤',
+        desc: '拍摄花盆和土壤，可判断浇水是否合理'
+      }
+    ],
+    currentTip: null
   },
 
   onLoad() {
+    this.setData({ currentTip: this.data.tips[0] });
     this.checkCameraAuth();
+    this.startTipRotation();
+  },
+
+  onUnload() {
+    // 清除定时器
+    if (this.tipTimer) {
+      clearInterval(this.tipTimer);
+    }
+  },
+
+  /**
+   * 自动切换提示
+   */
+  startTipRotation() {
+    this.tipTimer = setInterval(() => {
+      if (!this.data.showTips) return;
+      
+      let nextIndex = (this.data.currentIndex + 1) % 3;
+      this.setData({
+        currentIndex: nextIndex,
+        currentTip: this.data.tips[nextIndex]
+      });
+    }, 3000); // 每3秒切换
+  },
+
+  /**
+   * 隐藏提示
+   */
+  hideTips() {
+    this.setData({ showTips: false });
   },
 
   /**
@@ -17,17 +68,14 @@ Page({
     wx.getSetting({
       success: (res) => {
         if (res.authSetting['scope.camera']) {
-          // 已授权
           this.setData({ hasCameraAuth: true });
         } else {
-          // 未授权，尝试授权
           wx.authorize({
             scope: 'scope.camera',
             success: () => {
               this.setData({ hasCameraAuth: true });
             },
             fail: () => {
-              // 用户拒绝授权
               this.setData({ hasCameraAuth: false });
             }
           });
@@ -47,10 +95,7 @@ Page({
       success: (res) => {
         if (res.authSetting['scope.camera']) {
           this.setData({ hasCameraAuth: true });
-          wx.showToast({
-            title: '授权成功',
-            icon: 'success'
-          });
+          wx.showToast({ title: '授权成功', icon: 'success' });
         }
       }
     });
@@ -65,14 +110,10 @@ Page({
     ctx.takePhoto({
       quality: 'low',
       success: (res) => {
-        const tempImagePath = res.tempImagePath;
-        this.compressAndNavigate(tempImagePath);
+        this.compressAndNavigate(res.tempImagePath);
       },
       fail: (err) => {
-        wx.showToast({
-          title: '拍照失败',
-          icon: 'none'
-        });
+        wx.showToast({ title: '拍照失败', icon: 'none' });
         console.error('拍照失败', err);
       }
     });
@@ -87,8 +128,7 @@ Page({
       sizeType: ['compressed'],
       sourceType: ['album'],
       success: (res) => {
-        const tempImagePath = res.tempFilePaths[0];
-        this.compressAndNavigate(tempImagePath);
+        this.compressAndNavigate(res.tempFilePaths[0]);
       }
     });
   },
@@ -104,14 +144,12 @@ Page({
       quality: 50,
       success: (res) => {
         wx.hideLoading();
-        console.log('压缩后路径:', res.tempFilePath);
         wx.navigateTo({
           url: `/pages/result_swiper/result_swiper?tmp_filePath=${encodeURIComponent(res.tempFilePath)}`
         });
       },
-      fail: (err) => {
+      fail: () => {
         wx.hideLoading();
-        console.log('压缩失败，使用原图:', err);
         wx.navigateTo({
           url: `/pages/result_swiper/result_swiper?tmp_filePath=${encodeURIComponent(imagePath)}`
         });
@@ -119,27 +157,15 @@ Page({
     });
   },
 
-  /**
-   * 返回
-   */
   goBack() {
     wx.navigateBack();
   },
 
-  /**
-   * 相机错误
-   */
   onError(e) {
     console.error('相机错误', e.detail);
-    wx.showToast({
-      title: '相机打开失败',
-      icon: 'none'
-    });
+    wx.showToast({ title: '相机打开失败', icon: 'none' });
   },
 
-  /**
-   * 相机停止
-   */
   onStop() {
     console.log('相机已停止');
   }

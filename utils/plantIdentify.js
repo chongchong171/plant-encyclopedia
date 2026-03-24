@@ -368,9 +368,10 @@ async function getCareGuideFromQwen(plantName) {
 
 /**
  * Qwen-VL-Max 全能识别（降级方案）
+ * 同时返回植物信息和健康诊断
  */
 async function identifyWithQwenVL(imageBase64) {
-  console.log('🤖 调用 Qwen-VL-Max...');
+  console.log('🤖 调用 Qwen-VL-Max（含健康诊断）...');
   
   const apiKey = getQwenApiKey();
   const imageUrl = `data:image/jpeg;base64,${imageBase64}`;
@@ -394,15 +395,18 @@ async function identifyWithQwenVL(imageBase64) {
             },
             {
               type: 'text',
-              text: `请识别这张图片中的植物，并提供以下信息：
-1. 植物名称
-2. 养护建议（光照、浇水、温度）
+              text: `你是植物专家，请分析这张图片中的植物，返回以下信息：
 
-请按以下格式回答：
-名称：xxx
-光照：xxx
-浇水：xxx
-温度：xxx`
+【植物名称】植物的名字
+【健康状态】健康/亚健康/生病（三选一）
+【问题描述】如果健康写"无"，如果生病写具体问题（如：黄叶、斑点、虫害等）
+【问题原因】如果健康写"无"，否则写可能原因
+【解决方案】养护建议
+【光照需求】一句话
+【浇水建议】一句话
+【温度要求】一句话
+
+每项一句话，简洁明了。`
             }
           ]
         }]
@@ -413,13 +417,40 @@ async function identifyWithQwenVL(imageBase64) {
         
         if (res.statusCode === 200 && res.data?.choices?.[0]?.message?.content) {
           const content = res.data.choices[0].message.content;
-          console.log('📝 Qwen-VL 返回:', content.substring(0, 100));
+          console.log('📝 Qwen-VL 返回:', content.substring(0, 150));
           
           // 解析植物名称
           let plantName = '植物';
-          const nameMatch = content.match(/名称[是为：:]\s*([^\n，,。]+)/) ||
-                           content.match(/植物[是为：:]\s*([^\n，,。]+)/);
+          const nameMatch = content.match(/【植物名称】\s*([^\n【]+)/) ||
+                           content.match(/名称[是为：:]\s*([^\n，,。]+)/);
           if (nameMatch) plantName = nameMatch[1].trim();
+          
+          // 解析健康状态
+          let healthStatus = '健康';
+          const healthMatch = content.match(/【健康状态】\s*([^\n【]+)/);
+          if (healthMatch) {
+            const status = healthMatch[1].trim();
+            if (status.includes('生病') || status.includes('病')) {
+              healthStatus = '生病';
+            } else if (status.includes('亚健康')) {
+              healthStatus = '亚健康';
+            }
+          }
+          
+          // 解析问题描述
+          let issueDesc = '';
+          const issueMatch = content.match(/【问题描述】\s*([^\n【]+)/);
+          if (issueMatch) issueDesc = issueMatch[1].trim();
+          
+          // 解析问题原因
+          let issueCause = '';
+          const causeMatch = content.match(/【问题原因】\s*([^\n【]+)/);
+          if (causeMatch) issueCause = causeMatch[1].trim();
+          
+          // 解析解决方案
+          let solution = '';
+          const solutionMatch = content.match(/【解决方案】\s*([^\n【]+)/);
+          if (solutionMatch) solution = solutionMatch[1].trim();
           
           // 解析养护建议
           const careGuide = {
@@ -428,14 +459,28 @@ async function identifyWithQwenVL(imageBase64) {
             temperature: '室温'
           };
           
-          const lightMatch = content.match(/光照[是为：:]*\s*([^\n，,。]+)/);
+          const lightMatch = content.match(/【光照需求】\s*([^\n【]+)/) ||
+                            content.match(/光照[是为：:]*\s*([^\n，,。]+)/);
           if (lightMatch) careGuide.light = lightMatch[1].trim();
           
-          const waterMatch = content.match(/浇水?[是为：:]*\s*([^\n，,。]+)/);
+          const waterMatch = content.match(/【浇水建议】\s*([^\n【]+)/) ||
+                            content.match(/浇水?[是为：:]*\s*([^\n，,。]+)/);
           if (waterMatch) careGuide.water = waterMatch[1].trim();
           
-          const tempMatch = content.match(/温度[是为：:]*\s*([^\n，,。]+)/);
+          const tempMatch = content.match(/【温度要求】\s*([^\n【]+)/) ||
+                           content.match(/温度[是为：:]*\s*([^\n，,。]+)/);
           if (tempMatch) careGuide.temperature = tempMatch[1].trim();
+          
+          // 构建问题列表
+          const issues = [];
+          if (healthStatus !== '健康' && issueDesc && issueDesc !== '无') {
+            issues.push({
+              type: issueDesc,
+              severity: healthStatus === '生病' ? '严重' : '中等',
+              cause: issueCause,
+              solution: solution
+            });
+          }
           
           resolve({
             success: true,
@@ -445,7 +490,11 @@ async function identifyWithQwenVL(imageBase64) {
               scientificName: '',
               family: '未知',
               description: content,
-              careGuide: careGuide
+              careGuide: careGuide,
+              // 健康诊断
+              healthStatus: healthStatus,
+              issues: issues,
+              overallAdvice: healthStatus === '健康' ? '植物状态良好，继续保持当前养护方式' : solution
             }
           });
         } else {

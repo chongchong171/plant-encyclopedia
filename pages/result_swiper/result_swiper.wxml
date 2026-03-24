@@ -51,6 +51,39 @@
         </view>
       </view>
 
+      <!-- 健康诊断 -->
+      <view class="health-section {{plant.healthStatus === '健康' ? 'healthy' : plant.healthStatus === '亚健康' ? 'warning' : 'danger'}}">
+        <view class="health-header">
+          <text class="health-icon">{{plant.healthStatus === '健康' ? '✅' : plant.healthStatus === '亚健康' ? '⚠️' : '🚨'}}</text>
+          <text class="health-status">{{plant.healthStatus}}</text>
+        </view>
+      </view>
+
+      <!-- 发现问题 -->
+      <view class="issues-section" wx:if="{{plant.issues && plant.issues.length > 0}}">
+        <text class="issues-title">🔍 发现问题</text>
+        <view class="issue-item" wx:for="{{plant.issues}}" wx:key="index">
+          <view class="issue-header">
+            <text class="issue-type">{{item.type}}</text>
+            <text class="issue-severity severity-{{item.severity === '轻微' ? 'light' : item.severity === '中等' ? 'medium' : 'severe'}}">{{item.severity}}</text>
+          </view>
+          <view class="issue-cause" wx:if="{{item.cause}}">
+            <text class="issue-label">可能原因：</text>
+            <text class="issue-value">{{item.cause}}</text>
+          </view>
+          <view class="issue-solution" wx:if="{{item.solution}}">
+            <text class="issue-label">💡 解决方案：</text>
+            <text class="issue-value">{{item.solution}}</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 整体建议 -->
+      <view class="advice-section" wx:if="{{plant.overallAdvice && plant.healthStatus !== '健康'}}">
+        <text class="advice-title">📝 养护建议</text>
+        <text class="advice-text">{{plant.overallAdvice}}</text>
+      </view>
+
       <!-- 植物档案 -->
       <view class="info-card" wx:if="{{plant.plantProfile}}">
         <view class="info-card-header">

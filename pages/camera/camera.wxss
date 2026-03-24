@@ -1,4 +1,4 @@
-/* 植物百科大全 - 拍照页面样式 */
+/* 养花助手 - 拍照页面样式 */
 
 .container {
   width: 100vw;
@@ -51,6 +51,76 @@
   padding: 20rpx 60rpx;
   font-size: 28rpx;
   font-weight: bold;
+}
+
+/* 拍摄指导提示 */
+.photo-tips {
+  position: absolute;
+  top: 80rpx;
+  left: 30rpx;
+  right: 30rpx;
+  display: flex;
+  align-items: flex-start;
+}
+
+.tip-card {
+  flex: 1;
+  background: rgba(0, 0, 0, 0.7);
+  border-radius: 16rpx;
+  padding: 24rpx;
+  backdrop-filter: blur(10px);
+}
+
+.tip-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12rpx;
+}
+
+.tip-icon {
+  font-size: 36rpx;
+  margin-right: 12rpx;
+}
+
+.tip-title {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #4CAF50;
+}
+
+.tip-desc {
+  font-size: 26rpx;
+  color: rgba(255, 255, 255, 0.9);
+  line-height: 1.5;
+}
+
+.tip-dots {
+  display: flex;
+  justify-content: center;
+  margin-top: 16rpx;
+  gap: 12rpx;
+}
+
+.dot {
+  font-size: 20rpx;
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.dot.active {
+  color: #4CAF50;
+}
+
+.tip-close {
+  width: 56rpx;
+  height: 56rpx;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 28rpx;
+  margin-left: 16rpx;
 }
 
 /* 控制栏 */
