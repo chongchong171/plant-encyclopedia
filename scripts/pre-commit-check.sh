@@ -66,6 +66,19 @@ for f in pages/*/*.json; do
 done
 echo "✅ 通过"
 
+# 6. 检查常见错别字
+echo ""
+echo "【6】检查常见错别字..."
+TYPO_FOUND=0
+if grep -rn "党护" . --include="*.wxml" --include="*.js" --include="*.wxss" 2>/dev/null; then
+  echo "❌ 发现错别字：党护 → 应为 养护"
+  ERRORS=$((ERRORS + 1))
+  TYPO_FOUND=1
+fi
+if [ $TYPO_FOUND -eq 0 ]; then
+  echo "✅ 通过"
+fi
+
 # 总结
 echo ""
 echo "======================================"

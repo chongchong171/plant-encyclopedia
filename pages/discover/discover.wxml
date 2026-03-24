@@ -17,7 +17,7 @@
   <!-- 养护小贴士 -->
   <view class="section">
     <view class="section-header">
-      <text class="section-title">💡 党护小贴士</text>
+      <text class="section-title">💡 养护小贴士</text>
     </view>
     <view class="tips-list">
       <view class="tip-card" wx:for="{{careTips}}" wx:key="title">
