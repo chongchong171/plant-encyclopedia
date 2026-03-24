@@ -140,10 +140,11 @@
 }
 
 .category-item {
-  width: calc(50% - 10rpx);
+  width: 100%;
   background: white;
   border-radius: 20rpx;
   padding: 30rpx;
+  margin-bottom: 20rpx;
   display: flex;
   align-items: center;
   box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.05);
@@ -151,10 +152,23 @@
 
 .category-icon {
   font-size: 48rpx;
-  margin-right: 20rpx;
+  margin-right: 24rpx;
+}
+
+.category-info {
+  flex: 1;
 }
 
 .category-name {
-  font-size: 28rpx;
+  display: block;
+  font-size: 30rpx;
+  font-weight: bold;
   color: #333;
+  margin-bottom: 6rpx;
+}
+
+.category-desc {
+  display: block;
+  font-size: 24rpx;
+  color: #999;
 }

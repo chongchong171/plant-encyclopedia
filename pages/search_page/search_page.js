@@ -13,12 +13,12 @@ Page({
     historyList: [],
     hotPlants: [],
     categories: [
-      { id: 1, name: '观叶植物', icon: '🍃' },
-      { id: 2, name: '开花植物', icon: '🌸' },
-      { id: 3, name: '多肉植物', icon: '🪴' },
-      { id: 4, name: '水培植物', icon: '💧' },
-      { id: 5, name: '室内植物', icon: '🏠' },
-      { id: 6, name: '阳台植物', icon: '☀️' }
+      { id: 1, name: '好养植物', icon: '🌱', desc: '新手友好，不易养死' },
+      { id: 2, name: '净化空气', icon: '🌬️', desc: '吸收甲醛，净化室内空气' },
+      { id: 3, name: '开花植物', icon: '🌸', desc: '花色艳丽，观赏性强' },
+      { id: 4, name: '多肉植物', icon: '🪴', desc: '耐旱好养，造型可爱' },
+      { id: 5, name: '阳台花园', icon: '🏡', desc: '适合阳台种植的花卉' },
+      { id: 6, name: '办公室绿植', icon: '🏢', desc: '耐阴耐旱，适合办公环境' }
     ]
   },
 

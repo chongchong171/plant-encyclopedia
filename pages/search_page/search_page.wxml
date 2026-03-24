@@ -63,7 +63,7 @@
 
   <!-- 植物分类 -->
   <view class="category-section">
-    <text class="section-title">🌿 植物分类</text>
+    <text class="section-title">🌿 常用植物分类</text>
     <view class="category-list">
       <view 
         class="category-item" 
@@ -73,7 +73,10 @@
         bindtap="selectCategory"
       >
         <text class="category-icon">{{item.icon}}</text>
-        <text class="category-name">{{item.name}}</text>
+        <view class="category-info">
+          <text class="category-name">{{item.name}}</text>
+          <text class="category-desc">{{item.desc}}</text>
+        </view>
       </view>
     </view>
   </view>
