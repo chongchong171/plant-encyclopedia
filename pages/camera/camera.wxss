@@ -1,7 +1,9 @@
 /* 花草百科全书 - 拍照页面 */
+
+/* ========== 容器 ========== */
 .container {
   min-height: 100vh;
-  background: linear-gradient(180deg, #E8F5E9 0%, #C8E6C9 100%);
+  background: #E8F5E9;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -9,7 +11,7 @@
   position: relative;
 }
 
-/* 背景装饰 */
+/* ========== 背景装饰 ========== */
 .leaf-bg {
   position: absolute;
   top: 0;
@@ -37,43 +39,46 @@
   50% { transform: translateY(-30rpx) rotate(10deg); }
 }
 
-/* 拍摄提示 */
-.photo-tips {
-  position: relative;
+/* ========== 卡片组件（标准） ========== */
+.card {
+  background: white;
+  border-radius: 20rpx;
+  padding: 20rpx;
+  margin-bottom: 30rpx;
   margin-top: 80rpx;
-  margin-bottom: 60rpx;
+  box-shadow: 0 8rpx 30rpx rgba(0, 0, 0, 0.08);
+  position: relative;
+  width: 100%;
 }
 
-.tip-card {
-  background: rgba(255, 255, 255, 0.95);
-  border-radius: 24rpx;
-  padding: 40rpx;
-  box-shadow: 0 8rpx 32rpx rgba(76, 175, 80, 0.15);
-}
-
-.tip-header {
+.card-header {
   display: flex;
   align-items: center;
   margin-bottom: 16rpx;
 }
 
-.tip-icon {
-  font-size: 48rpx;
-  margin-right: 16rpx;
+.card-icon {
+  font-size: 32rpx;
+  margin-right: 12rpx;
 }
 
-.tip-title {
-  font-size: 36rpx;
+.card-title {
+  font-size: 32rpx;
   font-weight: bold;
   color: #4CAF50;
 }
 
-.tip-desc {
+.card-content {
   font-size: 28rpx;
-  color: #666;
+  color: #555;
   line-height: 1.6;
 }
 
+.card-text {
+  color: #555;
+}
+
+/* ========== 提示点 ========== */
 .tip-dots {
   display: flex;
   justify-content: center;
@@ -82,7 +87,7 @@
 
 .dot {
   font-size: 20rpx;
-  color: #ccc;
+  color: #E0E0E0;
   margin: 0 8rpx;
   transition: color 0.3s;
 }
@@ -103,60 +108,69 @@
   align-items: center;
   justify-content: center;
   font-size: 28rpx;
-  color: #999;
+  color: #999999;
   box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.1);
 }
 
-/* 操作按钮区 */
+/* ========== 操作按钮区 ========== */
 .action-section {
   width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 32rpx;
+  gap: 30rpx;
+  margin-top: 40rpx;
 }
 
-.action-btn {
-  background: #fff;
-  border-radius: 24rpx;
-  padding: 40rpx;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.08);
-  transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.action-btn:active {
-  transform: scale(0.98);
-  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.1);
-}
-
-.camera-btn {
-  border: 3rpx solid #4CAF50;
-}
-
-.album-btn {
-  border: 3rpx solid #81C784;
-}
-
-.action-icon {
-  font-size: 80rpx;
-  margin-bottom: 16rpx;
-}
-
-.action-title {
-  font-size: 36rpx;
+/* ========== 主要按钮（标准） ========== */
+.btn-primary {
+  width: 100%;
+  height: 90rpx;
+  background: #4CAF50;
+  color: white;
+  border-radius: 45rpx;
+  font-size: 32rpx;
   font-weight: bold;
-  color: #333;
-  margin-bottom: 8rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8rpx 24rpx rgba(76, 175, 80, 0.28);
 }
 
-.action-desc {
-  font-size: 26rpx;
-  color: #999;
+.btn-primary::after {
+  border: none;
 }
 
-/* 返回按钮 */
+/* ========== 次要按钮（标准） ========== */
+.btn-secondary {
+  width: 100%;
+  height: 90rpx;
+  background: white;
+  color: #4CAF50;
+  border: 4rpx solid #4CAF50;
+  border-radius: 45rpx;
+  font-size: 32rpx;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-secondary::after {
+  border: none;
+}
+
+/* ========== 文字按钮（标准） ========== */
+.btn-text {
+  background: transparent;
+  color: #4CAF50;
+  font-size: 28rpx;
+}
+
+.btn-text::after {
+  border: none;
+}
+
+/* ========== 返回按钮 ========== */
 .back-btn {
   position: fixed;
   top: 40rpx;
@@ -164,18 +178,5 @@
   background: rgba(255, 255, 255, 0.9);
   padding: 16rpx 32rpx;
   border-radius: 40rpx;
-  font-size: 28rpx;
-  color: #4CAF50;
   box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.1);
-}
-
-/* 重置 button 默认样式 */
-.action-btn {
-  margin: 0;
-  padding: 40rpx;
-  line-height: normal;
-}
-
-.action-btn::after {
-  border: none;
 }

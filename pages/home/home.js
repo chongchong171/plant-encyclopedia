@@ -5,6 +5,12 @@ const app = getApp();
 
 Page({
   data: {
+    // 状态（标准）
+    loading: false,
+    error: false,
+    errorMessage: '',
+    
+    // 识别数据
     identifyCount: 0,
     identifyLimit: 500,
     vipUser: false
@@ -35,7 +41,7 @@ Page({
   },
 
   /**
-   * 相册选择回调 - 从 button open-type 触发
+   * 相册选择回调
    */
   onChooseFromAlbum(e) {
     console.log('相册选择回调', e);
