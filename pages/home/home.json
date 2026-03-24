@@ -1,8 +1,4 @@
 {
-  "window": {
-    "backgroundTextStyle": "light",
-    "navigationBarBackgroundColor": "#000",
-    "navigationBarTitleText": "test",
-    "navigationBarTextStyle": "black"
-  }
-  }
+  "navigationBarTitleText": "养花助手",
+  "usingComponents": {}
+}

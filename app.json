@@ -49,11 +49,10 @@
       }
     ]
   },
-  "permission": {
-    "scope.camera": {
-      "desc": "用于拍照识别植物"
-    }
-  },
+  "requiredPrivateInfos": [
+    "chooseImage",
+    "chooseMedia"
+  ],
   "cloud": true,
   "style": "v2",
   "sitemapLocation": "sitemap.json"
