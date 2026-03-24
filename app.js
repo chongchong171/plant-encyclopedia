@@ -17,9 +17,6 @@ App({
     // API Key 配置（统一管理）
     qwenApiKey: 'sk-d43b58a6d0dd486d89b69a38f305483a',
     plantnetApiKey: '2b10FL68fQYQN3rsOHf9xCrSe',
-    // 百度 AI 植物识别（降级方案）
-    baiduApiKey: '',  // 需要填入百度 AI 的 API Key
-    baiduSecretKey: '',  // 需要填入百度 AI 的 Secret Key
     
     // 热门植物配置（统一管理）
     hotPlants: [

@@ -1,31 +1,21 @@
 /**
- * 混合植物识别工具 v3.0
+ * 混合植物识别工具 v3.1
  * 
  * 策略：
- * 1. 优先使用 PlantNet API（精准识别植物名称）
- * 2. 用 Qwen-Turbo 补充养护建议（便宜）
- * 3. PlantNet 失败时自动切换到百度 AI 植物识别（免费3万次）
- * 4. 自动追踪每日额度
+ * 1. 使用 PlantNet API（精准识别植物名称，500次/天免费）
+ * 2. 用 Qwen-Turbo 补充养护建议
  * 
- * 更新：降级方案从 Qwen-VL-Max（付费）改为百度 AI（免费）
+ * 注：降级方案（百度 AI）在企业认证后再启用
  */
 
 const app = getApp();
 
 const PLANTNET_API_URL = 'https://my-api.plantnet.org/v2/identify/all';
 const QWEN_API_URL = 'https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions';
-const BAIDU_TOKEN_URL = 'https://aip.baidubce.com/oauth/2.0/token';
-const BAIDU_PLANT_URL = 'https://aip.baidubce.com/rest/2.0/image-classify/v1/plant';
 
 // 获取 API Key 的辅助函数
 const getQwenApiKey = () => app.globalData?.qwenApiKey || '';
 const getPlantnetApiKey = () => app.globalData?.plantnetApiKey || '';
-const getBaiduApiKey = () => app.globalData?.baiduApiKey || '';
-const getBaiduSecretKey = () => app.globalData?.baiduSecretKey || '';
-
-// 百度 access_token 缓存
-let baiduAccessToken = null;
-let baiduTokenExpireTime = 0;
 
 // 额度追踪
 let plantnetDailyCount = 0;
@@ -133,30 +123,16 @@ const identifyPlant = async (imageBase64) => {
       };
     }
     
-    console.log('⚠️ PlantNet 失败:', plantnetResult.error);
-    console.log('🔄 自动切换到策略2...');
-  } else {
-    console.log('⚠️ PlantNet 今日额度已用完');
-    console.log('🔄 自动切换到策略2...');
+    console.log('❌ PlantNet 失败:', plantnetResult.error);
   }
   
-  // ========== 策略2: 百度 AI 植物识别（降级方案，免费3万次）==========
-  console.log('🚀 策略2: 百度 AI 植物识别');
-  const baiduResult = await identifyWithBaiduAI(imageBase64);
-  
-  if (baiduResult.success) {
-    console.log('✅ 百度 AI 识别成功');
-    return {
-      success: true,
-      data: {
-        ...baiduResult.data,
-        source: '百度 AI + Qwen-Turbo（降级）'
-      }
-    };
+  // ========== PlantNet 额度用完或失败 ==========
+  if (plantnetDailyCount >= PLANTNET_DAILY_LIMIT) {
+    console.log('❌ PlantNet 今日额度已用完');
+    return { success: false, error: '今日识别次数已用完，请明天再试' };
   }
   
-  console.log('❌ 所有识别方案都失败');
-  return { success: false, error: baiduResult.error || '识别失败，请重试' };
+  return { success: false, error: plantnetResult?.error || '识别失败，请重试' };
 };
 
 /**
@@ -384,123 +360,6 @@ async function getCareGuideFromQwen(plantName) {
 }
 
 /**
- * 获取百度 AI access_token
- */
-async function getBaiduAccessToken() {
-  // 如果 token 还有效，直接返回
-  if (baiduAccessToken && Date.now() < baiduTokenExpireTime) {
-    return baiduAccessToken;
-  }
-  
-  const apiKey = getBaiduApiKey();
-  const secretKey = getBaiduSecretKey();
-  
-  if (!apiKey || !secretKey) {
-    console.log('⚠️ 百度 AI API Key 未配置');
-    return null;
-  }
-  
-  return new Promise((resolve) => {
-    wx.request({
-      url: `${BAIDU_TOKEN_URL}?grant_type=client_credentials&client_id=${apiKey}&client_secret=${secretKey}`,
-      method: 'POST',
-      success: (res) => {
-        if (res.data?.access_token) {
-          baiduAccessToken = res.data.access_token;
-          // token 有效期 30 天，提前 1 天刷新
-          baiduTokenExpireTime = Date.now() + (res.data.expires_in - 86400) * 1000;
-          console.log('✅ 百度 AI access_token 获取成功');
-          resolve(baiduAccessToken);
-        } else {
-          console.log('❌ 百度 AI access_token 获取失败:', res.data);
-          resolve(null);
-        }
-      },
-      fail: (err) => {
-        console.log('❌ 百度 AI 网络错误:', err);
-        resolve(null);
-      }
-    });
-  });
-}
-
-/**
- * 百度 AI 植物识别（降级方案，免费3万次）
- */
-async function identifyWithBaiduAI(imageBase64) {
-  console.log('🤖 调用百度 AI 植物识别（降级方案）...');
-  
-  const accessToken = await getBaiduAccessToken();
-  
-  if (!accessToken) {
-    return { success: false, error: '百度 AI 未配置或获取 token 失败' };
-  }
-  
-  return new Promise((resolve) => {
-    wx.request({
-      url: `${BAIDU_PLANT_URL}?access_token=${accessToken}`,
-      method: 'POST',
-      header: {
-        'Content-Type': 'application/x-www-form-urlencoded'
-      },
-      data: `image=${encodeURIComponent(imageBase64)}&baike_num=1`,
-      timeout: 30000,
-      success: async (res) => {
-        console.log('📡 百度 AI HTTP 状态:', res.statusCode);
-        
-        if (res.statusCode === 200 && res.data?.result?.length > 0) {
-          const bestMatch = res.data.result[0];
-          const score = bestMatch.score || 0;
-          
-          console.log(`🎯 百度 AI 最佳匹配: ${bestMatch.name}`);
-          console.log(`📊 置信度: ${Math.round(score * 100)}%`);
-          
-          // 获取百科信息
-          const baikeInfo = bestMatch.baike_info || {};
-          
-          // 用 Qwen-Turbo 获取养护建议
-          console.log('🤖 调用 Qwen-Turbo 获取养护建议...');
-          const detailInfo = await getCareGuideFromQwen(bestMatch.name);
-          
-          resolve({
-            success: true,
-            data: {
-              id: 'plant_' + Date.now(),
-              name: bestMatch.name,
-              scientificName: baikeInfo.baike_url?.split('/').pop() || '',
-              family: '未知',
-              confidence: Math.round(score * 100),
-              description: baikeInfo.description || '',
-              imageUrl: baikeInfo.image_url || '',
-              // Qwen 返回的详细信息
-              commonNames: detailInfo.commonNames,
-              plantProfile: detailInfo.plantProfile,
-              growthHabit: detailInfo.growthHabit,
-              distribution: detailInfo.distribution,
-              mainValue: detailInfo.mainValue,
-              careGuide: detailInfo.careGuide,
-              difficultyLevel: detailInfo.difficultyLevel,
-              difficultyText: detailInfo.difficultyText,
-              quickTips: detailInfo.quickTips,
-              source: '百度 AI + Qwen-Turbo（降级）'
-            }
-          });
-        } else if (res.data?.error_code) {
-          console.log('❌ 百度 AI 错误:', res.data.error_msg);
-          resolve({ success: false, error: res.data.error_msg || '识别失败' });
-        } else {
-          resolve({ success: false, error: '未识别到植物' });
-        }
-      },
-      fail: (err) => {
-        console.log('❌ 百度 AI 网络错误:', err);
-        resolve({ success: false, error: '网络错误，请检查网络连接' });
-      }
-    });
-  });
-}
-
-/**
  * 获取当前额度状态
  */
 const getQuotaStatus = () => {
@@ -514,10 +373,6 @@ const getQuotaStatus = () => {
     },
     qwen: {
       note: '100万 Token / 90天'
-    },
-    baidu: {
-      limit: '3万次总额度（企业认证）',
-      note: '每天500次限制'
     }
   };
 };
