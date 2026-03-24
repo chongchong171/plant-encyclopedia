@@ -65,26 +65,9 @@ Page({
    * 检查相机授权
    */
   checkCameraAuth() {
-    wx.getSetting({
-      success: (res) => {
-        if (res.authSetting['scope.camera']) {
-          this.setData({ hasCameraAuth: true });
-        } else {
-          wx.authorize({
-            scope: 'scope.camera',
-            success: () => {
-              this.setData({ hasCameraAuth: true });
-            },
-            fail: () => {
-              this.setData({ hasCameraAuth: false });
-            }
-          });
-        }
-      },
-      fail: () => {
-        this.setData({ hasCameraAuth: false });
-      }
-    });
+    // 直接设置为 true，让 camera 组件自己处理授权
+    // 如果用户拒绝，camera 组件会触发 binderror 事件
+    this.setData({ hasCameraAuth: true });
   },
 
   /**
