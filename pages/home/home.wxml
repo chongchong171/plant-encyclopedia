@@ -31,13 +31,16 @@
       <view class="sub-btn album-btn" bindtap="chooseFromAlbum">
         <text class="sub-icon">🖼️</text>
         <text class="sub-title">相册上传</text>
-        <text class="sub-desc">选择照片</text>
       </view>
       <view class="sub-btn search-btn" bindtap="goToSearch">
         <text class="sub-icon">🔍</text>
         <text class="sub-title">搜索植物</text>
-        <text class="sub-desc">查找百科</text>
       </view>
+    </view>
+
+    <!-- 底部 Slogan -->
+    <view class="footer-slogan">
+      <text>🌱 每一片叶子，都有它的故事</text>
     </view>
   </view>
 </view>

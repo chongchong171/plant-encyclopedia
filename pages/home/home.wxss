@@ -6,7 +6,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 40rpx 30rpx;
+  padding: 50rpx 36rpx;
   position: relative;
   overflow: hidden;
 }
@@ -24,35 +24,35 @@
 
 .leaf {
   position: absolute;
-  opacity: 0.15;
+  opacity: 0.12;
   filter: drop-shadow(0 0 20rpx rgba(76, 175, 80, 0.3));
 }
 
 .leaf-1 {
-  font-size: 500rpx;
-  top: -150rpx;
-  left: -120rpx;
+  font-size: 480rpx;
+  top: -120rpx;
+  left: -100rpx;
   transform: rotate(-25deg);
 }
 
 .leaf-2 {
-  font-size: 450rpx;
-  top: 100rpx;
-  right: -150rpx;
+  font-size: 420rpx;
+  top: 80rpx;
+  right: -130rpx;
   transform: rotate(35deg);
 }
 
 .leaf-3 {
-  font-size: 400rpx;
-  bottom: 50rpx;
-  left: -100rpx;
+  font-size: 380rpx;
+  bottom: 180rpx;
+  left: -80rpx;
   transform: rotate(-40deg);
 }
 
 .leaf-4 {
-  font-size: 480rpx;
-  bottom: -180rpx;
-  right: -80rpx;
+  font-size: 450rpx;
+  bottom: -150rpx;
+  right: -60rpx;
   transform: rotate(20deg);
 }
 
@@ -61,20 +61,20 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-bottom: 36rpx;
+  margin-bottom: 50rpx;
   z-index: 1;
 }
 
 .logo-icon {
-  font-size: 100rpx;
-  margin-bottom: 12rpx;
+  font-size: 90rpx;
+  margin-bottom: 16rpx;
 }
 
 .app-name {
-  font-size: 48rpx;
+  font-size: 46rpx;
   font-weight: bold;
   color: #2E7D32;
-  margin-bottom: 8rpx;
+  margin-bottom: 10rpx;
 }
 
 .slogan {
@@ -85,9 +85,6 @@
 /* 主功能区 */
 .func-section {
   width: 100%;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
   z-index: 1;
 }
 
@@ -97,15 +94,15 @@
   align-items: center;
   background: linear-gradient(135deg, #66BB6A 0%, #4CAF50 100%);
   border-radius: 28rpx;
-  padding: 40rpx 36rpx;
-  margin-bottom: 24rpx;
+  padding: 36rpx 40rpx;
+  margin-bottom: 30rpx;
   box-shadow: 
-    0 8rpx 24rpx rgba(76, 175, 80, 0.3),
+    0 8rpx 24rpx rgba(76, 175, 80, 0.28),
     inset 0 2rpx 0 rgba(255, 255, 255, 0.2);
 }
 
 .main-icon {
-  font-size: 72rpx;
+  font-size: 64rpx;
   margin-right: 28rpx;
 }
 
@@ -115,7 +112,7 @@
 }
 
 .main-title {
-  font-size: 36rpx;
+  font-size: 34rpx;
   font-weight: bold;
   color: white;
   margin-bottom: 6rpx;
@@ -130,7 +127,7 @@
 .sub-btns {
   display: flex;
   gap: 24rpx;
-  flex: 1;
+  margin-bottom: 60rpx;
 }
 
 .sub-btn {
@@ -139,37 +136,43 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  border-radius: 24rpx;
-  padding: 36rpx 20rpx;
+  border-radius: 22rpx;
+  padding: 32rpx 24rpx;
 }
 
 .album-btn {
   background: linear-gradient(135deg, #FFF8E1 0%, #FFE082 100%);
   box-shadow: 
-    0 6rpx 20rpx rgba(255, 193, 7, 0.2),
+    0 6rpx 18rpx rgba(255, 193, 7, 0.18),
     inset 0 2rpx 0 rgba(255, 255, 255, 0.5);
 }
 
 .search-btn {
   background: linear-gradient(135deg, #E0F7FA 0%, #80DEEA 100%);
   box-shadow: 
-    0 6rpx 20rpx rgba(0, 188, 212, 0.2),
+    0 6rpx 18rpx rgba(0, 188, 212, 0.18),
     inset 0 2rpx 0 rgba(255, 255, 255, 0.5);
 }
 
 .sub-icon {
-  font-size: 56rpx;
-  margin-bottom: 12rpx;
+  font-size: 48rpx;
+  margin-bottom: 10rpx;
 }
 
 .sub-title {
-  font-size: 30rpx;
-  font-weight: bold;
+  font-size: 28rpx;
+  font-weight: 600;
   color: #333;
-  margin-bottom: 4rpx;
 }
 
-.sub-desc {
-  font-size: 22rpx;
-  color: #888;
+/* 底部 Slogan */
+.footer-slogan {
+  text-align: center;
+  padding: 30rpx 0;
+}
+
+.footer-slogan text {
+  font-size: 24rpx;
+  color: #81C784;
+  letter-spacing: 1rpx;
 }
