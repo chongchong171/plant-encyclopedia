@@ -232,7 +232,53 @@ pages/page_name/
   color: #4CAF50;
   font-size: 28rpx;
 }
+
+/* 重置 button 默认边框 */
+.btn-primary::after,
+.btn-secondary::after,
+.btn-text::after {
+  border: none;
+}
 ```
+
+### 3.4 隐私协议相关按钮（标准）
+
+**用于：** 相册选择、拍照等需要用户授权的功能
+
+```xml
+<!-- 拍照按钮（自动处理隐私协议） -->
+<button class="btn-primary" open-type="chooseMedia" bindchoosemedia="onTakePhoto">
+  📷 拍照识别
+</button>
+
+<!-- 相册选择按钮（自动处理隐私协议） -->
+<button class="btn-secondary" open-type="chooseMedia" bindchoosemedia="onChooseFromAlbum">
+  🖼️ 相册上传
+</button>
+```
+
+```javascript
+// 页面 JS 中的回调函数
+onTakePhoto(e) {
+  if (e.detail && e.detail.tempFiles && e.detail.tempFiles.length > 0) {
+    const imageFile = e.detail.tempFiles.find(f => f.fileType === 'image' || f.tempFilePath);
+    if (imageFile) {
+      this.compressAndNavigate(imageFile.tempFilePath);
+    }
+  }
+},
+
+onChooseFromAlbum(e) {
+  if (e.detail && e.detail.tempFiles && e.detail.tempFiles.length > 0) {
+    const imageFile = e.detail.tempFiles.find(f => f.fileType === 'image' || f.tempFilePath);
+    if (imageFile) {
+      this.compressAndNavigate(imageFile.tempFilePath);
+    }
+  }
+}
+```
+
+**注意：** 使用 `open-type="chooseMedia"` 时，微信会自动弹出隐私协议弹窗，不需要手动处理授权。
 
 ---
 
@@ -396,6 +442,70 @@ bash scripts/setup-hooks.sh
 - [ ] API Key 是否从 app.globalData 获取
 - [ ] 是否有未使用的代码
 - [ ] commit 信息是否清晰
+
+---
+
+## 八、app.json 配置标准
+
+### 8.1 隐私协议配置
+
+**必须在 app.json 中声明使用的隐私接口：**
+
+```json
+{
+  "requiredPrivateInfos": [
+    "chooseMedia"
+  ]
+}
+```
+
+### 8.2 支持的隐私接口列表
+
+| 接口名称 | 用途 |
+|---------|------|
+| `chooseMedia` | 拍照、选择图片/视频 |
+| `chooseImage` | 选择图片（已废弃，使用 chooseMedia） |
+| `chooseVideo` | 选择视频（已废弃，使用 chooseMedia） |
+| `chooseLocation` | 选择位置 |
+| `chooseAddress` | 选择地址 |
+| `getLocation` | 获取位置 |
+
+### 8.3 完整 app.json 模板
+
+```json
+{
+  "pages": [
+    "pages/home/home",
+    "pages/camera/camera",
+    "pages/result_swiper/result_swiper",
+    "pages/discover/discover",
+    "pages/search_page/search_page",
+    "pages/search_result/search_result",
+    "pages/favorites/favorites",
+    "pages/history/history",
+    "pages/profile/profile"
+  ],
+  "window": {
+    "backgroundTextStyle": "light",
+    "navigationBarBackgroundColor": "#4CAF50",
+    "navigationBarTitleText": "花草百科全书",
+    "navigationBarTextStyle": "white",
+    "backgroundColor": "#E8F5E9"
+  },
+  "tabBar": {
+    "color": "#666666",
+    "selectedColor": "#4CAF50",
+    "backgroundColor": "#ffffff",
+    "list": [...]
+  },
+  "requiredPrivateInfos": [
+    "chooseMedia"
+  ],
+  "cloud": true,
+  "style": "v2",
+  "sitemapLocation": "sitemap.json"
+}
+```
 
 ---
 
