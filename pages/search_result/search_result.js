@@ -1,7 +1,7 @@
 /**
  * 养花助手 - 搜索结果页面
  */
-const API_KEY = 'sk-d43b58a6d0dd486d89b69a38f305483a';
+const app = getApp();
 
 Page({
   data: {
@@ -28,11 +28,13 @@ Page({
   searchPlant(keyword) {
     wx.showLoading({ title: '查询中...' });
     
+    const apiKey = app.globalData.qwenApiKey;
+    
     wx.request({
       url: 'https://dashscope.aliyuncs.com/api/v1/services/aigc/text-generation/generation',
       method: 'POST',
       header: {
-        'Authorization': `Bearer ${API_KEY}`,
+        'Authorization': `Bearer ${apiKey}`,
         'Content-Type': 'application/json'
       },
       data: {
@@ -54,14 +56,8 @@ Page({
   "careGuide": {
     "light": "光照需求",
     "water": "浇水频率",
-    "temperature": "适宜温度",
-    "humidity": "湿度要求",
-    "fertilizer": "施肥建议",
-    "tips": "养护技巧"
-  },
-  "difficulty": "简单/中等/困难",
-  "toxicity": false,
-  "features": ["特点1", "特点2"]
+    "temperature": "适宜温度"
+  }
 }`
             }
           ]

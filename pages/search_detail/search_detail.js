@@ -1,5 +1,7 @@
 /**
  * 养花助手 - 搜索详情页面
+ * 
+ * 注意：此页面功能已合并到 search_page，保留此文件用于兼容
  */
 const app = getApp();
 
@@ -11,14 +13,14 @@ Page({
     showHistory: true,
     suggestList: [],
     historyList: [],
-    hotPlants: [
-      '绿萝', '多肉', '君子兰', '发财树',
-      '蝴蝶兰', '吊兰', '龟背竹', '富贵竹',
-      '仙人掌', '芦荟', '栀子花', '茉莉花'
-    ]
+    hotPlants: []
   },
 
   onLoad() {
+    // 从全局配置获取热门植物
+    this.setData({
+      hotPlants: app.globalData.hotPlants || []
+    });
     this.loadHistory();
   },
 
@@ -61,8 +63,7 @@ Page({
    * 获取搜索建议
    */
   getSuggests(keyword) {
-    const allPlants = [...this.data.hotPlants];
-    return allPlants.filter(p => p.includes(keyword)).slice(0, 5);
+    return this.data.hotPlants.filter(p => p.includes(keyword)).slice(0, 5);
   },
 
   /**

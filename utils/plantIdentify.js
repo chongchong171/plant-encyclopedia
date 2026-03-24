@@ -1,17 +1,23 @@
 /**
- * 混合植物识别工具 v2.0
+ * 混合植物识别工具 v2.1
  * 
  * 策略：
  * 1. 优先使用 PlantNet API（精准识别植物名称）
  * 2. 用 Qwen-Turbo 补充养护建议（便宜）
  * 3. PlantNet 失败时自动切换到 Qwen-VL-Max
  * 4. 自动追踪每日额度
+ * 
+ * 更新：API Key 从 app.globalData 统一获取
  */
 
+const app = getApp();
+
 const PLANTNET_API_URL = 'https://my-api.plantnet.org/v2/identify/all';
-const PLANTNET_API_KEY = '2b10FL68fQYQN3rsOHf9xCrSe';
 const QWEN_API_URL = 'https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions';
-const QWEN_API_KEY = 'sk-d43b58a6d0dd486d89b69a38f305483a';
+
+// 获取 API Key 的辅助函数
+const getQwenApiKey = () => app.globalData?.qwenApiKey || '';
+const getPlantnetApiKey = () => app.globalData?.plantnetApiKey || '';
 
 // 额度追踪
 let plantnetDailyCount = 0;
@@ -135,6 +141,8 @@ const identifyPlant = async (imageBase64) => {
 async function identifyWithPlantNet(imageBase64) {
   console.log('📡 调用 PlantNet API...');
   
+  const apiKey = getPlantnetApiKey();
+  
   return new Promise((resolve) => {
     // 创建临时文件
     const filePath = `${wx.env.USER_DATA_PATH}/plantnet_temp_${Date.now()}.jpg`;
@@ -149,7 +157,7 @@ async function identifyWithPlantNet(imageBase64) {
         success: () => {
           // 上传到 PlantNet
           wx.uploadFile({
-            url: `${PLANTNET_API_URL}?api-key=${PLANTNET_API_KEY}`,
+            url: `${PLANTNET_API_URL}?api-key=${apiKey}`,
             filePath: filePath,
             name: 'images',
             formData: {
@@ -228,12 +236,14 @@ async function identifyWithPlantNet(imageBase64) {
 async function getCareGuideFromQwen(plantName) {
   console.log('🤖 调用 Qwen-Turbo 获取养护建议...');
   
+  const apiKey = getQwenApiKey();
+  
   return new Promise((resolve) => {
     wx.request({
       url: QWEN_API_URL,
       method: 'POST',
       header: {
-        'Authorization': `Bearer ${QWEN_API_KEY}`,
+        'Authorization': `Bearer ${apiKey}`,
         'Content-Type': 'application/json'
       },
       data: {
@@ -284,14 +294,15 @@ async function getCareGuideFromQwen(plantName) {
 async function identifyWithQwenVL(imageBase64) {
   console.log('🤖 调用 Qwen-VL-Max...');
   
+  const apiKey = getQwenApiKey();
+  const imageUrl = `data:image/jpeg;base64,${imageBase64}`;
+  
   return new Promise((resolve) => {
-    const imageUrl = `data:image/jpeg;base64,${imageBase64}`;
-    
     wx.request({
       url: QWEN_API_URL,
       method: 'POST',
       header: {
-        'Authorization': `Bearer ${QWEN_API_KEY}`,
+        'Authorization': `Bearer ${apiKey}`,
         'Content-Type': 'application/json'
       },
       data: {

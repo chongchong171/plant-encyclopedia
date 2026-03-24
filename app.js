@@ -8,14 +8,31 @@
 
 App({
   globalData: {
+    // 用户信息
     userInfo: null,
     hasLogin: false,
     openid: null,
-    apiKey: 'sk-d43b58a6d0dd486d89b69a38f305483a',
+    vipUser: false,
+    
+    // API Key 配置（统一管理）
+    qwenApiKey: 'sk-d43b58a6d0dd486d89b69a38f305483a',
+    plantnetApiKey: '2b10FL68fQYQN3rsOHf9xCrSe',
+    
+    // 热门植物配置（统一管理）
+    hotPlants: [
+      '绿萝', '多肉', '君子兰', '发财树',
+      '蝴蝶兰', '吊兰', '龟背竹', '富贵竹',
+      '仙人掌', '芦荟', '栀子花', '茉莉花'
+    ],
+    
+    // 识别额度
     identifyCount: 0,
     identifyLimit: 500,  // PlantNet 免费 500次/天
-    vipUser: false,
-    plantCache: {}
+    plantCache: {},
+    
+    // 用户数据
+    favorites: [],
+    history: []
   },
 
   onLaunch() {
