@@ -10,10 +10,13 @@ Page({
   },
 
   onLoad() {
+    console.log('📋 收藏页面加载');
     this.loadFavorites();
   },
 
   onShow() {
+    console.log('📋 收藏页面显示');
+    // 每次显示时强制从 storage 重新加载
     this.loadFavorites();
   },
 
@@ -21,10 +24,14 @@ Page({
    * 加载收藏列表
    */
   loadFavorites() {
-    const favorites = app.globalData.favorites || [];
+    // 强制从 storage 读取最新数据
+    const storedFavorites = wx.getStorageSync('favorites') || [];
+    app.globalData.favorites = storedFavorites;
+    
+    console.log('📋 加载收藏列表:', storedFavorites.length, '条');
     
     // 格式化时间
-    const formattedList = favorites.map(item => ({
+    const formattedList = storedFavorites.map(item => ({
       ...item,
       addTimeStr: formatRelativeTime(item.addTime)
     }));

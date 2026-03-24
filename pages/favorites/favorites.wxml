@@ -22,10 +22,10 @@
       data-plant="{{item}}"
       bindtap="goToDetail"
     >
-      <image class="plant-image" src="{{item.image}}" mode="aspectFill"></image>
+      <image class="plant-image" src="{{item.imageUrl || item.image}}" mode="aspectFill"></image>
       <view class="plant-info">
         <text class="plant-name">{{item.name}}</text>
-        <text class="plant-family">{{item.family}}</text>
+        <text class="plant-family">{{item.family || '未知科属'}}</text>
         <text class="add-time">{{item.addTimeStr}}</text>
       </view>
       <view class="remove-btn" catchtap="removeFavorite" data-id="{{item.id}}">
