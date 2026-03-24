@@ -51,7 +51,6 @@ Page({
       // 使用学名搜索（GBIF 不支持中文名）
       const imageUrl = await this.getPlantImageFromGBIF(plants[i].scientificName || plants[i].name);
       plants[i].image = imageUrl || '';
-      console.log(`🌸 ${plants[i].name} 图片:`, imageUrl || '未找到');
     }
     
     this.setData({ seasonPlants: plants });

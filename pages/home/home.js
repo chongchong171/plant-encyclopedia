@@ -49,7 +49,6 @@ Page({
         });
       },
       fail: (err) => {
-        console.log('选择图片失败', err);
       }
     });
   },

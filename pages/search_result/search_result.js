@@ -161,7 +161,6 @@ Page({
                   // 找到第一张可用图片
                   for (const img of images) {
                     if (img.identifier && img.type === 'StillImage') {
-                      console.log('✅ GBIF 找到图片:', img.identifier);
                       resolve(img.identifier);
                       return;
                     }

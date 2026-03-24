@@ -76,9 +76,6 @@ Page({
           quotaRemaining: result.data.quotaRemaining
         };
         
-        console.log('✅ 识别成功:', plant.name);
-        console.log('📊 来源:', plant.source);
-        console.log('📊 置信度:', plant.confidence);
         
         this.setData({ loading: false, plant });
         

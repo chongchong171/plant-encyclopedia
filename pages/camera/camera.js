@@ -167,6 +167,5 @@ Page({
   },
 
   onStop() {
-    console.log('相机已停止');
   }
 });
