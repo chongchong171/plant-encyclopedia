@@ -1,23 +1,31 @@
 /**
- * 混合植物识别工具 v2.1
+ * 混合植物识别工具 v3.0
  * 
  * 策略：
  * 1. 优先使用 PlantNet API（精准识别植物名称）
  * 2. 用 Qwen-Turbo 补充养护建议（便宜）
- * 3. PlantNet 失败时自动切换到 Qwen-VL-Max
+ * 3. PlantNet 失败时自动切换到百度 AI 植物识别（免费3万次）
  * 4. 自动追踪每日额度
  * 
- * 更新：API Key 从 app.globalData 统一获取
+ * 更新：降级方案从 Qwen-VL-Max（付费）改为百度 AI（免费）
  */
 
 const app = getApp();
 
 const PLANTNET_API_URL = 'https://my-api.plantnet.org/v2/identify/all';
 const QWEN_API_URL = 'https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions';
+const BAIDU_TOKEN_URL = 'https://aip.baidubce.com/oauth/2.0/token';
+const BAIDU_PLANT_URL = 'https://aip.baidubce.com/rest/2.0/image-classify/v1/plant';
 
 // 获取 API Key 的辅助函数
 const getQwenApiKey = () => app.globalData?.qwenApiKey || '';
 const getPlantnetApiKey = () => app.globalData?.plantnetApiKey || '';
+const getBaiduApiKey = () => app.globalData?.baiduApiKey || '';
+const getBaiduSecretKey = () => app.globalData?.baiduSecretKey || '';
+
+// 百度 access_token 缓存
+let baiduAccessToken = null;
+let baiduTokenExpireTime = 0;
 
 // 额度追踪
 let plantnetDailyCount = 0;
@@ -132,23 +140,23 @@ const identifyPlant = async (imageBase64) => {
     console.log('🔄 自动切换到策略2...');
   }
   
-  // ========== 策略2: Qwen-VL-Max（降级方案）==========
-  console.log('🚀 策略2: Qwen-VL-Max (全能识别)');
-  const qwenResult = await identifyWithQwenVL(imageBase64);
+  // ========== 策略2: 百度 AI 植物识别（降级方案，免费3万次）==========
+  console.log('🚀 策略2: 百度 AI 植物识别');
+  const baiduResult = await identifyWithBaiduAI(imageBase64);
   
-  if (qwenResult.success) {
-    console.log('✅ Qwen-VL-Max 识别成功');
+  if (baiduResult.success) {
+    console.log('✅ 百度 AI 识别成功');
     return {
       success: true,
       data: {
-        ...qwenResult.data,
-        source: 'Qwen-VL-Max (降级)'
+        ...baiduResult.data,
+        source: '百度 AI + Qwen-Turbo（降级）'
       }
     };
   }
   
   console.log('❌ 所有识别方案都失败');
-  return { success: false, error: qwenResult.error || '识别失败，请重试' };
+  return { success: false, error: baiduResult.error || '识别失败，请重试' };
 };
 
 /**
@@ -376,142 +384,116 @@ async function getCareGuideFromQwen(plantName) {
 }
 
 /**
- * Qwen-VL-Max 全能识别（降级方案）
- * 同时返回植物信息和健康诊断
+ * 获取百度 AI access_token
  */
-async function identifyWithQwenVL(imageBase64) {
-  console.log('🤖 调用 Qwen-VL-Max（含健康诊断）...');
+async function getBaiduAccessToken() {
+  // 如果 token 还有效，直接返回
+  if (baiduAccessToken && Date.now() < baiduTokenExpireTime) {
+    return baiduAccessToken;
+  }
   
-  const apiKey = getQwenApiKey();
-  const imageUrl = `data:image/jpeg;base64,${imageBase64}`;
+  const apiKey = getBaiduApiKey();
+  const secretKey = getBaiduSecretKey();
+  
+  if (!apiKey || !secretKey) {
+    console.log('⚠️ 百度 AI API Key 未配置');
+    return null;
+  }
   
   return new Promise((resolve) => {
     wx.request({
-      url: QWEN_API_URL,
+      url: `${BAIDU_TOKEN_URL}?grant_type=client_credentials&client_id=${apiKey}&client_secret=${secretKey}`,
+      method: 'POST',
+      success: (res) => {
+        if (res.data?.access_token) {
+          baiduAccessToken = res.data.access_token;
+          // token 有效期 30 天，提前 1 天刷新
+          baiduTokenExpireTime = Date.now() + (res.data.expires_in - 86400) * 1000;
+          console.log('✅ 百度 AI access_token 获取成功');
+          resolve(baiduAccessToken);
+        } else {
+          console.log('❌ 百度 AI access_token 获取失败:', res.data);
+          resolve(null);
+        }
+      },
+      fail: (err) => {
+        console.log('❌ 百度 AI 网络错误:', err);
+        resolve(null);
+      }
+    });
+  });
+}
+
+/**
+ * 百度 AI 植物识别（降级方案，免费3万次）
+ */
+async function identifyWithBaiduAI(imageBase64) {
+  console.log('🤖 调用百度 AI 植物识别（降级方案）...');
+  
+  const accessToken = await getBaiduAccessToken();
+  
+  if (!accessToken) {
+    return { success: false, error: '百度 AI 未配置或获取 token 失败' };
+  }
+  
+  return new Promise((resolve) => {
+    wx.request({
+      url: `${BAIDU_PLANT_URL}?access_token=${accessToken}`,
       method: 'POST',
       header: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/x-www-form-urlencoded'
       },
-      data: {
-        model: 'qwen-vl-max',
-        messages: [{
-          role: 'user',
-          content: [
-            {
-              type: 'image_url',
-              image_url: { url: imageUrl }
-            },
-            {
-              type: 'text',
-              text: `你是植物专家，请分析这张图片中的植物，返回以下信息：
-
-【植物名称】植物的名字
-【健康状态】健康/亚健康/生病（三选一）
-【问题描述】如果健康写"无"，如果生病写具体问题（如：黄叶、斑点、虫害等）
-【问题原因】如果健康写"无"，否则写可能原因
-【解决方案】养护建议
-【光照需求】一句话
-【浇水建议】一句话
-【温度要求】一句话
-
-每项一句话，简洁明了。`
-            }
-          ]
-        }]
-      },
-      timeout: 60000,
-      success: (res) => {
-        console.log('📡 Qwen-VL HTTP 状态:', res.statusCode);
+      data: `image=${encodeURIComponent(imageBase64)}&baike_num=1`,
+      timeout: 30000,
+      success: async (res) => {
+        console.log('📡 百度 AI HTTP 状态:', res.statusCode);
         
-        if (res.statusCode === 200 && res.data?.choices?.[0]?.message?.content) {
-          const content = res.data.choices[0].message.content;
-          console.log('📝 Qwen-VL 返回:', content.substring(0, 150));
+        if (res.statusCode === 200 && res.data?.result?.length > 0) {
+          const bestMatch = res.data.result[0];
+          const score = bestMatch.score || 0;
           
-          // 解析植物名称
-          let plantName = '植物';
-          const nameMatch = content.match(/【植物名称】\s*([^\n【]+)/) ||
-                           content.match(/名称[是为：:]\s*([^\n，,。]+)/);
-          if (nameMatch) plantName = nameMatch[1].trim();
+          console.log(`🎯 百度 AI 最佳匹配: ${bestMatch.name}`);
+          console.log(`📊 置信度: ${Math.round(score * 100)}%`);
           
-          // 解析健康状态
-          let healthStatus = '健康';
-          const healthMatch = content.match(/【健康状态】\s*([^\n【]+)/);
-          if (healthMatch) {
-            const status = healthMatch[1].trim();
-            if (status.includes('生病') || status.includes('病')) {
-              healthStatus = '生病';
-            } else if (status.includes('亚健康')) {
-              healthStatus = '亚健康';
-            }
-          }
+          // 获取百科信息
+          const baikeInfo = bestMatch.baike_info || {};
           
-          // 解析问题描述
-          let issueDesc = '';
-          const issueMatch = content.match(/【问题描述】\s*([^\n【]+)/);
-          if (issueMatch) issueDesc = issueMatch[1].trim();
-          
-          // 解析问题原因
-          let issueCause = '';
-          const causeMatch = content.match(/【问题原因】\s*([^\n【]+)/);
-          if (causeMatch) issueCause = causeMatch[1].trim();
-          
-          // 解析解决方案
-          let solution = '';
-          const solutionMatch = content.match(/【解决方案】\s*([^\n【]+)/);
-          if (solutionMatch) solution = solutionMatch[1].trim();
-          
-          // 解析养护建议
-          const careGuide = {
-            light: '适中光照',
-            water: '适量浇水',
-            temperature: '室温'
-          };
-          
-          const lightMatch = content.match(/【光照需求】\s*([^\n【]+)/) ||
-                            content.match(/光照[是为：:]*\s*([^\n，,。]+)/);
-          if (lightMatch) careGuide.light = lightMatch[1].trim();
-          
-          const waterMatch = content.match(/【浇水建议】\s*([^\n【]+)/) ||
-                            content.match(/浇水?[是为：:]*\s*([^\n，,。]+)/);
-          if (waterMatch) careGuide.water = waterMatch[1].trim();
-          
-          const tempMatch = content.match(/【温度要求】\s*([^\n【]+)/) ||
-                           content.match(/温度[是为：:]*\s*([^\n，,。]+)/);
-          if (tempMatch) careGuide.temperature = tempMatch[1].trim();
-          
-          // 构建问题列表
-          const issues = [];
-          if (healthStatus !== '健康' && issueDesc && issueDesc !== '无') {
-            issues.push({
-              type: issueDesc,
-              severity: healthStatus === '生病' ? '严重' : '中等',
-              cause: issueCause,
-              solution: solution
-            });
-          }
+          // 用 Qwen-Turbo 获取养护建议
+          console.log('🤖 调用 Qwen-Turbo 获取养护建议...');
+          const detailInfo = await getCareGuideFromQwen(bestMatch.name);
           
           resolve({
             success: true,
             data: {
               id: 'plant_' + Date.now(),
-              name: plantName,
-              scientificName: '',
+              name: bestMatch.name,
+              scientificName: baikeInfo.baike_url?.split('/').pop() || '',
               family: '未知',
-              description: content,
-              careGuide: careGuide,
-              // 健康诊断
-              healthStatus: healthStatus,
-              issues: issues,
-              overallAdvice: healthStatus === '健康' ? '植物状态良好，继续保持当前养护方式' : solution
+              confidence: Math.round(score * 100),
+              description: baikeInfo.description || '',
+              imageUrl: baikeInfo.image_url || '',
+              // Qwen 返回的详细信息
+              commonNames: detailInfo.commonNames,
+              plantProfile: detailInfo.plantProfile,
+              growthHabit: detailInfo.growthHabit,
+              distribution: detailInfo.distribution,
+              mainValue: detailInfo.mainValue,
+              careGuide: detailInfo.careGuide,
+              difficultyLevel: detailInfo.difficultyLevel,
+              difficultyText: detailInfo.difficultyText,
+              quickTips: detailInfo.quickTips,
+              source: '百度 AI + Qwen-Turbo（降级）'
             }
           });
+        } else if (res.data?.error_code) {
+          console.log('❌ 百度 AI 错误:', res.data.error_msg);
+          resolve({ success: false, error: res.data.error_msg || '识别失败' });
         } else {
-          resolve({ success: false, error: '识别失败' });
+          resolve({ success: false, error: '未识别到植物' });
         }
       },
       fail: (err) => {
-        console.log('❌ Qwen-VL 网络错误:', err);
+        console.log('❌ 百度 AI 网络错误:', err);
         resolve({ success: false, error: '网络错误，请检查网络连接' });
       }
     });
@@ -532,6 +514,10 @@ const getQuotaStatus = () => {
     },
     qwen: {
       note: '100万 Token / 90天'
+    },
+    baidu: {
+      limit: '3万次总额度（企业认证）',
+      note: '每天500次限制'
     }
   };
 };
