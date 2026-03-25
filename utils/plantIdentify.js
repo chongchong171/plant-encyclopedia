@@ -1,16 +1,22 @@
 /**
- * 混合植物识别工具 v3.1
+ * 混合植物识别工具 v3.2（代理版）
  * 
  * 策略：
- * 1. 使用 PlantNet API（精准识别植物名称，500次/天免费）
+ * 1. 使用代理服务器访问 PlantNet API（解决国内访问不稳定问题）
  * 2. 用 Qwen-Turbo 补充养护建议
  * 
- * 注：降级方案（百度 AI）在企业认证后再启用
+ * 更新日期：2026-03-25
  */
 
 const app = getApp();
 
-const PLANTNET_API_URL = 'https://my-api.plantnet.org/v2/identify/all';
+// ========== 代理配置 ==========
+// 审核通过后，把下面的 URL 改成代理地址
+const USE_PROXY = true;  // true = 用代理，false = 直连
+const PROXY_URL = 'https://plantnet.yg-crystal.com';
+const DIRECT_URL = 'https://my-api.plantnet.org/v2/identify/all';
+
+const PLANTNET_API_URL = USE_PROXY ? `${PROXY_URL}/v2/identify/all` : DIRECT_URL;
 const QWEN_API_URL = 'https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions';
 
 // 获取 API Key 的辅助函数
@@ -70,6 +76,7 @@ const identifyPlant = async (imageBase64) => {
   
   console.log('🌿 ========== 开始混合识别 ==========');
   console.log(`📊 PlantNet 今日状态: ${plantnetDailyCount}/${PLANTNET_DAILY_LIMIT}`);
+  console.log(`🔗 PlantNet API: ${USE_PROXY ? '代理模式' : '直连模式'}`);
   
   // 计算图片大小
   const sizeKB = imageBase64.length * 0.75 / 1024;
@@ -137,10 +144,11 @@ const identifyPlant = async (imageBase64) => {
 };
 
 /**
- * PlantNet API 识别
+ * PlantNet API 识别（通过代理）
  */
 async function identifyWithPlantNet(imageBase64) {
   console.log('📡 调用 PlantNet API...');
+  console.log(`📍 请求地址: ${PLANTNET_API_URL}`);
   
   const apiKey = getPlantnetApiKey();
   
@@ -156,7 +164,7 @@ async function identifyWithPlantNet(imageBase64) {
         data: buffer,
         encoding: 'binary',
         success: () => {
-          // 上传到 PlantNet
+          // 上传到 PlantNet（通过代理）
           wx.uploadFile({
             url: `${PLANTNET_API_URL}?api-key=${apiKey}`,
             filePath: filePath,
