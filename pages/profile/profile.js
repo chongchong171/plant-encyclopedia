@@ -41,7 +41,7 @@ Page({
    * 跳转到历史页面
    */
   goToHistory() {
-    wx.switchTab({
+    wx.navigateTo({
       url: '/pages/history/history'
     });
   },
@@ -80,7 +80,7 @@ Page({
   showFeedback() {
     wx.showModal({
       title: '意见反馈',
-      content: '如有问题或建议，请联系：\n\n邮箱：feedback@example.com',
+      content: '如有问题或建议，请联系：\n\n微信：chongchong171\n\n我们会在24小时内回复！',
       showCancel: false
     });
   },
