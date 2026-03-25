@@ -1,15 +1,25 @@
 <!-- 花草百科全书 - 拍照页面 -->
 <view class="container">
-  <!-- 背景装饰 -->
-  <view class="leaf-bg">
-    <text class="leaf leaf-1">🍃</text>
-    <text class="leaf leaf-2">🌿</text>
-    <text class="leaf leaf-3">🍃</text>
-    <text class="leaf leaf-4">🌿</text>
+  <!-- 相机授权提示 -->
+  <view class="auth-tip" wx:if="{{!hasCameraAuth}}">
+    <text class="auth-icon">📷</text>
+    <text class="auth-title">需要相机权限</text>
+    <text class="auth-desc">请允许使用相机来拍摄植物</text>
+    <button class="auth-btn" bindtap="requestCameraAuth">授权相机</button>
   </view>
 
+  <!-- 相机 -->
+  <camera 
+    wx:if="{{hasCameraAuth}}"
+    class="camera" 
+    device-position="back" 
+    flash="auto"
+    binderror="onError"
+    bindstop="onStop"
+  ></camera>
+
   <!-- 拍摄指导提示 -->
-  <view class="photo-tips" wx:if="{{showTips}}">
+  <view class="photo-tips" wx:if="{{hasCameraAuth && showTips}}">
     <view class="tip-card">
       <view class="tip-header">
         <text class="tip-icon">{{currentTip.icon}}</text>
@@ -25,23 +35,18 @@
     <view class="tip-close" bindtap="hideTips">✕</view>
   </view>
 
-  <!-- 操作按钮 -->
-  <view class="action-section">
-    <view class="action-btn camera-btn" bindtap="takePhoto">
-      <text class="action-icon">📷</text>
-      <text class="action-title">拍照识别</text>
-      <text class="action-desc">拍一张植物照片</text>
+  <!-- 拍照按钮 -->
+  <view class="controls" wx:if="{{hasCameraAuth}}">
+    <view class="btn-back" bindtap="goBack">
+      <text>✕</text>
     </view>
     
-    <view class="action-btn album-btn" bindtap="chooseFromAlbum">
-      <text class="action-icon">🖼️</text>
-      <text class="action-title">相册上传</text>
-      <text class="action-desc">从相册选择图片</text>
+    <view class="btn-capture" bindtap="takePhoto">
+      <view class="capture-inner"></view>
     </view>
-  </view>
-
-  <!-- 返回按钮 -->
-  <view class="back-btn" bindtap="goBack">
-    <text>← 返回</text>
+    
+    <view class="btn-album" bindtap="chooseFromAlbum">
+      <text>🖼️</text>
+    </view>
   </view>
 </view>

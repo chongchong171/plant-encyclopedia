@@ -3,6 +3,7 @@
  */
 Page({
   data: {
+    hasCameraAuth: false,
     showTips: true,
     currentIndex: 0,
     tips: [
@@ -15,6 +16,7 @@ Page({
 
   onLoad() {
     this.setData({ currentTip: this.data.tips[0] });
+    this.checkCameraAuth();
     this.startTipRotation();
   },
 
@@ -38,40 +40,66 @@ Page({
   },
 
   /**
-   * 拍照 - 直接调用系统相机
+   * 检查相机授权
    */
-  takePhoto() {
+  checkCameraAuth() {
     const that = this;
-    wx.chooseMedia({
-      count: 1,
-      mediaType: ['image'],
-      sourceType: ['camera'],
+    wx.getSetting({
       success(res) {
-        const tempFilePath = res.tempFiles[0].tempFilePath;
-        that.compressAndNavigate(tempFilePath);
-      },
-      fail(err) {
-        console.log('拍照失败', err);
-        if (err.errMsg && err.errMsg.indexOf('auth deny') !== -1) {
-          wx.showModal({
-            title: '需要相机权限',
-            content: '请在设置中开启相机权限',
-            confirmText: '去设置',
-            success(modalRes) {
-              if (modalRes.confirm) {
-                wx.openSetting();
-              }
+        if (res.authSetting['scope.camera']) {
+          that.setData({ hasCameraAuth: true });
+        } else {
+          wx.authorize({
+            scope: 'scope.camera',
+            success() {
+              that.setData({ hasCameraAuth: true });
+            },
+            fail() {
+              that.setData({ hasCameraAuth: false });
             }
           });
-        } else {
-          wx.showToast({ title: '拍照失败', icon: 'none' });
+        }
+      },
+      fail() {
+        that.setData({ hasCameraAuth: false });
+      }
+    });
+  },
+
+  /**
+   * 手动授权
+   */
+  requestCameraAuth() {
+    const that = this;
+    wx.openSetting({
+      success(res) {
+        if (res.authSetting['scope.camera']) {
+          that.setData({ hasCameraAuth: true });
+          wx.showToast({ title: '授权成功', icon: 'success' });
         }
       }
     });
   },
 
   /**
-   * 从相册选择
+   * 拍照
+   */
+  takePhoto() {
+    const ctx = wx.createCameraContext();
+    ctx.takePhoto({
+      quality: 'low',
+      success: (res) => {
+        this.compressAndNavigate(res.tempImagePath);
+      },
+      fail: (err) => {
+        wx.showToast({ title: '拍照失败', icon: 'none' });
+        console.error('拍照失败', err);
+      }
+    });
+  },
+
+  /**
+   * 从相册选择（小按钮，不影响主要体验）
    */
   chooseFromAlbum() {
     const that = this;
@@ -90,9 +118,7 @@ Page({
             content: '请在设置中开启相册权限',
             confirmText: '去设置',
             success(modalRes) {
-              if (modalRes.confirm) {
-                wx.openSetting();
-              }
+              if (modalRes.confirm) wx.openSetting();
             }
           });
         }
@@ -125,5 +151,14 @@ Page({
 
   goBack() {
     wx.navigateBack();
+  },
+
+  onError(e) {
+    console.error('相机错误', e.detail);
+    wx.showToast({ title: '相机打开失败，请检查权限', icon: 'none' });
+  },
+
+  onStop() {
+    console.log('相机停止');
   }
 });
