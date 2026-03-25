@@ -80,6 +80,8 @@ const identifyPlant = async (imageBase64) => {
   }
   
   // ========== 策略1: PlantNet + Qwen-Turbo ==========
+  let lastError = '未知错误';
+  
   if (plantnetDailyCount < PLANTNET_DAILY_LIMIT) {
     console.log('🚀 策略1: PlantNet (精准识别) + Qwen-Turbo (养护建议)');
     
@@ -105,8 +107,7 @@ const identifyPlant = async (imageBase64) => {
           family: plantnetResult.data.family,
           confidence: plantnetResult.data.confidence,
           description: plantnetResult.data.description,
-          imageUrl: plantnetResult.data.imageUrl || '',  // PlantNet 提供的真实图片
-          // Qwen 返回的详细信息
+          imageUrl: plantnetResult.data.imageUrl || '',
           commonNames: detailInfo.commonNames,
           plantProfile: detailInfo.plantProfile,
           growthHabit: detailInfo.growthHabit,
@@ -116,7 +117,6 @@ const identifyPlant = async (imageBase64) => {
           difficultyLevel: detailInfo.difficultyLevel,
           difficultyText: detailInfo.difficultyText,
           quickTips: detailInfo.quickTips,
-          // 元数据
           source: 'PlantNet + Qwen-Turbo',
           quotaRemaining: PLANTNET_DAILY_LIMIT - plantnetDailyCount
         }
@@ -124,6 +124,7 @@ const identifyPlant = async (imageBase64) => {
     }
     
     console.log('❌ PlantNet 失败:', plantnetResult.error);
+    lastError = plantnetResult.error || 'PlantNet 识别失败';
   }
   
   // ========== PlantNet 额度用完或失败 ==========
@@ -132,7 +133,7 @@ const identifyPlant = async (imageBase64) => {
     return { success: false, error: '今日识别次数已用完，请明天再试' };
   }
   
-  return { success: false, error: plantnetResult?.error || '识别失败，请重试' };
+  return { success: false, error: lastError || '识别失败，请重试' };
 };
 
 /**
