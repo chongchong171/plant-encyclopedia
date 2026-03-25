@@ -12,7 +12,7 @@ const app = getApp();
 
 // ========== 代理配置 ==========
 // 审核通过后，把下面的 URL 改成代理地址
-const USE_PROXY = true;  // true = 用代理，false = 直连
+const USE_PROXY = false;  // true = 用代理，false = 直连
 const PROXY_URL = 'https://plantnet.yg-crystal.com';
 const DIRECT_URL = 'https://my-api.plantnet.org/v2/identify/all';
 
