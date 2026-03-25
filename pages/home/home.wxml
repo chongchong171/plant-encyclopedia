@@ -28,12 +28,14 @@
 
     <!-- 相册和搜索 - 并列 -->
     <view class="sub-btns">
-      <button class="btn-secondary sub-btn" open-type="chooseMedia" bindchoosemedia="onChooseFromAlbum">
-        🖼️ 相册上传
+      <button class="sub-btn album-btn" open-type="chooseMedia" bindchoosemedia="onChooseFromAlbum">
+        <text class="sub-icon">🖼️</text>
+        <text class="sub-title">相册上传</text>
       </button>
-      <button class="btn-secondary sub-btn" bindtap="goToSearch">
-        🔍 搜索植物
-      </button>
+      <view class="sub-btn search-btn" bindtap="goToSearch">
+        <text class="sub-icon">🔍</text>
+        <text class="sub-title">搜索植物</text>
+      </view>
     </view>
 
     <!-- 底部 Slogan -->

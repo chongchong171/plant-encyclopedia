@@ -130,23 +130,39 @@
   margin-bottom: 60rpx;
 }
 
-/* ========== 次要按钮（标准） ========== */
-.btn-secondary {
+.sub-btn {
   flex: 1;
-  height: 90rpx;
-  background: white;
-  color: #4CAF50;
-  border: 4rpx solid #4CAF50;
-  border-radius: 45rpx;
-  font-size: 28rpx;
-  font-weight: bold;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  border-radius: 22rpx;
+  padding: 32rpx 24rpx;
 }
 
-.btn-secondary::after {
-  border: none;
+.album-btn {
+  background: linear-gradient(135deg, #FFF8E1 0%, #FFE082 100%);
+  box-shadow: 
+    0 6rpx 18rpx rgba(255, 193, 7, 0.18),
+    inset 0 2rpx 0 rgba(255, 255, 255, 0.5);
+}
+
+.search-btn {
+  background: linear-gradient(135deg, #E0F7FA 0%, #80DEEA 100%);
+  box-shadow: 
+    0 6rpx 18rpx rgba(0, 188, 212, 0.18),
+    inset 0 2rpx 0 rgba(255, 255, 255, 0.5);
+}
+
+.sub-icon {
+  font-size: 48rpx;
+  margin-bottom: 10rpx;
+}
+
+.sub-title {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #333;
 }
 
 /* ========== 底部 Slogan ========== */
@@ -158,4 +174,16 @@
 .footer-slogan text {
   font-size: 24rpx;
   color: #81C784;
+  letter-spacing: 1rpx;
+}
+
+/* 重置 button 默认样式 */
+.sub-btn::after {
+  border: none;
+}
+
+.sub-btn {
+  margin: 0;
+  padding: 32rpx 24rpx;
+  line-height: normal;
 }
