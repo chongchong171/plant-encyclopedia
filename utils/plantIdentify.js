@@ -105,11 +105,15 @@ const identifyPlant = async (imageBase64) => {
       const detailInfo = await getCareGuideFromQwen(plantnetResult.data.name);
       
       console.log('🎉 混合识别完成！');
+      
+      // 优先使用 Qwen 生成的中文名，没有才用 PlantNet 的
+      const displayName = detailInfo.commonNames || plantnetResult.data.name;
+      
       return {
         success: true,
         data: {
           id: plantnetResult.data.id,
-          name: plantnetResult.data.name,
+          name: displayName,
           scientificName: plantnetResult.data.scientificName,
           family: plantnetResult.data.family,
           confidence: plantnetResult.data.confidence,
