@@ -102,7 +102,8 @@ const identifyPlant = async (imageBase64) => {
         success: true,
         data: {
           id: plantnetResult.data.id,
-          name: plantnetResult.data.name,
+          // 优先使用中文名，没有才用英文名
+          name: detailInfo.commonNames || plantnetResult.data.name,
           scientificName: plantnetResult.data.scientificName,
           family: plantnetResult.data.family,
           confidence: plantnetResult.data.confidence,
