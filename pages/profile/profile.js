@@ -80,7 +80,7 @@ Page({
   showFeedback() {
     wx.showModal({
       title: '意见反馈',
-      content: '如有问题或建议，请联系：\n\n微信：chongchong171\n\n我们会在24小时内回复！',
+      content: '如有问题或建议，请联系：\n\n邮箱：joyce.wang@dorblecapital.com\n\n我们会在24小时内回复！',
       showCancel: false
     });
   },
