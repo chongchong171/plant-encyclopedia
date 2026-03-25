@@ -5,12 +5,6 @@ const app = getApp();
 
 Page({
   data: {
-    // 状态（标准）
-    loading: false,
-    error: false,
-    errorMessage: '',
-    
-    // 识别数据
     identifyCount: 0,
     identifyLimit: 500,
     vipUser: false
@@ -41,18 +35,36 @@ Page({
   },
 
   /**
-   * 相册选择回调
+   * 从相册选择
    */
-  onChooseFromAlbum(e) {
-    console.log('相册选择回调', e);
-    if (e.detail && e.detail.tempFiles && e.detail.tempFiles.length > 0) {
-      const imageFile = e.detail.tempFiles.find(f => f.fileType === 'image' || f.tempFilePath);
-      if (imageFile) {
+  chooseFromAlbum() {
+    wx.chooseMedia({
+      count: 1,
+      mediaType: ['image'],
+      sourceType: ['album'],
+      success: (res) => {
+        const tempFilePath = res.tempFiles[0].tempFilePath;
         wx.navigateTo({
-          url: '/pages/result_swiper/result_swiper?tmp_filePath=' + encodeURIComponent(imageFile.tempFilePath)
+          url: '/pages/result_swiper/result_swiper?tmp_filePath=' + encodeURIComponent(tempFilePath)
         });
+      },
+      fail: (err) => {
+        console.log('选择图片失败', err);
+        // 用户拒绝权限
+        if (err.errMsg && err.errMsg.indexOf('auth deny') !== -1) {
+          wx.showModal({
+            title: '需要相册权限',
+            content: '请在设置中开启相册权限',
+            confirmText: '去设置',
+            success: (modalRes) => {
+              if (modalRes.confirm) {
+                wx.openSetting();
+              }
+            }
+          });
+        }
       }
-    }
+    });
   },
 
   /**

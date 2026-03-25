@@ -9,35 +9,39 @@
   </view>
 
   <!-- 拍摄指导提示 -->
-  <view class="card" wx:if="{{showTips}}">
-    <view class="card-header">
-      <text class="card-icon">{{currentTip.icon}}</text>
-      <text class="card-title">{{currentTip.title}}</text>
-    </view>
-    <view class="card-content">
-      <text class="card-text">{{currentTip.desc}}</text>
-    </view>
-    <view class="tip-dots">
-      <text class="dot {{currentIndex === 0 ? 'active' : ''}}">●</text>
-      <text class="dot {{currentIndex === 1 ? 'active' : ''}}">●</text>
-      <text class="dot {{currentIndex === 2 ? 'active' : ''}}">●</text>
+  <view class="photo-tips" wx:if="{{showTips}}">
+    <view class="tip-card">
+      <view class="tip-header">
+        <text class="tip-icon">{{currentTip.icon}}</text>
+        <text class="tip-title">{{currentTip.title}}</text>
+      </view>
+      <text class="tip-desc">{{currentTip.desc}}</text>
+      <view class="tip-dots">
+        <text class="dot {{currentIndex === 0 ? 'active' : ''}}">●</text>
+        <text class="dot {{currentIndex === 1 ? 'active' : ''}}">●</text>
+        <text class="dot {{currentIndex === 2 ? 'active' : ''}}">●</text>
+      </view>
     </view>
     <view class="tip-close" bindtap="hideTips">✕</view>
   </view>
 
-  <!-- 操作按钮区 -->
+  <!-- 操作按钮 -->
   <view class="action-section">
-    <!-- 拍照按钮 -->
-    <button class="btn-primary" open-type="chooseMedia" bindchoosemedia="onTakePhoto">
-      📷 拍照识别
-    </button>
+    <view class="action-btn camera-btn" bindtap="takePhoto">
+      <text class="action-icon">📷</text>
+      <text class="action-title">拍照识别</text>
+      <text class="action-desc">拍一张植物照片</text>
+    </view>
     
-    <!-- 相册按钮 -->
-    <button class="btn-secondary" open-type="chooseMedia" bindchoosemedia="onChooseFromAlbum">
-      🖼️ 相册上传
-    </button>
+    <view class="action-btn album-btn" bindtap="chooseFromAlbum">
+      <text class="action-icon">🖼️</text>
+      <text class="action-title">相册上传</text>
+      <text class="action-desc">从相册选择图片</text>
+    </view>
   </view>
 
   <!-- 返回按钮 -->
-  <button class="btn-text back-btn" bindtap="goBack">← 返回</button>
+  <view class="back-btn" bindtap="goBack">
+    <text>← 返回</text>
+  </view>
 </view>
