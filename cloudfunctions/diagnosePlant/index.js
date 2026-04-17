@@ -10,7 +10,7 @@ const fetch = require('node-fetch')
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV })
 
 const GLM_API_URL = 'https://open.bigmodel.cn/api/paas/v4/chat/completions'
-const GLM_API_KEY = process.env.GLM_API_KEY || process.env.QWEN_API_KEY || 'sk-d43b58a6d0dd486d89b69a38f305483a'
+const GLM_API_KEY = process.env.GLM_API_KEY || process.env.QWEN_API_KEY
 
 exports.main = async (event, context) => {
   console.log('Diagnose plant event:', event);

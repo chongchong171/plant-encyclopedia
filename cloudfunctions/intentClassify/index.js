@@ -14,7 +14,7 @@ const db = cloud.database();
 
 const MODULE_NAME = 'smartChat'
 const VERSION = 'v5.11-add-emotional-intelligence-guidelines-2026-04-17'  // 添加情感智能指导
-const GLM_API_KEY = process.env.GLM_API_KEY || '962f865d75934dacb0dba248c39269ff.bYosRiGyN3N1aTNJ'
+const GLM_API_KEY = process.env.GLM_API_KEY
 const GLM_API_URL = 'https://open.bigmodel.cn/api/paas/v4/chat/completions'
 
 // 工具定义：描述功能，让 AI 自己判断何时调用
