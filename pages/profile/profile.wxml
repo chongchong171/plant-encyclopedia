@@ -7,9 +7,9 @@
     
     <view class="header-content" style="padding-top: 180rpx;">
       <view class="avatar" bindtap="getUserProfile">
-        <image class="avatar-img" src="{{userInfo.avatarUrl || 'https://img.icons8.com/color/96/sunflower.png'}}" mode="aspectFill" binderror="onAvatarError"></image>
+        <image class="avatar-img" src="https://img.icons8.com/color/96/sunflower.png" mode="aspectFill"></image>
       </view>
-      <text class="nickname">{{userInfo.nickName || '植物爱好者'}}</text>
+      <text class="nickname">植物爱好者 🌿</text>
       <text class="bio">每天认识一种植物 🌿</text>
     </view>
   </view>
