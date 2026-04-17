@@ -1,0 +1,64 @@
+<!-- plant-card.wxml -->
+<!-- 植物卡片组件 - 统一样式 -->
+
+<view class="plant-card plant-card--{{mode}}" bindtap="onCardTap">
+  <!-- 图片区域 -->
+  <view class="plant-card__image-wrapper">
+    <image 
+      class="plant-card__image"
+      src="{{displayImage}}"
+      mode="aspectFill"
+      binderror="onImageError"
+    />
+    
+    <!-- 浇水角标 -->
+    <view wx:if="{{showWaterBadge && plant.daysUntilWater <= 0}}" class="water-badge water-badge--urgent">
+      💧
+    </view>
+    <view wx:if="{{showWaterBadge && plant.daysUntilWater > 0 && plant.daysUntilWater <= 2}}" class="water-badge water-badge--soon">
+      💧{{plant.daysUntilWater}}天
+    </view>
+  </view>
+  
+  <!-- 信息区域 -->
+  <view class="plant-card__info">
+    <!-- 植物名称 -->
+    <view class="plant-card__name">{{plant.name}}</view>
+    
+    <!-- 学名（可选） -->
+    <view wx:if="{{plant.scientificName}}" class="plant-card__scientific">
+      {{plant.scientificName}}
+    </view>
+    
+    <!-- 浇水状态 -->
+    <view wx:if="{{showWaterBadge}}" class="plant-card__water-status {{plant.daysUntilWater <= 0 ? 'plant-card__water-status--urgent' : ''}}">
+      {{wateringText || plant.wateringText}}
+    </view>
+    
+    <!-- 光照需求 -->
+    <view wx:if="{{showLightNeed && plant.lightNeed}}" class="plant-card__light">
+      ☀️ {{plant.lightNeed.text}}
+    </view>
+  </view>
+  
+  <!-- 操作按钮区域（浇水、施肥、删除） -->
+  <view wx:if="{{showActions}}" class="plant-card__actions" catchtap="onActionsTap">
+    <!-- 浇水按钮 -->
+    <view class="action-btn action-btn--water" catchtap="onWaterTap">
+      <view class="action-btn__icon">💧</view>
+      <view class="action-btn__text">浇水</view>
+    </view>
+    
+    <!-- 施肥按钮 -->
+    <view class="action-btn action-btn--fertilize" catchtap="onFertilizeTap">
+      <view class="action-btn__icon">🌱</view>
+      <view class="action-btn__text">施肥</view>
+    </view>
+    
+    <!-- 删除按钮 -->
+    <view class="action-btn action-btn--delete" catchtap="onDeleteTap">
+      <view class="action-btn__icon">🗑️</view>
+      <view class="action-btn__text">删除</view>
+    </view>
+  </view>
+</view>

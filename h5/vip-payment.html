@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>开通 VIP 会员 - AI 植物管家</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(180deg, #1a3a2f 0%, #0d1f18 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .container { max-width: 400px; margin: 0 auto; }
+    .header {
+      text-align: center;
+      padding: 40px 0;
+      color: #fff;
+    }
+    .header-icon { font-size: 64px; margin-bottom: 16px; }
+    .header-title { font-size: 28px; font-weight: 600; margin-bottom: 8px; }
+    .header-subtitle { font-size: 14px; opacity: 0.7; }
+    
+    .benefits {
+      background: rgba(255,255,255,0.1);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+    .benefit-item {
+      display: flex;
+      align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    .benefit-item:last-child { border-bottom: none; }
+    .benefit-icon { font-size: 24px; margin-right: 12px; }
+    .benefit-text { color: #fff; font-size: 15px; }
+    
+    .pricing {
+      background: #fff;
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+    .pricing-title { font-size: 16px; color: #333; margin-bottom: 16px; }
+    .plan-card {
+      border: 2px solid #e0e0e0;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 12px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    .plan-card.selected {
+      border-color: #4CAF50;
+      background: #e8f5e9;
+    }
+    .plan-name { font-size: 15px; font-weight: 600; color: #333; }
+    .plan-price { font-size: 24px; color: #4CAF50; font-weight: 700; margin: 8px 0; }
+    .plan-desc { font-size: 12px; color: #666; }
+    
+    .pay-btn {
+      width: 100%;
+      background: linear-gradient(135deg, #4CAF50, #66BB6A);
+      color: #fff;
+      border: none;
+      padding: 16px;
+      border-radius: 24px;
+      font-size: 18px;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(76,175,80,0.3);
+    }
+    .pay-btn:disabled { opacity: 0.6; }
+    
+    .note { text-align: center; color: rgba(255,255,255,0.6); font-size: 12px; margin-top: 16px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="header-icon">👑</div>
+      <div class="header-title">开通 VIP 会员</div>
+      <div class="header-subtitle">解锁 AI 植物管家全部功能</div>
+    </div>
+
+    <div class="benefits">
+      <div class="benefit-item">
+        <div class="benefit-icon">🌱</div>
+        <div class="benefit-text">无限植物数量</div>
+      </div>
+      <div class="benefit-item">
+        <div class="benefit-icon">📷</div>
+        <div class="benefit-text">无限次植物识别</div>
+      </div>
+      <div class="benefit-item">
+        <div class="benefit-icon">📊</div>
+        <div class="benefit-text">数据统计分析</div>
+      </div>
+      <div class="benefit-item">
+        <div class="benefit-icon">💬</div>
+        <div class="benefit-text">专属客服支持</div>
+      </div>
+    </div>
+
+    <div class="pricing">
+      <div class="pricing-title">选择会员方案</div>
+      
+      <div class="plan-card selected" onclick="selectPlan('month')">
+        <div class="plan-name">连续包月</div>
+        <div class="plan-price">¥9.9 <span style="font-size:12px;color:#999;font-weight:400">/首月</span></div>
+        <div class="plan-desc">次月起 ¥19.9/月，随时取消</div>
+      </div>
+
+      <div class="plan-card" onclick="selectPlan('year')">
+        <div class="plan-name">连续包年</div>
+        <div class="plan-price">¥99 <span style="font-size:12px;color:#999;font-weight:400">/首年</span></div>
+        <div class="plan-desc">次年 ¥118.8/年，更划算</div>
+      </div>
+    </div>
+
+    <button class="pay-btn" onclick="doPayment()" id="payBtn">立即开通</button>
+    <div class="note">微信支付 · 自动续费 · 随时取消</div>
+  </div>
+
+  <script src="https://res.wx.qq.com/open/js/jweixin-1.6.0.js"></script>
+  <script>
+    let selectedPlan = 'month'
+    const PRICE_CONFIG = {
+      month: { price: 990, next: 1990 },
+      year: { price: 9900, next: 11880 }
+    }
+
+    function selectPlan(plan) {
+      selectedPlan = plan
+      document.querySelectorAll('.plan-card').forEach((card, i) => {
+        card.classList.toggle('selected', (plan === 'month' ? i === 0 : i === 1))
+      })
+    }
+
+    async function doPayment() {
+      const btn = document.getElementById('payBtn')
+      btn.disabled = true
+      btn.textContent = '创建订单中...'
+
+      try {
+        // 获取 URL 中的 openid（从公众号网页授权获取）
+        const urlParams = new URLSearchParams(window.location.search)
+        const openid = urlParams.get('openid')
+
+        if (!openid) {
+          alert('请先关注公众号')
+          return
+        }
+
+        // 调用后端创建订单
+        const res = await fetch('/api/createVipOrder', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            openid,
+            plan: selectedPlan
+          })
+        })
+
+        const data = await res.json()
+
+        if (data.success) {
+          // 调用微信支付
+          if (typeof WeixinJSBridge !== 'undefined') {
+            WeixinJSBridge.invoke(
+              'getBrandWCPayRequest',
+              data.payment,
+              (payRes) => {
+                if (payRes.err_name === 'get_brand_wcpay_request:ok') {
+                  window.location.href = `/success?plan=${selectedPlan}`
+                } else {
+                  btn.disabled = false
+                  btn.textContent = '立即开通'
+                }
+              }
+            )
+          } else {
+            alert('请在微信内打开')
+          }
+        } else {
+          alert(data.error || '创建订单失败')
+          btn.disabled = false
+          btn.textContent = '立即开通'
+        }
+      } catch (err) {
+        console.error(err)
+        alert('网络错误，请重试')
+        btn.disabled = false
+        btn.textContent = '立即开通'
+      }
+    }
+  </script>
+</body>
+</html>

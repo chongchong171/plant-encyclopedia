@@ -1,0 +1,1268 @@
+/* AI 植物管家 - 首页样式 v12.0 */
+/* 优化排版可读性 */
+
+.page {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: #1a3a2f;
+}
+
+/* ========== 静态海报图 ========== */
+.home-poster {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: #1a3a2f;
+  z-index: 10;
+}
+
+/* ========== 视频淡入动画 ========== */
+.main-video {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  z-index: 1;  /* 降低视频层级，让它在最底层 */
+}
+
+.main-video.fade-in {
+  opacity: 1;
+}
+
+/* ========== 全屏视频 ========== */
+.main-video {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  object-fit: cover;
+}
+
+/* ========== 首屏文字 ========== */
+.header-text {
+  position: absolute;
+  top: 20%;
+  left: 0;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: 30;
+}
+
+.header-title {
+  font-size: 28px;
+  font-weight: 300;
+  color: #ffffff;
+  letter-spacing: 1px;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
+  line-height: 1.4;
+}
+
+.header-subtitle {
+  font-size: 16px;  /* 恢复原始字体大小 */
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.95);  /* 保持高亮度 */
+  margin-top: 10px;
+  letter-spacing: 1px;
+  text-align: center;
+  padding: 0 20px;
+  line-height: 1.5;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);  /* 保持阴影 */
+  white-space: nowrap;  /* 强制不换行 */
+}
+
+/* ========== AI 胶囊对话框 ========== */
+.ai-capsule {
+  position: absolute;
+  bottom: 130px;  /* 从 120px 改为 130px，再往上提一点，避开底部 TabBar */
+  left: 12px;
+  right: 12px;
+  background: rgba(255, 255, 255, 0.35);  /* 35% 不透明度，提升可读性 */
+  backdrop-filter: blur(12px);  /* 增强毛玻璃效果 */
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: 24px;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.15);
+  z-index: 100;  /* 提高胶囊层级，确保在最上层，点击响应更快 */
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.ai-capsule.expanded {
+  bottom: 80px;  /* 从 50px 改为 80px，与胶囊状态保持一致的上移量 */
+}
+
+/* PC 模式：对话框往上提，避免与底部 TabBar 重叠 */
+.ai-capsule.pc-mode {
+  bottom: 230px !important;
+}
+
+.ai-capsule.pc-mode.expanded {
+  bottom: 190px !important;
+}
+
+/* 胶囊模式 */
+.capsule-mode {
+  display: flex;
+  align-items: center;
+  padding: 16px 20px;
+}
+
+.ai-icon {
+  font-size: 18px;
+  margin-right: 10px;
+}
+
+.ai-text {
+  flex: 1;
+  font-size: 15px;
+  color: #ffffff;
+}
+
+.ai-arrow {
+  font-size: 18px;
+  color: #4CAF50;
+}
+
+/* 对话模式 */
+.dialog-mode {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.dialog-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.dialog-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.dialog-close {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.8);
+  padding: 6px 16px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 14px;
+}
+
+/* ========== 消息区域 ========== */
+.messages-area {
+  flex: 1;
+  padding: 12px;
+  height: 0;  /* 关键：让 flex: 1 在 scroll-view 中生效 */
+}
+
+/* 欢迎卡片 */
+.welcome-msg {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 12px;
+  align-self: center;
+  width: calc(100% - 24px);
+  box-sizing: border-box;
+}
+
+.welcome-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #ffffff;
+  margin-bottom: 8px;
+}
+
+.welcome-subtitle {
+  font-size: 12px;  /* 调整为 12px */
+  color: rgba(255, 255, 255, 0.75);
+  margin-bottom: 8px;
+  line-height: 1.4;
+  letter-spacing: 0;
+}
+
+.welcome-hint {
+  font-size: 14px;  /* 从 12px 放大到 14px */
+  color: rgba(255, 255, 255, 0.5);
+  margin-bottom: 6px;
+}
+
+.welcome-examples {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+}
+
+.example-item {
+  background: rgba(255, 255, 255, 0.15);
+  padding: 12px 14px;
+  border-radius: 12px;
+  font-size: 14px;
+  color: #ffffff;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.example-item:active {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+/* ========== 消息气泡 ========== */
+.msg {
+  margin-bottom: 20px;  /* 增加间距，从 16px 到 20px */
+  display: flex;
+  flex-direction: column;
+}
+
+.msg.user {
+  align-items: flex-end;
+  width: 100%;
+  padding-right: 24px;
+  box-sizing: border-box;
+}
+
+.msg.assistant {
+  align-items: center;
+  width: 100%;
+  padding-right: 24px;
+  box-sizing: border-box;
+}
+
+/* 植物卡片增加额外间距 */
+.add-plant-card {
+  margin-top: 8px;  /* 恢复原始间距 */
+}
+
+/* 当消息包含植物卡片时，文字内容需要增加顶部间距 */
+.msg-bubble.has-plant-card {
+  margin-top: 20px;
+}
+
+.msg-image {
+  max-width: 70%;
+  margin-bottom: 8px;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.msg-image image {
+  width: 100%;
+  display: block;
+}
+
+.msg-bubble {
+  max-width: 88%;  /* 从 92% 改为 88%，缩小宽度让文字在更自然的位置换行 */
+  padding: 14px 18px;
+  border-radius: 16px;
+}
+
+.msg.user .msg-bubble {
+  background: #4CAF50;
+}
+
+.msg.assistant .msg-bubble {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.msg-bubble.loading {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.msg-text {
+  font-size: 15px;
+  color: #ffffff;
+  line-height: 1.8;  /* 调整行高，让文字更紧凑 */
+  word-break: break-word;  /* 保持原有设置 */
+  white-space: pre-wrap;  /* 保留换行和空格 */
+  display: block;  /* 确保 block 显示，支持换行 */
+  text-align: left;  /* 左对齐，保持原始格式 */
+  overflow-wrap: break-word;  /* 长单词自动换行 */
+  text-justify: inter-ideograph;  /* 中文排版优化，让换行更自然 */
+}
+
+/* 植物列表样式 */
+.plant-list {
+  width: 100%;
+  margin-top: 8px;
+}
+
+.plant-list-item {
+  display: flex;
+  align-items: flex-start;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.plant-list-item:last-child {
+  border-bottom: none;
+}
+
+.plant-list-icon {
+  font-size: 18px;
+  margin-right: 8px;
+  flex-shrink: 0;
+}
+
+.plant-list-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.plant-list-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: #ffffff;
+  margin-bottom: 4px;
+}
+
+.plant-list-status {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.7);
+  line-height: 1.4;
+}
+
+/* ========== 植物卡片列表 ========== */
+.plant-cards {
+  width: 100%;
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.plant-card {
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 14px;
+  padding: 12px;
+  gap: 12px;
+}
+
+.plant-card:active {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.plant-card-image {
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.plant-card-image image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.plant-card-emoji {
+  font-size: 24px;
+}
+
+.plant-card-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.plant-card-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: #ffffff;
+  margin-bottom: 4px;
+}
+
+.plant-card-status {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* 花园查看更多 */
+.garden-link {
+  margin-top: 12px;
+  padding: 12px;
+  background: rgba(76, 175, 80, 0.25);
+  border-radius: 12px;
+  text-align: center;
+}
+
+.garden-link text {
+  font-size: 14px;
+  font-weight: 500;
+  color: #ffffff;
+}
+
+/* ========== 确认按钮 ========== */
+.confirm-buttons {
+  margin-top: 16px;
+  display: flex;
+  gap: 12px;
+}
+
+.confirm-btn {
+  flex: 1;
+  font-size: 14px;
+  padding: 10px 0;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #ffffff;
+  border: none;
+}
+
+.confirm-btn::after {
+  border: none;
+}
+
+.cancel-btn {
+  flex: 1;
+  font-size: 14px;
+  padding: 10px 0;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.cancel-btn::after {
+  border: none;
+}
+
+/* ========== 识别结果顶部图片 ========== */
+.identify-result-image {
+  width: 100%;
+  margin-bottom: 12px;
+  border-radius: 14px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.identify-result-image image {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  display: block;
+}
+
+/* ========== 识别结果消息居中 ========== */
+.identify-result-wrapper {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-sizing: border-box;
+  padding: 0;
+}
+
+.identify-result-wrapper .identify-result-image {
+  width: 80%;
+  margin-left: 10%;
+  margin-right: 10%;
+  height: 200px;
+  box-sizing: border-box;
+  border-radius: 14px;
+  overflow: hidden;
+  padding: 0;
+  margin-bottom: 12px;
+}
+
+.identify-result-wrapper .msg-bubble {
+  width: 95%;
+  margin-left: 3%;
+  margin-right: 2%;
+  box-sizing: border-box;
+  padding: 14px 18px;
+  margin-top: 4px;
+}
+
+/* ========== 识别结果操作按钮 ========== */
+.identify-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 10px;
+  width: 100%;
+  padding-right: 4px;
+  box-sizing: border-box;
+}
+
+.action-btn {
+  flex: 1;
+  padding: 8px 4px;
+  border-radius: 10px;
+  text-align: center;
+  font-size: 11px;
+  min-width: 0;
+}
+
+.action-btn text {
+  color: #ffffff;
+  white-space: nowrap;
+}
+
+.action-btn-primary {
+  background: #4CAF50;
+}
+
+.action-btn-primary:active {
+  background: #43A047;
+}
+
+.action-btn-secondary {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.action-btn-secondary:active {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.action-btn-cancel {
+  background: rgba(255, 255, 255, 0.1);
+  flex: 0.6;
+}
+
+.action-btn-cancel:active {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* ========== 快捷操作 ========== */
+.quick-actions {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  padding: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.quick-action {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px 24px;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+}
+
+.quick-action:active {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.quick-icon-img {
+  width: 28px;
+  height: 28px;
+  margin-bottom: 8px;
+}
+
+.quick-text {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* ========== 确认卡片 ========== */
+.confirm-card {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+  margin: 8px 16px;
+  padding: 16px;
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.card-icon {
+  font-size: 20px;
+  margin-right: 8px;
+}
+
+.card-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.card-image {
+  margin-bottom: 12px;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.card-image image {
+  width: 100%;
+  height: 120px;
+  object-fit: cover;
+}
+
+.card-fields {
+  margin-bottom: 16px;
+}
+
+.card-field {
+  display: flex;
+  margin-bottom: 8px;
+}
+
+.field-label {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.6);
+  width: 70px;
+  flex-shrink: 0;
+}
+
+.field-value {
+  font-size: 14px;
+  color: #ffffff;
+}
+
+.card-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.card-btn {
+  padding: 8px 20px;
+  border-radius: 14px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.card-btn.cancel {
+  background: rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.card-btn.confirm {
+  background: #4CAF50;
+  color: #ffffff;
+}
+
+/* ========== 输入区域 ========== */
+.input-area {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  gap: 8px;
+}
+
+.input-action {
+  font-size: 32px;  /* 继续放大 */
+  padding: 0;  /* 移除 padding */
+  color: #8B0000 !important;  /* 暗红色，更有质感 */
+  font-weight: bold;  /* 粗体 */
+  -webkit-text-fill-color: #8B0000 !important;  /* 强制填充暗红色 */
+  text-fill-color: #8B0000 !important;
+  line-height: 1;  /* 紧凑行高 */
+  margin-top: -4px;  /* 往上提一点 */
+}
+
+/* 笑脸按钮缩小 */
+.emoji-btn {
+  font-size: 22px !important;  /* 缩小 emoji */
+}
+
+.input-field {
+  flex: 1;
+  height: 36px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 18px;
+  padding: 0 16px;
+  font-size: 15px;
+  color: #ffffff;
+}
+
+.input-field::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.send-btn {
+  padding: 8px 16px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 16px;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.send-btn.active {
+  background: #4CAF50;
+  color: #ffffff;
+}
+
+/* ========== 加号操作面板 ========== */
+.action-panel {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.3);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* PC 模式：加号菜单往上提 */
+.ai-capsule.pc-mode .action-panel {
+  align-items: flex-end;
+  padding-bottom: 120px;
+}
+
+.action-panel-content {
+  width: 280px;
+  background: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: 20px;
+  padding: 16px;
+}
+
+.action-panel-title {
+  text-align: center;
+  font-size: 15px;
+  font-weight: 500;
+  color: #ffffff;
+  margin-bottom: 14px;
+}
+
+.action-panel-grid {
+  display: flex;
+  justify-content: space-around;
+  margin-bottom: 14px;
+}
+
+.action-panel-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px 20px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 14px;
+}
+
+.action-panel-item:active {
+  background: rgba(255, 255, 255, 0.35);
+}
+
+.action-panel-icon {
+  font-size: 28px;
+  margin-bottom: 6px;
+}
+
+.action-panel-label {
+  font-size: 13px;
+  color: #ffffff;
+}
+
+.action-panel-cancel {
+  text-align: center;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.action-panel-cancel:active {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+/* ========== 植物推荐横向滚动 ========== */
+.recommend-scroll {
+  width: 100%;
+  margin-top: 12px;
+}
+
+.scroll-container {
+  white-space: nowrap;
+  width: 100%;
+}
+
+.recommend-card {
+  display: inline-block;
+  width: 110px;
+  margin-right: 10px;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 14px;
+  overflow: hidden;
+  vertical-align: top;
+}
+
+.recommend-card:first-child {
+  margin-left: 4px;
+}
+
+.recommend-img {
+  width: 110px;
+  height: 80px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.recommend-info {
+  padding: 10px;
+}
+
+.recommend-name {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: #ffffff;
+  margin-bottom: 4px;
+}
+
+.recommend-desc {
+  display: block;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.6);
+  white-space: normal;
+  line-height: 1.3;
+}
+
+/* ========== 养护技巧网格 ========== */
+.tips-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin-top: 12px;
+  width: 100%;
+}
+
+.tip-item {
+  display: flex;
+  align-items: flex-start;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 14px;
+  padding: 12px;
+  gap: 10px;
+}
+
+.tip-icon-wrap {
+  width: 36px;
+  height: 36px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.tip-icon {
+  font-size: 20px;
+}
+
+.tip-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.tip-title {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: #ffffff;
+  margin-bottom: 4px;
+}
+
+.tip-desc {
+  display: block;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.65);
+  line-height: 1.4;
+}
+
+/* ========== 热门搜索标签云 ========== */
+.hot-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 12px;
+  width: 100%;
+  padding: 8px 0;
+}
+
+.hot-tag {
+  background: rgba(255, 255, 255, 0.15);
+  padding: 10px 18px;
+  border-radius: 18px;
+  font-size: 16px;
+  font-weight: 500;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+}
+
+.hot-tag:active {
+  background: rgba(76, 175, 80, 0.35);
+  transform: scale(0.98);
+}
+
+/* ========== 表情选择面板 ========== */
+.emoji-panel {
+  padding: 12px 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.emoji-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.emoji-panel-title {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.emoji-panel-close {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.6);
+  padding: 4px 10px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+}
+
+.emoji-scroll {
+  max-height: 200px;
+}
+
+.emoji-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.emoji-item {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  font-size: 22px;
+}
+
+.emoji-item:active {
+  background: rgba(76, 175, 80, 0.3);
+  transform: scale(0.9);
+}
+
+
+
+
+/* ========== 植物添加成功卡片 ========== */
+.add-plant-card {
+  width: calc(100% - 48px);
+  margin: 0 auto;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+  overflow: hidden;
+  box-sizing: border-box;
+  border: 1px solid rgba(76, 175, 80, 0.3);
+}
+
+.plant-card-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.plant-card-icon {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+}
+
+.plant-card-title {
+  flex: 1;
+  font-size: 17px;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.plant-card-badge {
+  font-size: 11px;
+  color: #4CAF50;
+  background: rgba(76, 175, 80, 0.15);
+  padding: 3px 8px;
+  border-radius: 8px;
+  font-weight: 500;
+}
+
+.plant-card-body {
+  padding: 12px 16px;
+}
+
+.plant-info-row {
+  display: flex;
+  align-items: center;
+  padding: 5px 0;
+}
+
+.plant-info-label {
+  width: 80px;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.6);
+  flex-shrink: 0;
+}
+
+.plant-info-value {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.plant-card-footer {
+  padding: 10px 16px 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.plant-card-hint {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.5);
+}
+/* ========== 植物卡片增强样式 ========== */
+.plant-info-row-inline {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 16rpx;
+}
+
+.plant-info-item {
+  flex: 1;
+  padding: 0 8rpx;
+}
+
+.plant-info-item:first-child {
+  padding-left: 0;
+}
+
+.plant-info-item:last-child {
+  padding-right: 0;
+}
+
+.plant-tip {
+  display: flex;
+  align-items: flex-start;
+  background: rgba(76, 175, 80, 0.1);
+  border-radius: 12rpx;
+  padding: 16rpx;
+  margin-top: 16rpx;
+}
+
+.plant-tip-icon {
+  font-size: 32rpx;
+  margin-right: 12rpx;
+  flex-shrink: 0;
+}
+
+.plant-tip-text {
+  flex: 1;
+  font-size: 26rpx;
+  color: #555;
+  line-height: 1.5;
+}
+
+/* ========== 用户信息授权弹窗 ========== */
+.auth-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.auth-modal {
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: 24rpx;
+  padding: 60rpx 40rpx 40rpx;
+  width: 600rpx;
+  text-align: center;
+  box-shadow: 0 10rpx 40rpx rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.auth-icon {
+  width: 120rpx;
+  height: 120rpx;
+  margin-bottom: 30rpx;
+  border-radius: 50%;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.1);
+}
+
+.auth-title {
+  font-size: 36rpx;
+  font-weight: bold;
+  color: #333;
+  display: block;
+  margin-bottom: 20rpx;
+  line-height: 1.2;
+}
+
+.auth-desc {
+  font-size: 28rpx;
+  color: #666;
+  display: block;
+  margin-bottom: 30rpx;
+  line-height: 1.4;
+}
+
+.auth-benefits {
+  background: rgba(245, 245, 245, 0.8);
+  border-radius: 12rpx;
+  padding: 30rpx;
+  margin-bottom: 40rpx;
+  text-align: left;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.benefit-item {
+  font-size: 28rpx;
+  color: #333;
+  display: block;
+  line-height: 1.8;
+  padding-left: 10rpx;
+  position: relative;
+}
+
+.benefit-item::before {
+  content: '✓';
+  position: absolute;
+  left: 0;
+  color: #4CAF50;
+  font-weight: bold;
+}
+
+.auth-button {
+  background: linear-gradient(135deg, #4CAF50, #45a049);
+  color: white;
+  font-size: 32rpx;
+  font-weight: bold;
+  padding: 24rpx 0;
+  border-radius: 48rpx;
+  border: none;
+  margin-bottom: 20rpx;
+  width: 100%;
+  transition: all 0.3s ease;
+}
+
+.auth-button:active {
+  transform: scale(0.98);
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.2);
+}
+
+.auth-button-later {
+  background: transparent;
+  color: #666;
+  font-size: 28rpx;
+  padding: 20rpx 0;
+  border: none;
+  width: 100%;
+  transition: all 0.3s ease;
+}
+
+.auth-button-later:active {
+  color: #333;
+}
+
+/* ========== 底部登录提示条 ========== */
+.auth-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 -2rpx 10rpx rgba(0, 0, 0, 0.1);
+  z-index: 9999;
+  padding: 20rpx;
+}
+
+.auth-bar-content {
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+  padding: 0 10rpx;
+}
+
+.auth-bar-icon {
+  width: 60rpx;
+  height: 60rpx;
+  border-radius: 50%;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
+}
+
+.auth-bar-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.auth-bar-title {
+  font-size: 28rpx;
+  font-weight: bold;
+  color: #333;
+  display: block;
+  margin-bottom: 4rpx;
+}
+
+.auth-bar-desc {
+  font-size: 22rpx;
+  color: #666;
+  display: block;
+}
+
+.auth-bar-button {
+  background: linear-gradient(135deg, #4CAF50, #45a049);
+  color: white;
+  font-size: 28rpx;
+  font-weight: bold;
+  padding: 16rpx 32rpx;
+  border-radius: 40rpx;
+  border: none;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.auth-bar-button:active {
+  transform: scale(0.98);
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.2);
+}
+

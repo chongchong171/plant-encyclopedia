@@ -1,0 +1,1 @@
+{"name": "intentClassify", "version": "3.0.0", "description": "智能对话管家 - AI工具调用版", "main": "index.js", "dependencies": {"wx-server-sdk": "~2.6.3"}}

@@ -1,0 +1,281 @@
+/* 社区花园页面样式 */
+.container {
+  min-height: 100vh;
+  background: #F5F5F5;
+}
+
+/* Tab 切换栏 */
+.rank-tabs {
+  display: flex;
+  background: white;
+  padding: 12rpx 16rpx;
+  margin: 16rpx;
+  border-radius: 40rpx;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.05);
+}
+
+.rank-tab {
+  flex: 1;
+  text-align: center;
+  font-size: 26rpx;
+  color: #666;
+  padding: 16rpx 0;
+  border-radius: 32rpx;
+  transition: all 0.2s;
+}
+
+.rank-tab.active {
+  background: #E8F5E9;
+  color: #4CAF50;
+  font-weight: bold;
+}
+
+/* 前三名 */
+.top-three {
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  padding: 30rpx 20rpx;
+  margin-bottom: 10rpx;
+}
+
+.top-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: white;
+  border-radius: 20rpx;
+  padding: 24rpx;
+  margin: 0 10rpx;
+  box-shadow: 0 8rpx 30rpx rgba(0, 0, 0, 0.08);
+  position: relative;
+  min-width: 200rpx;
+}
+
+.top-item.first {
+  width: 240rpx;
+  padding: 36rpx 24rpx;
+  transform: scale(1.15);
+  z-index: 10;
+  background: linear-gradient(180deg, #FFF9E6 0%, #FFFFFF 100%);
+  border: 3rpx solid #FFD700;
+}
+
+.top-item.second {
+  width: 200rpx;
+  opacity: 0.95;
+}
+
+.top-item.third {
+  width: 200rpx;
+  opacity: 0.9;
+}
+
+.crown {
+  font-size: 36rpx;
+  position: absolute;
+  top: -16rpx;
+  animation: bounce 1s infinite;
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8rpx); }
+}
+
+.rank-badge {
+  font-size: 32rpx;
+  margin-bottom: 8rpx;
+}
+
+.avatar {
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 4rpx solid #4CAF50;
+  margin-bottom: 12rpx;
+}
+
+.avatar image {
+  width: 100%;
+  height: 100%;
+}
+
+.name {
+  font-size: 26rpx;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 6rpx;
+  max-width: 140rpx;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.value {
+  font-size: 28rpx;
+  font-weight: bold;
+  color: #4CAF50;
+}
+
+.value.highlight {
+  font-size: 32rpx;
+}
+
+.featured-plant {
+  font-size: 22rpx;
+  color: #666;
+  margin-top: 8rpx;
+  background: #E8F5E9;
+  padding: 8rpx 16rpx;
+  border-radius: 20rpx;
+}
+
+/* 排行列表 */
+.ranking-list {
+  padding: 0 16rpx;
+}
+
+.ranking-item {
+  display: flex;
+  align-items: center;
+  background: white;
+  border-radius: 16rpx;
+  padding: 20rpx;
+  margin-bottom: 12rpx;
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.04);
+}
+
+.rank-num {
+  width: 50rpx;
+  font-size: 28rpx;
+  font-weight: bold;
+  color: #999;
+  text-align: center;
+}
+
+.avatar-small {
+  width: 70rpx;
+  height: 70rpx;
+  border-radius: 50%;
+  overflow: hidden;
+  margin-right: 16rpx;
+}
+
+.avatar-small image {
+  width: 100%;
+  height: 100%;
+}
+
+.user-info {
+  flex: 1;
+}
+
+.user-name {
+  font-size: 28rpx;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 6rpx;
+}
+
+.me-tag {
+  font-size: 20rpx;
+  background: #4CAF50;
+  color: white;
+  padding: 4rpx 10rpx;
+  border-radius: 16rpx;
+  margin-left: 8rpx;
+}
+
+.user-stats {
+  font-size: 24rpx;
+  color: #666;
+}
+
+/* 我的排名卡片 */
+.my-rank-card {
+  background: white;
+  border-radius: 16rpx;
+  padding: 20rpx;
+  margin: 20rpx 16rpx;
+  border: 4rpx solid #4CAF50;
+}
+
+.my-rank-title {
+  font-size: 26rpx;
+  font-weight: bold;
+  color: #4CAF50;
+  margin-bottom: 12rpx;
+}
+
+.my-rank-content {
+  display: flex;
+  align-items: center;
+}
+
+.my-info {
+  flex: 1;
+}
+
+.my-name {
+  font-size: 30rpx;
+  font-weight: bold;
+  color: #333;
+}
+
+.my-stats {
+  font-size: 24rpx;
+  color: #666;
+  margin-top: 6rpx;
+}
+
+/* 加载状态 */
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 300rpx;
+}
+
+.loading-text {
+  font-size: 28rpx;
+  color: #999;
+}
+
+/* 空状态 */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 100rpx 40rpx;
+  text-align: center;
+}
+
+.empty-icon {
+  font-size: 100rpx;
+  margin-bottom: 24rpx;
+}
+
+.empty-text {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 12rpx;
+}
+
+/* 主要按钮 */
+.btn-primary {
+  width: 320rpx;
+  height: 80rpx;
+  background: #4CAF50;
+  color: white;
+  border-radius: 40rpx;
+  font-size: 28rpx;
+  font-weight: bold;
+  line-height: 80rpx;
+}
+
+.btn-primary::after {
+  border: none;
+}

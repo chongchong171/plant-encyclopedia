@@ -1,0 +1,80 @@
+/* water-badge.wxss */
+/* 使用全局 CSS 变量 */
+
+.water-badge {
+  display: flex;
+  align-items: center;
+  gap: 4rpx;
+  border-radius: 16rpx;
+  padding: 4rpx 12rpx;
+}
+
+.water-badge__icon {
+  font-size: var(--font-size-xs);
+}
+
+.water-badge__text {
+  font-size: var(--font-size-sm);
+  white-space: nowrap;
+}
+
+/* ========== 状态颜色 ========== */
+
+.water-badge--urgent {
+  background: var(--error-color);
+  color: var(--white);
+}
+
+.water-badge--soon {
+  background: var(--warning-color);
+  color: var(--white);
+}
+
+.water-badge--ok {
+  background: #f0f0f0;
+  color: var(--text-secondary);
+}
+
+.water-badge--unknown {
+  background: #f0f0f0;
+  color: var(--text-light);
+}
+
+/* ========== 动画 ========== */
+
+.water-badge--animated {
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+}
+
+/* ========== 尺寸变体 ========== */
+
+.water-badge--small {
+  padding: 2rpx 8rpx;
+}
+
+.water-badge--small .water-badge__icon {
+  font-size: 16rpx;
+}
+
+.water-badge--small .water-badge__text {
+  font-size: 18rpx;
+}
+
+.water-badge--large {
+  padding: 8rpx 16rpx;
+  border-radius: 20rpx;
+}
+
+.water-badge--large .water-badge__icon {
+  font-size: var(--font-size-xl);
+}
+
+.water-badge--large .water-badge__text {
+  font-size: var(--font-size-md);
+  font-weight: 500;
+}

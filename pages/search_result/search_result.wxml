@@ -1,0 +1,275 @@
+<!-- 搜索结果页 - 重构版 -->
+<view class="container">
+  
+  <!-- 加载中 -->
+  <view class="loading-container text-loading" wx:if="{{loading && !headerImage}}">
+    <view class="loading-spinner"></view>
+    <text class="loading-text">🔍 正在查询...</text>
+  </view>
+
+  <!-- 查询结果 -->
+  <view class="result-container" wx:if="{{!loading && !error && plant}}">
+    
+    <!-- 1. 植物头图 -->
+    <view class="plant-hero-section" wx:if="{{headerImage || plant.imageUrl}}">
+      <image class="hero-image" src="{{headerImage || plant.imageUrl}}" mode="aspectFill" catchtap="previewImage"></image>
+      <view class="favorite-btn" catchtap="toggleFavorite">
+        <text>{{isFavorite ? '❤️' : '🤍'}}</text>
+      </view>
+      <view class="image-preview-hint">📷 点击图片放大查看</view>
+    </view>
+
+    <!-- 2. 基本信息 -->
+    <view class="plant-info-card">
+      <view class="plant-name-section">
+        <text class="plant-name">🏷️ {{plant.name}}</text>
+        <text class="plant-scientific" wx:if="{{plant.scientificNameLatin}}">{{plant.scientificNameLatin}}</text>
+        <view class="plant-difficulty" wx:if="{{plant.difficultyText}}">
+          <text class="difficulty-stars">{{difficultyStars}}</text>
+          <text class="difficulty-text">{{plant.difficultyText}}</text>
+        </view>
+      </view>
+      
+      <view class="plant-meta-info" wx:if="{{plant.commonNames}}">
+        <text class="meta-label">别名：</text>
+        <text class="meta-value">{{plant.commonNames}}</text>
+      </view>
+      
+      <view class="plant-meta-info" wx:if="{{plant.family}}">
+        <text class="meta-label">科属：</text>
+        <text class="meta-value">{{plant.family}}</text>
+      </view>
+    </view>
+
+    <!-- 3. 植物档案 -->
+    <view class="plant-profile-card" wx:if="{{plant.description || plant.appearance || plant.origin}}">
+      <view class="card-header">
+        <text class="section-title">📖 植物档案</text>
+        <text class="importance-badge medium-importance">基础</text>
+      </view>
+      <view class="profile-content">
+        <view class="profile-section" wx:if="{{plant.description}}">
+          <text class="section-subtitle">形态特征</text>
+          <text class="section-desc">{{plant.description}}</text>
+        </view>
+        
+        <view class="profile-section" wx:if="{{plant.appearance}}">
+          <text class="section-subtitle">观赏价值</text>
+          <text class="section-desc">{{plant.appearance}}</text>
+        </view>
+        
+        <view class="profile-section" wx:if="{{plant.origin}}">
+          <text class="section-subtitle">原产地</text>
+          <text class="section-desc">{{plant.origin}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 4. 生长习性 -->
+    <view class="growth-habit-card" wx:if="{{plant.growthHabit}}">
+      <view class="card-header">
+        <text class="section-title">🌱 生长习性</text>
+        <text class="importance-badge medium-importance">基础</text>
+      </view>
+      <view class="habit-content">
+        <text class="habit-desc">{{plant.growthHabit}}</text>
+      </view>
+    </view>
+
+    <!-- 5. 主要价值 -->
+    <view class="main-value-card" wx:if="{{plant.mainValue || plant.benefits || plant.uses || plant.medicinalValue || plant.symbolism}}">
+      <view class="card-header">
+        <text class="section-title">💎 主要价值</text>
+        <text class="importance-badge medium-importance">基础</text>
+      </view>
+      <view class="value-content">
+        <view class="value-section" wx:if="{{plant.mainValue}}">
+          <text class="value-title">观赏价值</text>
+          <text class="value-desc">{{plant.mainValue}}</text>
+        </view>
+        
+        <view class="value-section" wx:if="{{plant.benefits}}">
+          <text class="value-title">生态效益</text>
+          <text class="value-desc">{{plant.benefits}}</text>
+        </view>
+        
+        <view class="value-section" wx:if="{{plant.uses}}">
+          <text class="value-title">实用价值</text>
+          <text class="value-desc">{{plant.uses}}</text>
+        </view>
+        
+        <view class="value-section" wx:if="{{plant.medicinalValue}}">
+          <text class="value-title">药用价值</text>
+          <text class="value-desc">{{plant.medicinalValue}}</text>
+        </view>
+        
+        <view class="value-section" wx:if="{{plant.symbolism}}">
+          <text class="value-title">植物寓意</text>
+          <text class="value-desc">{{plant.symbolism}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 6. 养护指南（核心） -->
+    <view class="care-guide-card" wx:if="{{plant.careGuide}}">
+      <view class="card-header">
+        <text class="section-title">🌿 养护指南</text>
+        <text class="importance-badge high-importance">核心</text>
+      </view>
+      <view class="care-grid">
+        <view class="care-item light-item" wx:if="{{plant.careGuide.light}}">
+          <view class="care-item-header">
+            <text class="care-item-icon">☀️</text>
+            <text class="care-item-title">光照</text>
+          </view>
+          <text class="care-item-desc">{{plant.careGuide.light}}</text>
+        </view>
+        
+        <view class="care-item water-item" wx:if="{{plant.careGuide.water}}">
+          <view class="care-item-header">
+            <text class="care-item-icon">💧</text>
+            <text class="care-item-title">浇水</text>
+          </view>
+          <text class="care-item-desc">{{plant.careGuide.water}}</text>
+        </view>
+        
+        <view class="care-item temp-item" wx:if="{{plant.careGuide.temperature}}">
+          <view class="care-item-header">
+            <text class="care-item-icon">🌡️</text>
+            <text class="care-item-title">温度</text>
+          </view>
+          <text class="care-item-desc">{{plant.careGuide.temperature}}</text>
+        </view>
+        
+        <view class="care-item humid-item" wx:if="{{plant.careGuide.humidity}}">
+          <view class="care-item-header">
+            <text class="care-item-icon">💦</text>
+            <text class="care-item-title">湿度</text>
+          </view>
+          <text class="care-item-desc">{{plant.careGuide.humidity}}</text>
+        </view>
+        
+        <view class="care-item fert-item" wx:if="{{plant.careGuide.fertilizer}}">
+          <view class="care-item-header">
+            <text class="care-item-icon">🌿</text>
+            <text class="care-item-title">施肥</text>
+          </view>
+          <text class="care-item-desc">{{plant.careGuide.fertilizer}}</text>
+        </view>
+        
+        <view class="care-item soil-item" wx:if="{{plant.careGuide.soil}}">
+          <view class="care-item-header">
+            <text class="care-item-icon">🏺</text>
+            <text class="care-item-title">土壤</text>
+          </view>
+          <text class="care-item-desc">{{plant.careGuide.soil}}</text>
+        </view>
+        
+        <view class="care-item prune-item" wx:if="{{plant.careGuide.pruning}}">
+          <view class="care-item-header">
+            <text class="care-item-icon">✂️</text>
+            <text class="care-item-title">修剪</text>
+          </view>
+          <text class="care-item-desc">{{plant.careGuide.pruning}}</text>
+        </view>
+        
+        <view class="care-item grow-item" wx:if="{{plant.careGuide.propagation}}">
+          <view class="care-item-header">
+            <text class="care-item-icon">🌱</text>
+            <text class="care-item-title">繁殖</text>
+          </view>
+          <text class="care-item-desc">{{plant.careGuide.propagation}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 7. 养护要点 -->
+    <view class="quick-tips-card" wx:if="{{plant.quickTips && plant.quickTips.length > 0}}">
+      <view class="card-header">
+        <text class="section-title">💡 养护要点</text>
+        <text class="importance-badge high-importance">核心</text>
+      </view>
+      <view class="tip-list">
+        <view class="tip-item" wx:for="{{plant.quickTips}}" wx:key="*this">
+          <text class="tip-icon">✓</text>
+          <text class="tip-text">{{item}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 季节性养护（辅助） -->
+    <view class="seasonal-care-card" wx:if="{{plant.seasonalCare}}">
+      <view class="card-header" catchtap="toggleCollapse" data-target="seasonalCare">
+        <text class="section-title">📅 季节性养护</text>
+        <text class="importance-badge medium-importance">辅助</text>
+        <text class="collapse-icon">{{collapsedSections.seasonalCare ? '▶' : '▼'}}</text>
+      </view>
+      <view class="season-list" wx:if="{{!collapsedSections.seasonalCare}}">
+        <view class="season-item spring-item" wx:if="{{plant.seasonalCare.spring}}">
+          <view class="season-header">
+            <text class="season-icon">🌸</text>
+            <text class="season-title">春季</text>
+          </view>
+          <text class="season-desc">{{plant.seasonalCare.spring}}</text>
+        </view>
+        
+        <view class="season-item summer-item" wx:if="{{plant.seasonalCare.summer}}">
+          <view class="season-header">
+            <text class="season-icon">☀️</text>
+            <text class="season-title">夏季</text>
+          </view>
+          <text class="season-desc">{{plant.seasonalCare.summer}}</text>
+        </view>
+        
+        <view class="season-item autumn-item" wx:if="{{plant.seasonalCare.autumn}}">
+          <view class="season-header">
+            <text class="season-icon">🍂</text>
+            <text class="season-title">秋季</text>
+          </view>
+          <text class="season-desc">{{plant.seasonalCare.autumn}}</text>
+        </view>
+        
+        <view class="season-item winter-item" wx:if="{{plant.seasonalCare.winter}}">
+          <view class="season-header">
+            <text class="season-icon">❄️</text>
+            <text class="season-title">冬季</text>
+          </view>
+          <text class="season-desc">{{plant.seasonalCare.winter}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 植物趣闻（辅助） -->
+    <view class="fun-facts-card" wx:if="{{plant.funFacts && plant.funFacts.length > 0}}">
+      <view class="card-header" catchtap="toggleCollapse" data-target="funFacts">
+        <text class="section-title">🌟 植物趣闻</text>
+        <text class="importance-badge low-importance">可选</text>
+        <text class="collapse-icon">{{collapsedSections.funFacts ? '▶' : '▼'}}</text>
+      </view>
+      <view class="fun-list" wx:if="{{!collapsedSections.funFacts}}">
+        <view class="fun-item" wx:for="{{plant.funFacts}}" wx:key="{{index}}">
+          <view class="fun-header">
+            <text class="fun-icon">{{item.icon || '🌟'}}</text>
+            <text class="fun-title">{{item.title}}</text>
+          </view>
+          <text class="fun-content">{{item.content}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 收藏按钮 -->
+    <view class="action-section">
+      <button class="favorite-action-btn" catchtap="toggleFavorite">
+        <text>{{isFavorite ? '❤️ 已收藏' : '🤍 加入收藏'}}</text>
+      </button>
+    </view>
+  </view>
+
+  <!-- 错误提示 -->
+  <view class="error-container" wx:if="{{error}}">
+    <text class="error-icon">😕</text>
+    <text class="error-text">未找到相关植物信息</text>
+    <button class="retry-button" catchtap="retrySearch">重新搜索</button>
+  </view>
+
+</view>

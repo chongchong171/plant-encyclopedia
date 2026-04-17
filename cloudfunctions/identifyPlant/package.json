@@ -1,0 +1,14 @@
+{
+  "name": "identifyPlant",
+  "version": "1.0.0",
+  "description": "植物识别云函数（PlantNet + Qwen）",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "~2.6.3",
+    "node-fetch": "^2.6.7"
+  },
+  "cloudfunction-config": {
+    "memorySize": 512,
+    "timeout": 25
+  }
+}

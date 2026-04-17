@@ -1,0 +1,851 @@
+/* 植物百科大全 - 搜索结果页 · 全面重构版 */
+
+/* ========== 基础设定 ========== */
+page {
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  font-family: 'PingFang SC', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  color: #333333;
+  line-height: 1.6;
+}
+
+.container {
+  min-height: 100vh;
+  padding-bottom: 120rpx;
+}
+
+/* ========== 结果容器 ========== */
+.result-container {
+  padding: 24rpx;
+  background: rgba(255, 255, 255, 0.95);
+  min-height: 100vh;
+}
+
+/* ========== 植物头图 ========== */
+.plant-hero-section {
+  position: relative;
+  margin-bottom: 32rpx;
+  border-radius: 20rpx;
+  overflow: hidden;
+  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.15);
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+}
+
+.hero-image {
+  width: 100%;
+  height: 400rpx;
+  object-fit: cover;
+  border-radius: 20rpx;
+  transition: transform 0.3s ease;
+}
+
+.hero-image:hover {
+  transform: scale(1.02);
+}
+
+.favorite-btn {
+  position: absolute;
+  top: 20rpx;
+  right: 20rpx;
+  width: 64rpx;
+  height: 64rpx;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32rpx;
+  cursor: pointer;
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+  z-index: 10;
+}
+
+.favorite-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6rpx 20rpx rgba(0, 0, 0, 0.3);
+}
+
+.image-preview-hint {
+  position: absolute;
+  bottom: 20rpx;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.6);
+  color: white;
+  padding: 8rpx 20rpx;
+  border-radius: 20rpx;
+  font-size: 24rpx;
+  backdrop-filter: blur(4rpx);
+  z-index: 5;
+}
+
+/* ========== 基本信息卡片 ========== */
+.plant-info-card {
+  background: white;
+  border-radius: 20rpx;
+  padding: 28rpx;
+  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.1);
+  border: 2rpx solid #e8f5e8;
+  margin-bottom: 32rpx;
+  background: linear-gradient(135deg, #ffffff 0%, #f8fff8 100%);
+}
+
+.plant-name-section {
+  text-align: center;
+  margin-bottom: 24rpx;
+  padding-bottom: 24rpx;
+  border-bottom: 2rpx solid #e8f5e8;
+}
+
+.plant-name {
+  font-size: 44rpx;
+  font-weight: 700;
+  color: #222222;
+  margin-bottom: 12rpx;
+  text-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.1);
+  background: linear-gradient(135deg, #4CAF50, #66BB6A);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  display: block;
+}
+
+.plant-scientific {
+  font-size: 30rpx;
+  font-style: italic;
+  color: #666666;
+  margin-bottom: 16rpx;
+  display: block;
+}
+
+.plant-difficulty {
+  display: inline-flex;
+  align-items: center;
+  gap: 8rpx;
+  padding: 12rpx 20rpx;
+  background: linear-gradient(135deg, #F0F2F4, #E9ECEF);
+  border-radius: 24rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.08);
+  margin-top: 12rpx;
+}
+
+.difficulty-stars {
+  font-size: 24rpx;
+  color: #FFB347;
+}
+
+.difficulty-text {
+  font-size: 24rpx;
+  color: #666666;
+  font-weight: 500;
+}
+
+.plant-meta-info {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20rpx;
+  font-size: 30rpx;
+  padding: 16rpx;
+  background: rgba(245, 255, 245, 0.6);
+  border-radius: 12rpx;
+  border-left: 4rpx solid #4CAF50;
+}
+
+.meta-label {
+  font-weight: 500;
+  color: #555555;
+  margin-right: 12rpx;
+  min-width: 80rpx;
+}
+
+.meta-value {
+  color: #333333;
+  flex: 1;
+  font-size: 28rpx;
+}
+
+/* ========== 卡片基础样式 ========== */
+.card-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20rpx;
+  padding: 16rpx 24rpx;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.8) 0%, rgba(248, 249, 250, 0.8) 100%);
+  border-radius: 12rpx 12rpx 0 0;
+  margin: -24rpx -24rpx 20rpx -24rpx;
+  border-bottom: 2rpx solid #f0f0f0;
+}
+
+.section-title {
+  flex: 1;
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #333333;
+  text-shadow: 0 1rpx 2rpx rgba(0, 0, 0, 0.05);
+}
+
+.importance-badge {
+  padding: 4rpx 16rpx;
+  border-radius: 16rpx;
+  font-size: 20rpx;
+  font-weight: 500;
+  margin-left: 12rpx;
+}
+
+.high-importance {
+  background: linear-gradient(135deg, #ff6b6b, #ee5a6f);
+  color: white;
+}
+
+.medium-importance {
+  background: linear-gradient(135deg, #ffbe0b, #fb5607);
+  color: white;
+}
+
+.low-importance {
+  background: linear-gradient(135deg, #3a86ff, #8338ec);
+  color: white;
+}
+
+.collapse-icon {
+  font-size: 24rpx;
+  color: #666666;
+  transition: transform 0.3s ease;
+  margin-left: 12rpx;
+}
+
+/* ========== 植物档案卡片 ========== */
+.plant-profile-card {
+  background: white;
+  border-radius: 20rpx;
+  padding: 28rpx;
+  margin-bottom: 32rpx;
+  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.1);
+  border: 2rpx solid #e8f5e8;
+  background: linear-gradient(135deg, #ffffff 0%, #f8f8ff 100%);
+}
+
+.profile-content {
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+  margin-top: 20rpx;
+}
+
+.profile-section {
+  padding: 20rpx;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 16rpx;
+  border-left: 6rpx solid #4CAF50;
+  transition: all 0.3s ease;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.08);
+}
+
+.profile-section:hover {
+  transform: translateX(4rpx);
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.1);
+}
+
+.section-subtitle {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #333333;
+  margin-bottom: 12rpx;
+  display: block;
+}
+
+.section-desc {
+  font-size: 26rpx;
+  color: #555555;
+  line-height: 1.6;
+  text-align: justify;
+}
+
+/* ========== 生长习性卡片 ========== */
+.growth-habit-card {
+  background: white;
+  border-radius: 20rpx;
+  padding: 28rpx;
+  margin-bottom: 32rpx;
+  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.1);
+  border: 2rpx solid #e8f5e8;
+  background: linear-gradient(135deg, #ffffff 0%, #f0f8ff 100%);
+}
+
+.habit-content {
+  margin-top: 20rpx;
+  padding: 20rpx;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 16rpx;
+  border-left: 6rpx solid #8BC34A;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.08);
+}
+
+.habit-desc {
+  font-size: 26rpx;
+  color: #555555;
+  line-height: 1.6;
+  text-align: justify;
+}
+
+/* ========== 主要价值卡片 ========== */
+.main-value-card {
+  background: white;
+  border-radius: 20rpx;
+  padding: 28rpx;
+  margin-bottom: 32rpx;
+  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.1);
+  border: 2rpx solid #e8f5e8;
+  background: linear-gradient(135deg, #ffffff 0%, #fff8e1 100%);
+}
+
+.value-content {
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+  margin-top: 20rpx;
+}
+
+.value-section {
+  padding: 20rpx;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 16rpx;
+  border-left: 6rpx solid #FFC107;
+  transition: all 0.3s ease;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.08);
+}
+
+.value-section:hover {
+  transform: translateX(4rpx);
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.1);
+}
+
+.value-title {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #333333;
+  margin-bottom: 12rpx;
+  display: block;
+}
+
+.value-desc {
+  font-size: 26rpx;
+  color: #555555;
+  line-height: 1.6;
+  text-align: justify;
+}
+
+/* ========== 养护指南卡片（核心） ========== */
+.care-guide-card {
+  background: white;
+  border-radius: 20rpx;
+  padding: 28rpx;
+  margin-bottom: 32rpx;
+  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.1);
+  border: 2rpx solid #e8f5e8;
+  background: linear-gradient(135deg, #ffffff 0%, #f8fff8 100%);
+}
+
+.care-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300rpx, 1fr));
+  gap: 20rpx;
+  margin-top: 20rpx;
+}
+
+.care-item {
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 16rpx;
+  padding: 20rpx;
+  border: 1rpx solid #e8f5e8;
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.08);
+}
+
+.care-item:hover {
+  transform: translateY(-4rpx);
+  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.15);
+}
+
+.light-item {
+  border-left: 6rpx solid #FFB300;
+  background: linear-gradient(135deg, #fff8e1 0%, #fff3e0 100%);
+}
+
+.water-item {
+  border-left: 6rpx solid #2196F3;
+  background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+}
+
+.temp-item {
+  border-left: 6rpx solid #FF9800;
+  background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+}
+
+.humid-item {
+  border-left: 6rpx solid #00BCD4;
+  background: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 100%);
+}
+
+.fert-item {
+  border-left: 6rpx solid #4CAF50;
+  background: linear-gradient(135deg, #e8f5e8 0%, #c8e6c9 100%);
+}
+
+.soil-item {
+  border-left: 6rpx solid #795548;
+  background: linear-gradient(135deg, #efebe9 0%, #d7ccc8 100%);
+}
+
+.prune-item {
+  border-left: 6rpx solid #9C27B0;
+  background: linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%);
+}
+
+.grow-item {
+  border-left: 6rpx solid #8BC34A;
+  background: linear-gradient(135deg, #f1f8e9 0%, #dcedc8 100%);
+}
+
+.care-item-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12rpx;
+}
+
+.care-item-icon {
+  font-size: 32rpx;
+  margin-right: 12rpx;
+}
+
+.care-item-title {
+  flex: 1;
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #333333;
+}
+
+.care-item-desc {
+  font-size: 26rpx;
+  color: #555555;
+  line-height: 1.6;
+  flex: 1;
+}
+
+/* ========== 养护要点卡片 ========== */
+.quick-tips-card {
+  background: white;
+  border-radius: 20rpx;
+  padding: 28rpx;
+  margin-bottom: 32rpx;
+  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.1);
+  border: 2rpx solid #e8f5e8;
+  background: linear-gradient(135deg, #ffffff 0%, #f8fff8 100%);
+}
+
+.tip-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+  margin-top: 20rpx;
+}
+
+.tip-item {
+  display: flex;
+  align-items: flex-start;
+  padding: 20rpx;
+  background: rgba(245, 255, 245, 0.8);
+  border-radius: 16rpx;
+  border-left: 6rpx solid #4CAF50;
+  transition: all 0.3s ease;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.08);
+}
+
+.tip-item:hover {
+  transform: translateX(4rpx);
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.1);
+}
+
+.tip-icon {
+  font-size: 24rpx;
+  margin-right: 12rpx;
+  margin-top: 4rpx;
+  flex-shrink: 0;
+  color: #4CAF50;
+  font-weight: bold;
+}
+
+.tip-text {
+  flex: 1;
+  font-size: 26rpx;
+  color: #555555;
+  line-height: 1.6;
+  word-wrap: break-word;
+  word-break: break-all;
+  white-space: normal;
+}
+
+/* ========== 季节性养护卡片 ========== */
+.seasonal-care-card {
+  background: white;
+  border-radius: 20rpx;
+  padding: 28rpx;
+  margin-bottom: 32rpx;
+  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.1);
+  border: 2rpx solid #e8f5e8;
+  background: linear-gradient(135deg, #ffffff 0%, #f0f8ff 100%);
+}
+
+.season-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+  margin-top: 20rpx;
+}
+
+.season-item {
+  padding: 24rpx;
+  border-radius: 16rpx;
+  transition: all 0.3s ease;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.08);
+}
+
+.season-item:hover {
+  transform: translateY(-2rpx);
+  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.15);
+}
+
+.spring-item {
+  background: linear-gradient(135deg, #e8f5e8, #c8e6c9);
+  border-left: 6rpx solid #4CAF50;
+}
+
+.summer-item {
+  background: linear-gradient(135deg, #fff3e0, #ffcc80);
+  border-left: 6rpx solid #FF9800;
+}
+
+.autumn-item {
+  background: linear-gradient(135deg, #efebe9, #d7ccc8);
+  border-left: 6rpx solid #795548;
+}
+
+.winter-item {
+  background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+  border-left: 6rpx solid #2196F3;
+}
+
+.season-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 16rpx;
+}
+
+.season-icon {
+  font-size: 32rpx;
+  margin-right: 16rpx;
+}
+
+.season-title {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #333333;
+}
+
+.season-desc {
+  font-size: 26rpx;
+  color: #555555;
+  line-height: 1.6;
+  text-align: justify;
+}
+
+/* ========== 植物趣闻卡片 ========== */
+.fun-facts-card {
+  background: white;
+  border-radius: 20rpx;
+  padding: 28rpx;
+  margin-bottom: 32rpx;
+  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.1);
+  border: 2rpx solid #e8f5e8;
+  background: linear-gradient(135deg, #ffffff 0%, #fff8e1 100%);
+}
+
+.fun-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+  margin-top: 20rpx;
+}
+
+.fun-item {
+  padding: 24rpx;
+  background: linear-gradient(135deg, #fff8e1, #ffecb3);
+  border-radius: 16rpx;
+  border-left: 6rpx solid #FFC107;
+  transition: all 0.3s ease;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.08);
+}
+
+.fun-item:hover {
+  transform: translateY(-2rpx);
+  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.15);
+}
+
+.fun-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 16rpx;
+}
+
+.fun-icon {
+  font-size: 32rpx;
+  margin-right: 16rpx;
+}
+
+.fun-title {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #333333;
+}
+
+.fun-content {
+  font-size: 26rpx;
+  color: #555555;
+  line-height: 1.6;
+  text-align: justify;
+}
+
+/* ========== 操作区 ========== */
+.action-section {
+  margin-top: 32rpx;
+  margin-bottom: 40rpx;
+}
+
+.favorite-action-btn {
+  width: 100%;
+  height: 96rpx;
+  background: linear-gradient(135deg, #4CAF50, #45a049);
+  color: white;
+  font-size: 32rpx;
+  font-weight: 600;
+  border: none;
+  border-radius: 20rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8rpx 24rpx rgba(76, 175, 80, 0.3);
+  transition: all 0.3s ease;
+}
+
+.favorite-action-btn:hover {
+  transform: translateY(-2rpx);
+  box-shadow: 0 12rpx 32rpx rgba(76, 175, 80, 0.4);
+  background: linear-gradient(135deg, #45a049, #3d8b40);
+}
+
+.favorite-action-btn::after {
+  border: none;
+}
+
+.favorite-action-btn:active {
+  transform: scale(0.98);
+  box-shadow: 0 4rpx 16rpx rgba(76, 175, 80, 0.25);
+}
+
+/* ========== 错误提示 ========== */
+.error-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 80vh;
+  padding: 40rpx;
+  text-align: center;
+}
+
+.error-icon {
+  font-size: 80rpx;
+  margin-bottom: 24rpx;
+}
+
+.error-text {
+  font-size: 32rpx;
+  color: #666666;
+  margin-bottom: 32rpx;
+}
+
+.retry-button {
+  padding: 16rpx 48rpx;
+  background: linear-gradient(135deg, #4CAF50, #45a049);
+  color: white;
+  font-size: 28rpx;
+  font-weight: 500;
+  border: none;
+  border-radius: 20rpx;
+  box-shadow: 0 4rpx 16rpx rgba(76, 175, 80, 0.3);
+  transition: all 0.3s ease;
+}
+
+.retry-button:hover {
+  transform: translateY(-2rpx);
+  box-shadow: 0 6rpx 20rpx rgba(76, 175, 80, 0.4);
+}
+
+.retry-button::after {
+  border: none;
+}
+
+/* ========== 加载状态 ========== */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 80vh;
+  padding: 40rpx;
+  text-align: center;
+}
+
+.loading-spinner {
+  width: 80rpx;
+  height: 80rpx;
+  border: 8rpx solid #f3f3f3;
+  border-top: 8rpx solid #4CAF50;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 24rpx;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.loading-text {
+  font-size: 32rpx;
+  color: #666666;
+  font-weight: 500;
+  text-shadow: 0 1rpx 2rpx rgba(0, 0, 0, 0.1);
+}
+
+/* ========== 响应式设计 ========== */
+/* 小屏幕设备 */
+@media screen and (max-width: 375px) {
+  .hero-section {
+    height: 300rpx;
+  }
+  
+  .hero-image {
+    height: 300rpx;
+  }
+  
+  .plant-name {
+    font-size: 36rpx;
+  }
+  
+  .plant-scientific {
+    font-size: 24rpx;
+  }
+  
+  .section-title {
+    font-size: 28rpx;
+  }
+  
+  .plant-info-card,
+  .plant-profile-card,
+  .growth-habit-card,
+  .main-value-card,
+  .care-guide-card,
+  .quick-tips-card,
+  .seasonal-care-card,
+  .fun-facts-card {
+    padding: 20rpx;
+    margin-bottom: 24rpx;
+  }
+  
+  .care-grid {
+    grid-template-columns: 1fr;
+    gap: 16rpx;
+  }
+  
+  .care-item {
+    padding: 16rpx;
+  }
+  
+  .care-item-title {
+    font-size: 24rpx;
+  }
+  
+  .care-item-desc {
+    font-size: 22rpx;
+  }
+  
+  .section-desc,
+  .habit-desc,
+  .value-desc,
+  .season-desc,
+  .fun-content,
+  .tip-text {
+    font-size: 24rpx;
+  }
+}
+
+/* 大屏幕设备 */
+@media screen and (min-width: 768px) {
+  .hero-section {
+    height: 500rpx;
+  }
+  
+  .hero-image {
+    height: 500rpx;
+  }
+  
+  .result-container {
+    max-width: 800rpx;
+    margin: 0 auto;
+    padding: 32rpx;
+  }
+  
+  .plant-name {
+    font-size: 48rpx;
+  }
+  
+  .plant-scientific {
+    font-size: 32rpx;
+  }
+  
+  .care-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24rpx;
+  }
+  
+  .care-item {
+    padding: 24rpx;
+  }
+  
+  .section-desc,
+  .habit-desc,
+  .value-desc,
+  .season-desc,
+  .fun-content,
+  .tip-text {
+    font-size: 28rpx;
+  }
+}
+
+/* 横屏模式 */
+@media screen and (orientation: landscape) {
+  .hero-section {
+    height: 250rpx;
+  }
+  
+  .hero-image {
+    height: 250rpx;
+  }
+  
+  .care-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}

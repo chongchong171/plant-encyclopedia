@@ -1,0 +1,77 @@
+/* problem-picker.wxss */
+/* 使用全局 CSS 变量 */
+
+.problem-picker {
+  width: 100%;
+}
+
+.problem-picker__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16rpx;
+  padding: 0 16rpx;
+}
+
+.problem-picker__title {
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  color: var(--text-color);
+}
+
+.problem-picker__count {
+  font-size: var(--font-size-md);
+  color: var(--text-secondary);
+}
+
+.problem-picker__grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--gap);
+}
+
+/* ========== 问题项 ========== */
+
+.problem-item {
+  background: #f5f5f5;
+  border-radius: calc(var(--card-border-radius) * 0.6);
+  padding: var(--card-padding);
+  display: flex;
+  align-items: center;
+  gap: var(--gap);
+  transition: background 0.2s ease, transform 0.1s ease;
+  position: relative;
+}
+
+.problem-item:active {
+  transform: scale(0.98);
+}
+
+.problem-item--checked {
+  background: #e6f7ff;
+  border: 2rpx solid #1890ff;
+}
+
+.problem-item__icon {
+  font-size: var(--font-size-xl);
+}
+
+.problem-item__name {
+  font-size: var(--font-size-md);
+  color: var(--text-color);
+  flex: 1;
+}
+
+.problem-item__check {
+  font-size: var(--font-size-sm);
+  color: #1890ff;
+  font-weight: bold;
+}
+
+/* ========== 适配小屏 ========== */
+
+@media screen and (max-width: 375px) {
+  .problem-picker__grid {
+    grid-template-columns: repeat(1, 1fr);
+  }
+}

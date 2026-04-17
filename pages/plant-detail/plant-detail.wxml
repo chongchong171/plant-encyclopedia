@@ -1,0 +1,138 @@
+<!--植物详情页 - 花园入口专用-->
+<view class="container">
+  <!-- 加载中 -->
+  <view class="loading" wx:if="{{loading}}">
+    <text>加载中...</text>
+  </view>
+  
+  <!-- 植物信息 -->
+  <view class="plant-content" wx:if="{{!loading && plant}}">
+    <!-- 头部图片 -->
+    <view class="plant-header">
+      <image 
+        class="plant-image" 
+        src="{{plant.imageUrl}}" 
+        mode="aspectFill"
+        bindtap="previewImage"
+      ></image>
+      <view class="plant-name-box">
+        <text class="plant-name">{{plant.name}}</text>
+        <text class="plant-scientific" wx:if="{{plant.scientificName}}">{{plant.scientificName}}</text>
+      </view>
+    </view>
+    
+    <!-- 养护概览 -->
+    <view class="care-overview">
+      <view class="overview-item {{waterStatus}}">
+        <view class="overview-icon">💧</view>
+        <view class="overview-info">
+          <view class="overview-label">浇水</view>
+          <view class="overview-value">{{waterStatusText}}</view>
+        </view>
+        <button class="overview-btn" catchtap="recordWatering">记录</button>
+      </view>
+      
+      <view class="overview-item">
+        <view class="overview-icon">🌱</view>
+        <view class="overview-info">
+          <view class="overview-label">施肥</view>
+          <view class="overview-value">{{plant.careInfo.lastFertilized || '未记录'}}</view>
+        </view>
+        <button class="overview-btn" catchtap="recordFertilizing">记录</button>
+      </view>
+    </view>
+    
+    <!-- 光照需求 -->
+    <view class="care-card light-card" wx:if="{{plant.identifyResult.careGuide.light}}">
+      <view class="care-header">
+        <text class="care-icon">☀️</text>
+        <text class="care-title">光照需求</text>
+      </view>
+      <view class="care-content">
+        <text>{{plant.identifyResult.careGuide.light}}</text>
+      </view>
+    </view>
+    
+    <!-- 浇水周期 -->
+    <view class="care-card">
+      <view class="care-header">
+        <text class="care-icon">💧</text>
+        <text class="care-title">浇水周期</text>
+      </view>
+      
+      <view class="care-info">
+        <view class="info-row">
+          <text class="info-label">建议周期</text>
+          <text class="info-value">{{plant.careInfo.wateringDays || 7}}天/次</text>
+        </view>
+        <view class="info-row">
+          <text class="info-label">上次浇水</text>
+          <text class="info-value">{{plant.careInfo.lastWatered || '未记录'}}</text>
+        </view>
+        <view class="info-row">
+          <text class="info-label">下次浇水</text>
+          <text class="info-value">{{plant.careInfo.nextWatering || '未设置'}}</text>
+        </view>
+      </view>
+      
+      <view class="care-tips" wx:if="{{plant.identifyResult.careGuide.water}}">
+        <text class="tips-label">浇水建议</text>
+        <text class="tips-content">{{plant.identifyResult.careGuide.water}}</text>
+      </view>
+    </view>
+    
+    <!-- 施肥周期 -->
+    <view class="care-card">
+      <view class="care-header">
+        <text class="care-icon">🌱</text>
+        <text class="care-title">施肥周期</text>
+      </view>
+      
+      <view class="care-info">
+        <view class="info-row">
+          <text class="info-label">建议周期</text>
+          <text class="info-value">{{plant.careInfo.fertilizingDays || 30}}天/次</text>
+        </view>
+        <view class="info-row">
+          <text class="info-label">上次施肥</text>
+          <text class="info-value">{{plant.careInfo.lastFertilized || '未记录'}}</text>
+        </view>
+      </view>
+    </view>
+    
+    <!-- 温度要求 -->
+    <view class="care-card" wx:if="{{plant.identifyResult.careGuide.temperature}}">
+      <view class="care-header">
+        <text class="care-icon">🌡️</text>
+        <text class="care-title">温度要求</text>
+      </view>
+      <view class="care-content">
+        <text>{{plant.identifyResult.careGuide.temperature}}</text>
+      </view>
+    </view>
+    
+    <!-- 养护日志 -->
+    <view class="care-card">
+      <view class="care-header">
+        <text class="care-icon">📝</text>
+        <text class="care-title">养护日志</text>
+      </view>
+      
+      <view class="log-list" wx:if="{{plant.careLog && plant.careLog.length > 0}}">
+        <view class="log-item" wx:for="{{plant.careLog}}" wx:key="index">
+          <view class="log-date">{{item.date}}</view>
+          <view class="log-action">
+            <text wx:if="{{item.action === 'water'}}">💧 浇水</text>
+            <text wx:if="{{item.action === 'fertilize'}}">🌱 施肥</text>
+            <text wx:if="{{item.action === 'repot'}}">🪴 换盆</text>
+          </view>
+          <view class="log-notes" wx:if="{{item.notes}}">{{item.notes}}</view>
+        </view>
+      </view>
+      
+      <view class="empty-log" wx:else>
+        <text>暂无养护记录</text>
+      </view>
+    </view>
+  </view>
+</view>

@@ -1,0 +1,19 @@
+// tabBar 图标计算
+var icons = ['home', 'garden', 'discover', 'user']
+
+function getIcon(index, selected, homePage) {
+  var icon = icons[index]
+  var isActive = selected === index
+  
+  if (isActive) {
+    // 选中状态：绿色图标
+    return '/image/tab/' + icon + '-active.png'
+  } else {
+    // 未选中状态：白色图标（首页直接显示，其他页面通过 opacity 变灰）
+    return '/image/tab/' + icon + '-white.png'
+  }
+}
+
+module.exports = {
+  getIcon: getIcon
+}

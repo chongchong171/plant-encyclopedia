@@ -1,0 +1,844 @@
+/* 我的花园页面 - 简洁陈列式布局 */
+
+.container {
+  min-height: 100vh;
+  background: #f5f5f5;
+  padding-bottom: 160rpx;
+}
+
+/* ========== 头图区域（拓展到顶部） ========== */
+.header-section {
+  position: relative;
+  height: 500rpx;
+  overflow: hidden;
+}
+
+.header-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+}
+
+/* 状态栏占位 */
+.status-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 10;
+}
+
+/* 自定义导航栏 */
+.custom-navbar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: calc(var(--status-bar-height) + 88rpx);
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding-top: var(--status-bar-height);
+  z-index: 20;
+}
+
+.navbar-left {
+  width: 88rpx;
+  height: 88rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.back-icon {
+  font-size: 56rpx;
+  color: #ffffff;
+  font-weight: 300;
+  text-shadow: 0 2rpx 8rpx rgba(0,0,0,0.5);
+  line-height: 1;
+}
+
+.navbar-title {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 34rpx;
+  font-weight: 600;
+  color: #ffffff;
+  text-shadow: 0 2rpx 8rpx rgba(0,0,0,0.5);
+  top: calc(var(--status-bar-height) + 24rpx);
+}
+
+.navbar-right {
+  width: 88rpx;
+  height: 88rpx;
+}
+
+.header-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(180deg, 
+    rgba(0, 0, 0, 0.1) 0%, 
+    rgba(0, 0, 0, 0.3) 50%, 
+    rgba(0, 0, 0, 0.5) 100%
+  );
+  z-index: 1;
+}
+
+.header-content {
+  position: absolute;
+  bottom: 40rpx;
+  left: 0;
+  right: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.header-title {
+  font-size: 48rpx;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 10rpx;
+  text-shadow: 0 4rpx 16rpx rgba(0,0,0,0.6);
+  letter-spacing: 6rpx;
+}
+
+.header-subtitle {
+  font-size: 26rpx;
+  color: rgba(255, 255, 255, 0.9);
+  letter-spacing: 3rpx;
+  text-shadow: 0 2rpx 8rpx rgba(0,0,0,0.4);
+}
+
+/* ========== 统计卡片 ========== */
+.stats-section {
+  padding: 0 30rpx;
+  margin-top: -40rpx; /* 往上覆盖头图 */
+  position: relative;
+  z-index: 10;
+}
+
+.stats-card {
+  background: #ffffff;
+  border-radius: 12rpx;
+  padding: 30rpx 20rpx;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  box-shadow: 0 2rpx 8rpx rgba(0,0,0,0.08);
+}
+
+.stat-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 16rpx 0;
+  border-radius: 12rpx;
+  transition: all 0.2s ease;
+}
+
+.stat-item:active {
+  transform: scale(0.96);
+}
+
+.stat-num {
+  font-size: 40rpx;
+  font-weight: 700;
+  color: #2d5a20;
+  line-height: 1;
+  margin-bottom: 8rpx;
+  transition: all 0.2s ease;
+}
+
+.stat-label {
+  font-size: 24rpx;
+  color: #666666;
+  transition: all 0.2s ease;
+}
+
+/* 诊断统计项特殊样式 */
+.stat-item:last-child {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e3f2fd 50%, #bbdefb 100%);
+  border: 2rpx solid #bbdefb;
+  box-shadow: 0 4rpx 12rpx rgba(25, 118, 210, 0.15);
+}
+
+.stat-item:last-child .stat-num {
+  color: #1976d2;
+  font-size: 44rpx;
+  text-shadow: 0 2rpx 4rpx rgba(25, 118, 210, 0.3);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.stat-item:last-child .stat-label {
+  color: #1976d2;
+  font-weight: 600;
+  font-size: 26rpx;
+}
+
+/* 脉冲动画 */
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+.stat-divider {
+  width: 2rpx;
+  height: 40rpx;
+  background: #e0e0e0;
+  margin: 0 20rpx;
+}
+
+/* ========== 植物陈列区域 ========== */
+.plant-section {
+  padding: 0 30rpx;
+}
+
+.section-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20rpx 0;
+}
+
+.title-text {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #333333;
+}
+
+.title-count {
+  font-size: 24rpx;
+  color: #999999;
+}
+
+/* ========== 植物列表 ========== */
+.plant-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+}
+
+.plant-item {
+  background: #ffffff;
+  border-radius: 10rpx;
+  padding: 20rpx;
+  display: flex;
+  align-items: center;
+  box-shadow: 0 2rpx 8rpx rgba(0,0,0,0.08);
+  transition: all 0.2s;
+}
+
+.plant-item:active {
+  background: #f8f9fa;
+  transform: scale(0.98);
+}
+
+.plant-img-wrapper {
+  position: relative;
+  width: 140rpx;
+  height: 140rpx;
+  flex-shrink: 0;
+  margin-right: 24rpx;
+}
+
+.plant-img {
+  width: 100%;
+  height: 100%;
+  border-radius: 10rpx;
+  background: #f0f0f0;
+}
+
+/* 植物图片占位符（灰色加号） */
+.plant-img-placeholder {
+  width: 100%;
+  height: 100%;
+  border-radius: 10rpx;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 50%, #dee2e6 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 2rpx dashed #adb5bd;
+  box-sizing: border-box;
+  transition: all 0.2s ease;
+}
+
+.plant-img-placeholder:active {
+  background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 50%, #ced4da 100%);
+  border-color: #5a8f4a;
+  transform: scale(0.96);
+}
+
+.placeholder-plus {
+  font-size: 56rpx;
+  color: #868e96;
+  font-weight: 300;
+  line-height: 1;
+  margin-bottom: 6rpx;
+}
+
+.placeholder-text {
+  font-size: 20rpx;
+  color: #adb5bd;
+}
+
+/* 状态图标 - 简化，只留图标 */
+.status-icon {
+  position: absolute;
+  top: 8rpx;
+  right: 8rpx;
+  font-size: 32rpx;
+  text-shadow: 0 2rpx 4rpx rgba(0,0,0,0.5);
+}
+
+.status-icon.water {
+  animation: waterShake 2s ease-in-out infinite;
+}
+
+/* 水滴左右摆动动画 */
+@keyframes waterShake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-6rpx);
+  }
+  75% {
+    transform: translateX(6rpx);
+  }
+}
+
+/* 编辑植物弹窗 */
+.edit-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.edit-modal-content {
+  background: #ffffff;
+  border-radius: 24rpx;
+  padding: 36rpx;
+  width: 680rpx;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  box-shadow: 0 12rpx 40rpx rgba(0,0,0,0.25);
+}
+
+.edit-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0;
+  margin-bottom: 24rpx;
+}
+
+.edit-modal-title {
+  font-size: 34rpx;
+  font-weight: 700;
+  color: #333333;
+  display: block;
+  margin-bottom: 32rpx;
+  text-align: center;
+}
+
+.edit-form {
+  margin-bottom: 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.form-item {
+  margin-bottom: 26rpx;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.form-image-item {
+  margin-bottom: 26rpx;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.form-label {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #555555;
+  display: block;
+  margin-bottom: 12rpx;
+}
+
+.image-editor {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.current-image {
+  width: 100%;
+  height: 240rpx;
+  border-radius: 12rpx;
+  overflow: hidden;
+  position: relative;
+  border: 2rpx solid #e8e8e8;
+  box-sizing: border-box;
+}
+
+.plant-preview {
+  width: 100%;
+  height: 100%;
+}
+
+.change-hint {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(0,0,0,0.6);
+  color: #fff;
+  font-size: 24rpx;
+  text-align: center;
+  padding: 12rpx 0;
+}
+
+.upload-placeholder {
+  width: 100%;
+  height: 240rpx;
+  border-radius: 12rpx;
+  border: 2rpx dashed #cccccc;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #fafafa;
+  box-sizing: border-box;
+}
+
+.upload-plus {
+  font-size: 64rpx;
+  color: #999999;
+  font-weight: 300;
+  line-height: 1;
+  margin-bottom: 10rpx;
+}
+
+.upload-text {
+  font-size: 24rpx;
+  color: #999999;
+}
+
+.form-input {
+  width: 100%;
+  padding: 0 28rpx;
+  font-size: 30rpx;
+  height: 80rpx;
+  line-height: 80rpx;
+  border: 2rpx solid #e8e8e8;
+  border-radius: 10rpx;
+  box-sizing: border-box;
+  background: #fafafa;
+  transition: all 0.2s;
+}
+
+.form-input:focus {
+  border-color: #5a8f4a;
+  background: #ffffff;
+  box-shadow: 0 0 0 4rpx rgba(90, 143, 74, 0.1);
+}
+
+.form-textarea {
+  width: 100%;
+  padding: 24rpx 28rpx;
+  font-size: 30rpx;
+  line-height: 1.6;
+  border: 2rpx solid #e8e8e8;
+  border-radius: 10rpx;
+  box-sizing: border-box;
+  background: #fafafa;
+  min-height: 180rpx;
+  max-height: 240rpx;
+}
+
+.edit-modal-actions {
+  display: flex;
+  flex-direction: row !important;
+  justify-content: space-between;
+  gap: 24rpx;
+  padding-top: 28rpx;
+  border-top: 1rpx solid #f0f0f0;
+  background: transparent;
+  border-radius: 0 0 24rpx 24rpx;
+  flex-shrink: 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.edit-modal-btn {
+  flex: 1;
+  padding: 22rpx 0;
+  font-size: 30rpx;
+  font-weight: 600;
+  border-radius: 12rpx;
+  text-align: center;
+}
+
+.edit-modal-btn-cancel {
+  background: #f5f5f5;
+  color: #666666;
+}
+
+.edit-modal-btn-cancel:active {
+  background: #e0e0e0;
+}
+
+.edit-modal-btn-confirm {
+  background: linear-gradient(145deg, #5a8f4a 0%, #4a7a3a 100%);
+  color: #ffffff;
+  box-shadow: 0 4rpx 12rpx rgba(90, 143, 74, 0.3);
+}
+
+.edit-modal-btn-confirm:active {
+  transform: scale(0.98);
+  box-shadow: 0 2rpx 8rpx rgba(90, 143, 74, 0.3);
+}
+
+/* 删除确认弹窗 */
+.delete-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.delete-modal-content {
+  background: #ffffff;
+  border-radius: 16rpx;
+  padding: 40rpx 30rpx;
+  width: 520rpx;
+  text-align: center;
+}
+
+.delete-modal-title {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #333333;
+  margin-bottom: 16rpx;
+}
+
+.delete-modal-desc {
+  font-size: 26rpx;
+  color: #666666;
+  margin-bottom: 40rpx;
+}
+
+.delete-modal-actions {
+  display: flex;
+  gap: 20rpx;
+}
+
+.delete-modal-btn {
+  flex: 1;
+  padding: 20rpx 0;
+  border-radius: 10rpx;
+  font-size: 28rpx;
+  font-weight: 500;
+}
+
+.delete-modal-btn-cancel {
+  background: #f0f0f0;
+  color: #666666;
+}
+
+.delete-modal-btn-confirm {
+  background: #ff5252;
+  color: #ffffff;
+}
+
+/* 植物信息 */
+.plant-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+  overflow: hidden;
+}
+
+/* 植物中间区域（浇水信息） */
+.plant-middle {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  font-size: 24rpx;
+}
+
+.water-info {
+  color: #1976d2;
+  font-weight: 500;
+}
+
+.days-info {
+  color: #999999;
+  font-size: 22rpx;
+}
+
+/* 植物底部区域（光照 + 温度标签） */
+.plant-bottom {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6rpx;
+}
+
+/* 植物顶部（名称 + 操作按钮） */
+.plant-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4rpx;
+}
+
+.plant-name {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #333333;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+  padding: 8rpx 0;
+}
+
+/* 操作按钮区域 */
+.plant-actions {
+  display: flex;
+  gap: 12rpx;
+  flex-shrink: 0;
+  margin-left: 16rpx;
+}
+
+.action-btn {
+  width: 72rpx;
+  height: 72rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #f5f5f5;
+  font-size: 36rpx;
+  transition: all 0.2s;
+  box-shadow: 0 2rpx 8rpx rgba(0,0,0,0.12);
+}
+
+.action-btn:active {
+  transform: scale(0.9);
+}
+
+.edit-btn {
+  background: #e3f2fd;
+}
+
+.edit-btn:active {
+  background: #bbdefb;
+}
+
+.delete-btn {
+  background: #ffebee;
+}
+
+.delete-btn:active {
+  background: #ffcdd2;
+}
+
+.tag {
+  font-size: 19rpx;
+  color: #666666;
+  background: #f5f5f5;
+  padding: 3rpx 10rpx;
+  border-radius: 4rpx;
+}
+
+/* 状态标签样式 */
+.tag-status {
+  background: #fff3e0;
+  color: #f57c00;
+  font-weight: 500;
+}
+
+/* 天数标签样式 */
+.tag-days {
+  background: #e8f5e9;
+  color: #2d5a20;
+  font-weight: 500;
+}
+
+/* 光照需求标签样式 */
+.tag-light-high {
+  background: #fff3e0;
+  color: #f57c00;
+  border: 1rpx solid #ffe0b2;
+}
+
+.tag-light-medium {
+  background: #e3f2fd;
+  color: #1976d2;
+  border: 1rpx solid #bbdefb;
+}
+
+.tag-light-low {
+  background: #e8eaf6;
+  color: #3f51b5;
+  border: 1rpx solid #c5cae9;
+}
+
+/* 温度需求标签样式 */
+.tag-temp-warm {
+  background: #ffebee;
+  color: #e53935;
+  border: 1rpx solid #ffcdd2;
+}
+
+.tag-temp-cool {
+  background: #e1f5fe;
+  color: #039be5;
+  border: 1rpx solid #b3e5fc;
+}
+
+.tag-temp-hardy {
+  background: #e8f5e9;
+  color: #43a047;
+  border: 1rpx solid #c8e6c9;
+}
+
+/* 植物状态行 */
+.plant-status-row {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  flex-wrap: wrap;
+}
+
+.status-text {
+  font-size: 19rpx;
+  padding: 3rpx 10rpx;
+  border-radius: 4rpx;
+  font-weight: 500;
+}
+
+.water-text {
+  background: #fff3e0;
+  color: #f57c00;
+}
+
+.sun-text {
+  background: #e3f2fd;
+  color: #1976d2;
+}
+
+.ok-text {
+  background: #e8f5e9;
+  color: #2d5a20;
+}
+
+.water-hint {
+  font-size: 19rpx;
+  color: #999999;
+}
+
+/* 编辑功能（暂未实现） */
+.edit-hint {
+  font-size: 20rpx;
+  color: #1976d2;
+}
+
+/* ========== 加载状态 ========== */
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+}
+
+.loading-spinner {
+  width: 80rpx;
+  height: 80rpx;
+  border: 6rpx solid rgba(90, 143, 74, 0.3);
+  border-top-color: #5a8f4a;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.loading-text {
+  margin-top: 24rpx;
+  font-size: 28rpx;
+  color: rgba(90, 143, 74, 0.8);
+}
+
+/* ========== 空状态 ========== */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  padding: 48rpx;
+}
+
+.empty-icon {
+  font-size: 120rpx;
+  margin-bottom: 32rpx;
+}
+
+.empty-title {
+  font-size: 36rpx;
+  font-weight: 600;
+  color: #3d2817;
+  margin-bottom: 12rpx;
+}
+
+.empty-tip {
+  font-size: 28rpx;
+  color: rgba(61, 40, 23, 0.6);
+  margin-bottom: 40rpx;
+}
+
+.empty-btn {
+  background: linear-gradient(145deg, #5a8f4a 0%, #4a7a3a 100%);
+  color: #ffffff;
+  padding: 24rpx 64rpx;
+  border-radius: 40rpx;
+  font-size: 30rpx;
+  font-weight: 500;
+  box-shadow: 0 8rpx 24rpx rgba(0,0,0,0.2);
+}

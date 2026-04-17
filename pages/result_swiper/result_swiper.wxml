@@ -1,0 +1,210 @@
+<!-- AI 植物管家 - 识别结果页面 -->
+<view class="container">
+  <!-- 加载中 -->
+  <view class="loading-container" wx:if="{{loading}}">
+    <image class="loading-image" src="{{imagePath}}" mode="aspectFill"></image>
+    <view class="loading-overlay">
+      <view class="loading-box">
+        <view class="loading-spinner"></view>
+        <text class="loading-text">🌱 AI 正在识别...</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 识别失败 -->
+  <view class="error-container" wx:if="{{identifyError && !loading}}">
+    <image class="error-image" src="{{imagePath}}" mode="aspectFill"></image>
+    <view class="error-content">
+      <text class="error-icon">😢</text>
+      <text class="error-title">识别失败</text>
+      <text class="error-message">{{errorMessage}}</text>
+      <button class="retry-btn" bindtap="retryIdentify">📸 重新拍照</button>
+    </view>
+  </view>
+
+  <!-- 识别成功 -->
+  <view class="result-container" wx:if="{{!loading && !identifyError && plant}}">
+    <!-- 顶部图片 -->
+    <view class="plant-header">
+      <image class="plant-image" src="{{imagePath}}" mode="aspectFill"></image>
+      <view class="favorite-btn" bindtap="toggleFavorite">
+        <text>{{isFavorite ? '❤️' : '🤍'}}</text>
+      </view>
+      <view class="source-tag">{{plant.source}}</view>
+    </view>
+
+    <!-- 植物卡片 -->
+    <view class="plant-card">
+      <!-- 名称 -->
+      <view class="name-area">
+        <text class="plant-name">{{plant.name}}</text>
+        <text class="plant-common-names" wx:if="{{plant.commonNames}}">{{plant.commonNames}}</text>
+        <text class="plant-scientific" wx:if="{{plant.scientificName}}">学名：{{plant.scientificName}}</text>
+        
+        <!-- 置信度 -->
+        <view class="confidence-bar" wx:if="{{plant.confidence > 0}}">
+          <text class="confidence-label">置信度</text>
+          <view class="confidence-track">
+            <view class="confidence-fill" style="width: {{plant.confidence}}%"></view>
+          </view>
+          <text class="confidence-value">{{plant.confidence}}%</text>
+        </view>
+      </view>
+
+      <!-- 植物档案 -->
+      <view class="info-card" wx:if="{{plant.plantProfile}}">
+        <view class="info-card-header">
+          <text class="info-card-icon">📋</text>
+          <text class="info-card-title">植物档案</text>
+        </view>
+        <text class="info-card-content">{{plant.plantProfile}}</text>
+      </view>
+
+      <!-- 生长习性 -->
+      <view class="info-card" wx:if="{{plant.growthHabit}}">
+        <view class="info-card-header">
+          <text class="info-card-icon">🌿</text>
+          <text class="info-card-title">生长习性</text>
+        </view>
+        <text class="info-card-content">{{plant.growthHabit}}</text>
+      </view>
+
+      <!-- 分布范围 -->
+      <view class="info-card" wx:if="{{plant.distribution}}">
+        <view class="info-card-header">
+          <text class="info-card-icon">🗺️</text>
+          <text class="info-card-title">分布范围</text>
+        </view>
+        <text class="info-card-content">{{plant.distribution}}</text>
+      </view>
+
+      <!-- 主要价值 -->
+      <view class="info-card highlight" wx:if="{{plant.mainValue}}">
+        <view class="info-card-header">
+          <text class="info-card-icon">💎</text>
+          <text class="info-card-title">主要价值</text>
+        </view>
+        <text class="info-card-content">{{plant.mainValue}}</text>
+      </view>
+
+      <!-- 养护难度 -->
+      <view class="difficulty-section">
+        <view class="section-header">
+          <text class="section-title">📊 养护难度</text>
+          <view class="difficulty-stars">
+            <text wx:for="{{[1,2,3,4,5]}}" wx:key="index" class="star {{item <= plant.difficultyLevel ? 'active' : ''}}">★</text>
+          </view>
+        </view>
+        <text class="difficulty-text">{{plant.difficultyText}}</text>
+      </view>
+
+      <!-- 养护指南 -->
+      <view class="care-section" wx:if="{{plant.careGuide}}">
+        <text class="care-section-title">🌿 养护指南</text>
+        
+        <!-- 基础养护 -->
+        <view class="care-category" wx:if="{{plant.careGuide.light || plant.careGuide.water}}">
+          <view class="care-category-title">📌 基础养护</view>
+          
+          <view class="care-item" wx:if="{{plant.careGuide.light}}">
+            <text class="care-item-emoji">☀️</text>
+            <view class="care-item-content">
+              <text class="care-item-label">光照</text>
+              <text class="care-item-value">{{plant.careGuide.light}}</text>
+            </view>
+          </view>
+          
+          <view class="care-item" wx:if="{{plant.careGuide.water}}">
+            <text class="care-item-emoji">💧</text>
+            <view class="care-item-content">
+              <text class="care-item-label">浇水</text>
+              <text class="care-item-value">{{plant.careGuide.water}}</text>
+            </view>
+          </view>
+        </view>
+        
+        <!-- 环境要求 -->
+        <view class="care-category" wx:if="{{plant.careGuide.temperature || plant.careGuide.humidity || plant.careGuide.soil}}">
+          <view class="care-category-title">🌡️ 环境要求</view>
+          
+          <view class="care-item" wx:if="{{plant.careGuide.temperature}}">
+            <text class="care-item-emoji">🌡️</text>
+            <view class="care-item-content">
+              <text class="care-item-label">温度</text>
+              <text class="care-item-value">{{plant.careGuide.temperature}}</text>
+            </view>
+          </view>
+          
+          <view class="care-item" wx:if="{{plant.careGuide.humidity}}">
+            <text class="care-item-emoji">💦</text>
+            <view class="care-item-content">
+              <text class="care-item-label">湿度</text>
+              <text class="care-item-value">{{plant.careGuide.humidity}}</text>
+            </view>
+          </view>
+          
+          <view class="care-item" wx:if="{{plant.careGuide.soil}}">
+            <text class="care-item-emoji">🌱</text>
+            <view class="care-item-content">
+              <text class="care-item-label">土壤</text>
+              <text class="care-item-value">{{plant.careGuide.soil}}</text>
+            </view>
+          </view>
+        </view>
+        
+        <!-- 进阶养护 -->
+        <view class="care-category" wx:if="{{plant.careGuide.fertilizer || plant.careGuide.pruning || plant.careGuide.pestControl}}">
+          <view class="care-category-title">🔧 进阶养护</view>
+          
+          <view class="care-item" wx:if="{{plant.careGuide.fertilizer}}">
+            <text class="care-item-emoji">🧪</text>
+            <view class="care-item-content">
+              <text class="care-item-label">施肥</text>
+              <text class="care-item-value">{{plant.careGuide.fertilizer}}</text>
+            </view>
+          </view>
+          
+          <view class="care-item" wx:if="{{plant.careGuide.pruning}}">
+            <text class="care-item-emoji">✂️</text>
+            <view class="care-item-content">
+              <text class="care-item-label">修剪</text>
+              <text class="care-item-value">{{plant.careGuide.pruning}}</text>
+            </view>
+          </view>
+          
+          <view class="care-item" wx:if="{{plant.careGuide.pestControl}}">
+            <text class="care-item-emoji">🐛</text>
+            <view class="care-item-content">
+              <text class="care-item-label">病虫害</text>
+              <text class="care-item-value">{{plant.careGuide.pestControl}}</text>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <!-- 快速要点 -->
+      <view class="quick-tips" wx:if="{{plant.quickTips && plant.quickTips.length > 0}}">
+        <text class="tips-title">⚡ 快速要点</text>
+        <view class="tips-list">
+          <view class="tip-item" wx:for="{{plant.quickTips}}" wx:key="index">
+            <text class="tip-dot">•</text>
+            <text class="tip-text">{{item}}</text>
+          </view>
+        </view>
+      </view>
+      
+      <!-- 额度提示 -->
+      <view class="quota-tip" wx:if="{{plant.quotaRemaining !== undefined}}">
+        <text>📊 今日剩余额度：{{plant.quotaRemaining}} 次</text>
+      </view>
+    </view>
+
+    <!-- 底部按钮 -->
+    <view class="bottom-bar">
+      <button class="btn-garden {{addedToGarden ? 'added' : ''}}" bindtap="addToMyGarden" disabled="{{isAdding}}">
+        {{isAdding ? '添加中...' : (addedToGarden ? '✓ 已添加' : '🌱 添加到我的花园')}}
+      </button>
+      <button class="btn-secondary" bindtap="retryIdentify">📷 再拍一张</button>
+    </view>
+  </view>
+</view>
