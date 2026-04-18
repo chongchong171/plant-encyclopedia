@@ -140,6 +140,9 @@ Page({
     // 视频自动播放
     if (this.videoContext) this.videoContext.play()
     this.loadGardenPlants()
+    
+    // 检测是否需要自动识别（从我的花园页面跳转过来）
+    this.checkAutoIdentify()
   },
 
   onHide() {
@@ -166,6 +169,33 @@ Page({
     // 视频解码失败，保持显示静态海报图
     console.log('视频解码不支持，使用静态海报图')
     // 不设置 videoLoaded，保持显示静态图
+  },
+
+  /**
+   * 检测是否需要自动识别（从我的花园页面跳转过来）
+   */
+  checkAutoIdentify() {
+    const autoIdentify = wx.getStorageSync('auto_identify')
+    
+    if (!autoIdentify) return
+    
+    // 清除标记，避免重复触发
+    wx.removeStorageSync('auto_identify')
+    
+    if (autoIdentify === 'camera') {
+      // 自动打开相机拍照
+      console.log('[Home] 自动识别：打开相机')
+      this.openCamera()
+    } else if (autoIdentify === 'album') {
+      // 从相册选择图片
+      const imagePath = wx.getStorageSync('auto_identify_image')
+      wx.removeStorageSync('auto_identify_image')
+      
+      if (imagePath) {
+        console.log('[Home] 自动识别：从相册选择', imagePath)
+        this.onChooseImageSuccess(imagePath)
+      }
+    }
   },
 
   async loadGardenPlants() {
