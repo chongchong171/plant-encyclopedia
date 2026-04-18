@@ -743,17 +743,34 @@ Page({
       sourceType: ['album'],
       success: (res) => {
         const tempFilePath = res.tempFiles[0].tempFilePath;
+        console.log('[MyPlants] 从相册选择成功，准备跳转首页:', tempFilePath);
+        
+        // 先保存标记，再跳转（确保跳转前已写入）
+        wx.setStorageSync('auto_identify_image', tempFilePath);
+        wx.setStorageSync('auto_identify', 'album');
+        
+        // 验证标记已保存
+        const checkImage = wx.getStorageSync('auto_identify_image');
+        const checkType = wx.getStorageSync('auto_identify');
+        console.log('[MyPlants] 标记已保存:', { type: checkType, hasImage: !!checkImage });
+        
         // 跳转到首页，传递图片路径进行识别
         wx.switchTab({
           url: '/pages/home/home',
           success: () => {
-            // 保存临时路径，首页 onLoad 时检测到后自动识别
-            wx.setStorageSync('auto_identify_image', tempFilePath);
-            wx.setStorageSync('auto_identify', 'album');
+            console.log('[MyPlants] switchTab 成功');
+          },
+          fail: (err) => {
+            console.error('[MyPlants] switchTab 失败:', err);
+            wx.showToast({
+              title: '跳转失败',
+              icon: 'none'
+            });
           }
         });
       },
       fail: (err) => {
+        console.error('[MyPlants] 从相册选择失败:', err);
         if (err.errMsg.indexOf('cancel') === -1) {
           wx.showToast({
             title: '选择失败',
