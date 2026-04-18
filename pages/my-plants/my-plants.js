@@ -729,31 +729,29 @@ Page({
   },
 
   /**
-   * 从相册选择添加植物 - 跳转到首页，调用首页的 chooseFromAlbum
+   * 从相册选择添加植物 - 直接调用相册，然后跳转到识别结果页
    */
   chooseFromAlbumToAdd() {
-    // 跳转到首页
-    wx.switchTab({
-      url: '/pages/home/home',
-      success: () => {
-        // 延迟一点，确保首页加载完成
-        setTimeout(() => {
-          const pages = getCurrentPages();
-          const homePage = pages.find(p => p.route === 'pages/home/home');
-          if (homePage && homePage.chooseFromAlbum) {
-            console.log('[MyPlants] 调用首页的 chooseFromAlbum');
-            homePage.chooseFromAlbum();
-          } else {
-            console.error('[MyPlants] 未找到首页或 chooseFromAlbum 方法');
-          }
-        }, 300);
+    wx.chooseMedia({
+      count: 1,
+      mediaType: ['image'],
+      sourceType: ['album'],
+      success: (res) => {
+        const tempFilePath = res.tempFiles[0].tempFilePath;
+        console.log('[MyPlants] 从相册选择成功:', tempFilePath);
+        // 直接跳转到识别结果页（和相机页面拍照后的逻辑一致）
+        wx.navigateTo({
+          url: `/pages/result_swiper/result_swiper?tmp_filePath=${encodeURIComponent(tempFilePath)}`
+        });
       },
       fail: (err) => {
-        console.error('[MyPlants] switchTab 失败:', err);
-        wx.showToast({
-          title: '跳转失败',
-          icon: 'none'
-        });
+        console.error('[MyPlants] 从相册选择失败:', err);
+        if (err.errMsg.indexOf('cancel') === -1) {
+          wx.showToast({
+            title: '选择失败',
+            icon: 'none'
+          });
+        }
       }
     });
   },
