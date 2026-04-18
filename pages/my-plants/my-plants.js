@@ -693,7 +693,7 @@ Page({
    */
   onAddPlantEntry() {
     wx.showActionSheet({
-      itemList: ['📷 拍照识别', '📁 从相册选择', '🔍 搜索植物库'],
+      itemList: ['📷 拍照识别', '📁 从相册选择'],
       success: (res) => {
         if (res.tapIndex === 0) {
           // 拍照识别
@@ -701,9 +701,6 @@ Page({
         } else if (res.tapIndex === 1) {
           // 从相册选择
           this.chooseFromAlbumToAdd();
-        } else if (res.tapIndex === 2) {
-          // 搜索植物库
-          this.searchAndAdd();
         }
       }
     });
@@ -762,15 +759,6 @@ Page({
           });
         }
       }
-    });
-  },
-
-  /**
-   * 搜索植物库添加植物
-   */
-  searchAndAdd() {
-    wx.switchTab({
-      url: '/pages/discover/discover'
     });
   },
 
