@@ -185,7 +185,7 @@ Page({
     if (autoIdentify === 'camera') {
       // 自动打开相机拍照
       console.log('[Home] 自动识别：打开相机')
-      this.openCamera()
+      this.takePhoto()
     } else if (autoIdentify === 'album') {
       // 从相册选择图片
       const imagePath = wx.getStorageSync('auto_identify_image')
@@ -193,9 +193,17 @@ Page({
       
       if (imagePath) {
         console.log('[Home] 自动识别：从相册选择', imagePath)
-        this.onChooseImageSuccess(imagePath)
+        this.chooseFromAlbumWithImage(imagePath)
       }
     }
+  },
+
+  /**
+   * 从相册选择图片并识别（支持外部传入图片路径）
+   */
+  chooseFromAlbumWithImage(imagePath) {
+    console.log('[Home] 从相册选择图片并识别:', imagePath)
+    this.identifyPlantFromImage(imagePath)
   },
 
   async loadGardenPlants() {
