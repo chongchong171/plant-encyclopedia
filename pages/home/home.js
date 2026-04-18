@@ -90,6 +90,9 @@ Page({
       }
     }, 5000)
 
+    // 检测是否需要自动识别（从我的花园页面跳转过来）
+    this.checkAutoIdentify()
+
     // 检查是否需要用户信息授权（已移除登录提示条）
     // const app = getApp()
     // const hasAuthed = wx.getStorageSync('hasUserInfoAuth')
@@ -140,9 +143,6 @@ Page({
     // 视频自动播放
     if (this.videoContext) this.videoContext.play()
     this.loadGardenPlants()
-    
-    // 检测是否需要自动识别（从我的花园页面跳转过来）
-    this.checkAutoIdentify()
   },
 
   onHide() {
