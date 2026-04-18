@@ -71,6 +71,8 @@ Page({
     
     gardenPlants: [],
     pendingAction: null,
+    
+    autoIdentifyProcessed: false,  // 标记自动识别是否已处理，避免重复
 
     emojiList: [
       '😊', '😂', '🥰', '😍', '🤩', '😎', '🥳', '😋',
@@ -91,7 +93,8 @@ Page({
     }, 5000)
 
     // 检测是否需要自动识别（从我的花园页面跳转过来）
-    this.checkAutoIdentify()
+    // 注意：switchTab 不会触发 onLoad，所以主要逻辑在 onShow 中
+    console.log('[Home] onLoad 执行')
 
     // 检查是否需要用户信息授权（已移除登录提示条）
     // const app = getApp()
@@ -143,6 +146,11 @@ Page({
     // 视频自动播放
     if (this.videoContext) this.videoContext.play()
     this.loadGardenPlants()
+    
+    // 检测是否需要自动识别（从我的花园页面跳转过来）
+    // 放在 onShow 中，因为 switchTab 会触发 onShow 而不是 onLoad
+    console.log('[Home] onShow 执行，检查自动识别')
+    this.checkAutoIdentify()
   },
 
   onHide() {
@@ -173,8 +181,15 @@ Page({
 
   /**
    * 检测是否需要自动识别（从我的花园页面跳转过来）
+   * 注意：此函数可能在 onLoad 和 onShow 中都被调用，需要确保只执行一次
    */
   checkAutoIdentify() {
+    // 如果已经处理过，直接跳过（避免重复执行）
+    if (this.data.autoIdentifyProcessed) {
+      console.log('[Home] 自动识别已处理，跳过')
+      return
+    }
+    
     try {
       const autoIdentify = wx.getStorageSync('auto_identify')
       const autoIdentifyImage = wx.getStorageSync('auto_identify_image')
@@ -189,6 +204,9 @@ Page({
         console.log('[Home] 无自动识别标记，跳过')
         return
       }
+      
+      // 标记为已处理，避免重复执行
+      this.setData({ autoIdentifyProcessed: true })
       
       // 先清除标记，避免重复触发
       wx.removeStorageSync('auto_identify')
