@@ -1,0 +1,11 @@
+{
+  "navigationBarTitleText": "植物诊断",
+  "navigationBarBackgroundColor": "#ffffff",
+  "navigationBarTextStyle": "black",
+  "backgroundColor": "#f8f9fa",
+  "usingComponents": {
+    "plant-card": "/components/plant-card/plant-card",
+    "problem-picker": "/components/problem-picker/problem-picker",
+    "water-badge": "/components/water-badge/water-badge"
+  }
+}

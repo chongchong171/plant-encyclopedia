@@ -1,0 +1,47 @@
+<!-- AI 植物管家 - 分类列表页面 -->
+<view class="container">
+  <!-- 加载中 -->
+  <view class="loading-section" wx:if="{{loading}}">
+    <text class="loading-text">加载中...</text>
+  </view>
+
+  <!-- 分类信息 -->
+  <view class="category-header" wx:if="{{categoryInfo}}">
+    <text class="category-icon">{{categoryInfo.icon}}</text>
+    <view class="category-info">
+      <text class="category-name">{{category}}</text>
+      <text class="category-desc">{{categoryInfo.desc}}</text>
+    </view>
+  </view>
+
+  <!-- 植物列表 -->
+  <view class="plant-list" wx:if="{{categoryInfo}}">
+    <view
+      class="plant-item"
+      wx:for="{{categoryInfo.plants}}"
+      wx:key="name"
+      data-name="{{item.name}}"
+      data-scientific-name="{{item.scientificName}}"
+      data-image-url="{{item.imageUrl}}"
+      bindtap="goToDetail"
+    >
+      <!-- 有图片时显示图片 -->
+      <image wx:if="{{item.imageUrl}}" class="plant-img" src="{{item.imageUrl}}" mode="aspectFill" lazy-load data-index="{{index}}" binderror="onImageError" />
+      <!-- 无图片时显示占位符 -->
+      <view wx:else class="plant-img-placeholder">
+        <text class="placeholder-icon">🌿</text>
+      </view>
+      <view class="plant-info">
+        <text class="plant-name">{{item.name}}</text>
+        <text class="plant-desc">{{item.desc}}</text>
+      </view>
+      <text class="plant-arrow">›</text>
+    </view>
+  </view>
+
+  <!-- 无数据 -->
+  <view class="empty-section" wx:if="{{!loading && !categoryInfo}}">
+    <text class="empty-icon">🌿</text>
+    <text class="empty-text">暂无该分类数据</text>
+  </view>
+</view>

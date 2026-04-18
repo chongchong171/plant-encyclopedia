@@ -1,0 +1,175 @@
+<!-- diagnosis.wxml -->
+<!-- 使用组件化架构 -->
+
+<view class="page-container">
+  
+  <!-- 第一步：选择植物（可选） -->
+  <view class="step-section step-section--compact">
+    <view class="step-header">
+      <view class="step-number">1</view>
+      <view class="step-title">选择植物（可选）</view>
+    </view>
+    
+    <view class="plant-selector">
+      <!-- 已选择的植物 -->
+      <view wx:if="{{selectedPlant}}" class="selected-plant">
+        <view class="selected-plant-info">
+          <image class="selected-plant-image" src="{{selectedPlant.userImageUrl || selectedPlant.imageUrl}}" mode="aspectFill" />
+          <view class="selected-plant-name">{{selectedPlant.name}}</view>
+        </view>
+        <view class="change-btn" bindtap="selectPlant">更换</view>
+      </view>
+      
+      <!-- 未选择 -->
+      <view wx:else class="no-plant-selected" bindtap="selectPlant">
+        <view class="no-plant-icon">🌱</view>
+        <view class="no-plant-text">点击选择植物</view>
+      </view>
+    </view>
+  </view>
+  
+  <!-- 第二步：上传图片（可选） -->
+  <view class="step-section step-section--compact">
+    <view class="step-header">
+      <view class="step-number">2</view>
+      <view class="step-title">上传问题图片（可选）</view>
+    </view>
+    
+    <view class="image-uploader">
+      <view wx:if="{{problemImage}}" class="uploaded-image">
+        <image src="{{problemImage}}" mode="aspectFill" bindtap="previewImage" />
+        <view class="delete-image" bindtap="deleteImage">×</view>
+      </view>
+      
+      <view wx:else class="upload-btn" bindtap="takePhoto">
+        <view class="upload-icon">📷</view>
+        <view class="upload-text">拍照或从相册选择</view>
+      </view>
+    </view>
+  </view>
+  
+  <!-- 第三步：选择问题类型 -->
+  <view class="step-section">
+    <view class="step-header">
+      <view class="step-number">3</view>
+      <view class="step-title">选择问题类型</view>
+      <view class="step-required">必选</view>
+    </view>
+    
+    <!-- 使用问题选择器组件 -->
+    <problem-picker 
+      selected-ids="{{selectedProblemIds}}"
+      max-select="{{5}}"
+      bind:change="onProblemChange"
+    />
+  </view>
+  
+  <!-- 诊断按钮 -->
+  <view class="diagnosis-btn-wrapper">
+    <view 
+      class="diagnosis-btn {{canDiagnose ? '' : 'diagnosis-btn--disabled'}}"
+      bindtap="startDiagnosis"
+    >
+      {{diagnosing ? 'AI 诊断中...' : '开始诊断'}}
+    </view>
+  </view>
+  
+  <!-- 诊断结果 -->
+  <view wx:if="{{diagnosisResult}}" class="result-section">
+    <view class="result-header">
+      <view class="result-icon">✅</view>
+      <view class="result-title">诊断结果</view>
+      <view class="result-time">{{diagnosisResult.time}}</view>
+    </view>
+    
+    <!-- AI 生成标识 - 低调合规 -->
+    <view class="ai-generate-tag">
+      <text class="ai-tag-text">AI 生成内容，仅供参考</text>
+    </view>
+    
+    <!-- 可能原因 -->
+    <view class="result-card result-card--causes">
+      <view class="result-card-header">
+        <view class="result-card-icon">🔍</view>
+        <view class="result-card-title">可能原因</view>
+      </view>
+      <view class="result-list">
+        <view wx:for="{{diagnosisResult.causes}}" wx:key="index" class="result-item">
+          <view class="result-item-index">{{index + 1}}</view>
+          <view class="result-item-text">{{item}}</view>
+        </view>
+        <view wx:if="{{!diagnosisResult.causes || diagnosisResult.causes.length === 0}}" class="result-empty">
+          暂无诊断结果
+        </view>
+      </view>
+    </view>
+    
+    <!-- 解决方案 -->
+    <view class="result-card result-card--solutions">
+      <view class="result-card-header">
+        <view class="result-card-icon">💡</view>
+        <view class="result-card-title">解决方案</view>
+      </view>
+      <view class="result-list">
+        <view wx:for="{{diagnosisResult.solutions}}" wx:key="index" class="result-item">
+          <view class="result-item-index">{{index + 1}}</view>
+          <view class="result-item-text">{{item}}</view>
+        </view>
+        <view wx:if="{{!diagnosisResult.solutions || diagnosisResult.solutions.length === 0}}" class="result-empty">
+          暂无解决方案
+        </view>
+      </view>
+    </view>
+    
+    <!-- 推荐商品 -->
+    <view class="result-card result-card--products">
+      <view class="result-card-header">
+        <view class="result-card-icon">🛒</view>
+        <view class="result-card-title">推荐商品</view>
+      </view>
+      <view class="product-list">
+        <view wx:for="{{diagnosisResult.products}}" wx:key="name" class="product-item" bindtap="goToShop">
+          <view class="product-info">
+            <view class="product-name">{{item.name}}</view>
+            <view wx:if="{{item.description}}" class="product-description">{{item.description}}</view>
+          </view>
+          <view class="product-price">预计 ¥{{item.price}}</view>
+        </view>
+        <view wx:if="{{!diagnosisResult.products || diagnosisResult.products.length === 0}}" class="result-empty">
+          暂无推荐商品
+        </view>
+      </view>
+    </view>
+    
+    <!-- 保存按钮 -->
+    <view class="save-btn" bindtap="saveDiagnosis">
+      保存到养护日志
+    </view>
+  </view>
+  
+</view>
+
+<!-- 植物选择弹窗 -->
+<view wx:if="{{showPlantPicker}}" class="picker-popup">
+  <view class="picker-mask" bindtap="closePicker"></view>
+  <view class="picker-content">
+    <view class="picker-header">
+      <view class="picker-title">选择植物</view>
+      <view class="picker-close" bindtap="closePicker">×</view>
+    </view>
+    
+    <view class="picker-list">
+      <view wx:if="{{myPlants.length === 0}}" class="picker-empty">
+        暂无植物，请先添加
+      </view>
+      
+      <view wx:for="{{myPlants}}" wx:key="_id" 
+        class="picker-item"
+        bindtap="confirmPlant"
+        data-plant="{{item}}"
+      >
+        <plant-card plant="{{item}}" mode="compact" />
+      </view>
+    </view>
+  </view>
+</view>

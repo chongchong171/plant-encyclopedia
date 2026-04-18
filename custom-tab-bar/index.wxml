@@ -1,0 +1,8 @@
+<wxs src="index.wxs" module="utils" />
+
+<view class="tab-bar {{homePage ? 'tab-bar--home' : ''}}">
+  <view class="tab-bar-item {{selected === index ? 'tab-bar-item--active' : ''}}" wx:for="{{icons}}" wx:key="*this" data-index="{{index}}" bindtap="switchTab">
+    <image class="tab-icon" src="{{utils.getIcon(index, selected, homePage)}}"></image>
+    <text class="tab-text {{selected === index ? 'active' : ''}} {{homePage ? 'tab-text--home' : ''}}">{{texts[index]}}</text>
+  </view>
+</view>

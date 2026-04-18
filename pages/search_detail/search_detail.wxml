@@ -1,0 +1,64 @@
+<!-- AI 植物管家 - 搜索详情页面 -->
+<view class="container">
+  <!-- 搜索框 -->
+  <view class="search-box">
+    <input 
+      class="search-input"
+      placeholder="搜索植物名称..."
+      value="{{keyword}}"
+      bindinput="onInput"
+      bindconfirm="onSearch"
+      focus="{{focus}}"
+    />
+    <view class="search-btn" bindtap="onSearch">
+      <text>🔍</text>
+    </view>
+  </view>
+
+  <!-- 搜索建议 -->
+  <view class="suggest-section" wx:if="{{showSuggest && suggestList.length > 0}}">
+    <view 
+      class="suggest-item" 
+      wx:for="{{suggestList}}" 
+      wx:key="index"
+      bindtap="selectSuggest"
+      data-keyword="{{item}}"
+    >
+      <text>{{item}}</text>
+    </view>
+  </view>
+
+  <!-- 搜索历史 -->
+  <view class="history-section" wx:if="{{showHistory && historyList.length > 0}}">
+    <view class="section-header">
+      <text class="section-title">搜索历史</text>
+      <text class="clear-btn" bindtap="clearHistory">清空</text>
+    </view>
+    <view class="history-list">
+      <view 
+        class="history-item" 
+        wx:for="{{historyList}}" 
+        wx:key="index"
+        bindtap="selectHistory"
+        data-keyword="{{item}}"
+      >
+        <text class="history-icon">🕐</text>
+        <text class="history-text">{{item}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 热门搜索 -->
+  <view class="hot-section" wx:if="{{showHistory}}">
+    <text class="section-title">🔥 热门植物</text>
+    <view class="hot-list">
+      <view 
+        class="hot-item" 
+        wx:for="{{hotPlants}}" 
+        wx:key="index"
+        bindtap="selectHistory"
+        data-keyword="{{item}}"
+      >{{item}}</view>
+    </view>
+  </view>
+</view>

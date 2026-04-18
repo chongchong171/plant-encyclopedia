@@ -1,0 +1,113 @@
+<!--社区花园页面 - 排行榜 -->
+<view class="container">
+  
+  <!-- 排行类型切换 -->
+  <view class="rank-tabs">
+    <view class="rank-tab {{rankType === 'plantCount' ? 'active' : ''}}" data-type="plantCount" bindtap="switchRankType">植物数量</view>
+    <view class="rank-tab {{rankType === 'survivalRate' ? 'active' : ''}}" data-type="survivalRate" bindtap="switchRankType">存活率</view>
+    <view class="rank-tab {{rankType === 'totalCareDays' ? 'active' : ''}}" data-type="totalCareDays" bindtap="switchRankType">养护天数</view>
+  </view>
+
+  <!-- 加载中 -->
+  <view wx:if="{{loading}}" class="loading-container">
+    <text class="loading-text">加载中...</text>
+  </view>
+
+  <!-- 排行榜列表 -->
+  <view wx:elif="{{rankings.length > 0}}" class="ranking-content">
+    
+    <!-- 前三名 -->
+    <view class="top-three">
+      <!-- 第二名 -->
+      <view class="top-item second" wx:if="{{rankings.length >= 2}}">
+        <view class="rank-badge">🥈</view>
+        <view class="avatar">
+          <image src="{{rankings[1].avatarUrl || '/image/default-avatar.png'}}" mode="aspectFill" />
+        </view>
+        <view class="name">{{rankings[1].nickName || '植物达人'}}</view>
+        <view class="value">
+          <text wx:if="{{rankType === 'plantCount'}}">{{rankings[1].stats.plantCount}}盆</text>
+          <text wx:elif="{{rankType === 'survivalRate'}}">{{rankings[1].stats.survivalRate}}%</text>
+          <text wx:else>{{rankings[1].stats.totalCareDays}}天</text>
+        </view>
+        <view class="featured-plant" wx:if="{{rankings[1].featuredPlant}}">🌿 {{rankings[1].featuredPlant.name}}</view>
+      </view>
+      
+      <!-- 第一名 -->
+      <view class="top-item first">
+        <view class="crown">👑</view>
+        <view class="rank-badge">🥇</view>
+        <view class="avatar">
+          <image src="{{rankings[0].avatarUrl || '/image/default-avatar.png'}}" mode="aspectFill" />
+        </view>
+        <view class="name">{{rankings[0].nickName || '养护达人'}}</view>
+        <view class="value highlight">
+          <text wx:if="{{rankType === 'plantCount'}}">{{rankings[0].stats.plantCount}}盆</text>
+          <text wx:elif="{{rankType === 'survivalRate'}}">{{rankings[0].stats.survivalRate}}%</text>
+          <text wx:else>{{rankings[0].stats.totalCareDays}}天</text>
+        </view>
+        <view class="featured-plant" wx:if="{{rankings[0].featuredPlant}}">🌿 {{rankings[0].featuredPlant.name}}</view>
+      </view>
+      
+      <!-- 第三名 -->
+      <view class="top-item third" wx:if="{{rankings.length >= 3}}">
+        <view class="rank-badge">🥉</view>
+        <view class="avatar">
+          <image src="{{rankings[2].avatarUrl || '/image/default-avatar.png'}}" mode="aspectFill" />
+        </view>
+        <view class="name">{{rankings[2].nickName || '植物爱好者'}}</view>
+        <view class="value">
+          <text wx:if="{{rankType === 'plantCount'}}">{{rankings[2].stats.plantCount}}盆</text>
+          <text wx:elif="{{rankType === 'survivalRate'}}">{{rankings[2].stats.survivalRate}}%</text>
+          <text wx:else>{{rankings[2].stats.totalCareDays}}天</text>
+        </view>
+        <view class="featured-plant" wx:if="{{rankings[2].featuredPlant}}">🌿 {{rankings[2].featuredPlant.name}}</view>
+      </view>
+    </view>
+
+    <!-- 第4名及以后 -->
+    <view class="ranking-list">
+      <view class="ranking-item" wx:for="{{rankings}}" wx:key="_id" wx:if="{{index >= 3}}">
+        <view class="rank-num">{{item.rank}}</view>
+        <view class="avatar-small">
+          <image src="{{item.avatarUrl || '/image/default-avatar.png'}}" mode="aspectFill" />
+        </view>
+        <view class="user-info">
+          <view class="user-name">
+            {{item.nickName || '植物达人'}}
+            <text wx:if="{{item.isMe}}" class="me-tag">我</text>
+          </view>
+          <view class="user-stats">
+            <text wx:if="{{rankType === 'plantCount'}}">{{item.stats.plantCount}}盆植物</text>
+            <text wx:elif="{{rankType === 'survivalRate'}}">存活率 {{item.stats.survivalRate}}%</text>
+            <text wx:else>养护 {{item.stats.totalCareDays}} 天</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 我的排名 -->
+    <view class="my-rank-card" wx:if="{{myRank && myRank.rank > 3}}">
+      <view class="my-rank-title">我的排名</view>
+      <view class="my-rank-content">
+        <view class="rank-num">{{myRank.rank}}</view>
+        <view class="my-info">
+          <view class="my-name">我</view>
+          <view class="my-stats">
+            <text wx:if="{{rankType === 'plantCount'}}">{{myRank.stats.plantCount}}盆植物</text>
+            <text wx:elif="{{rankType === 'survivalRate'}}">存活率 {{myRank.stats.survivalRate}}%</text>
+            <text wx:else>养护 {{myRank.stats.totalCareDays}} 天</text>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 空状态 -->
+  <view wx:else class="empty-state">
+    <text class="empty-icon">🌱</text>
+    <text class="empty-text">还没有排行榜数据</text>
+    <button class="btn-primary" bindtap="goToHome">去添加植物</button>
+  </view>
+
+</view>

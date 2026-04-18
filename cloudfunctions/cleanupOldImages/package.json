@@ -1,0 +1,12 @@
+{
+  "name": "cleanupOldImages",
+  "version": "1.0.0",
+  "description": "云函数：清理云存储中的旧图片文件",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "^2.6.3"
+  },
+  "engines": {
+    "node": "16.x"
+  }
+}

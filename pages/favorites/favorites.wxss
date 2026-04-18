@@ -1,0 +1,138 @@
+/* 收藏页面 - 简洁优雅 */
+
+.container {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #F5F5F5 0%, #FAFAFA 100%);
+  padding: 32rpx;
+  padding-bottom: 160rpx;
+}
+
+/* ========== 空状态 ========== */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  padding: 48rpx;
+}
+
+.empty-icon {
+  font-size: 120rpx;
+  margin-bottom: 32rpx;
+  opacity: 0.6;
+}
+
+.empty-title {
+  font-size: 36rpx;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 16rpx;
+}
+
+.empty-desc {
+  font-size: 28rpx;
+  color: #888;
+  margin-bottom: 40rpx;
+}
+
+.go-btn {
+  background: linear-gradient(135deg, #4CAF50 0%, #66BB6A 100%);
+  color: #fff;
+  font-size: 30rpx;
+  padding: 20rpx 60rpx;
+  border-radius: 40rpx;
+  border: none;
+}
+
+/* ========== 收藏列表 ========== */
+.favorites-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+}
+
+.list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8rpx;
+  padding: 0 8rpx;
+}
+
+.list-title {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #2E7D32;
+}
+
+.list-count {
+  font-size: 26rpx;
+  color: #888;
+  background: rgba(76, 175, 80, 0.1);
+  padding: 6rpx 16rpx;
+  border-radius: 20rpx;
+}
+
+.favorite-item {
+  display: flex;
+  align-items: center;
+  background: #fff;
+  border-radius: 24rpx;
+  padding: 24rpx;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.06);
+  transition: all 0.2s ease;
+}
+
+.favorite-item:active {
+  transform: scale(0.98);
+}
+
+.plant-image {
+  width: 120rpx;
+  height: 120rpx;
+  border-radius: 20rpx;
+  background: linear-gradient(135deg, #E8F5E9 0%, #C8E6C9 100%);
+  flex-shrink: 0;
+}
+
+.plant-info {
+  flex: 1;
+  padding: 0 20rpx;
+  min-width: 0;
+}
+
+.plant-name {
+  display: block;
+  font-size: 34rpx;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-bottom: 8rpx;
+}
+
+.plant-family {
+  display: block;
+  font-size: 24rpx;
+  color: #888;
+  margin-bottom: 6rpx;
+}
+
+.add-time {
+  display: block;
+  font-size: 22rpx;
+  color: #BBB;
+}
+
+.remove-btn {
+  padding: 16rpx;
+  margin-left: 8rpx;
+}
+
+.remove-icon {
+  font-size: 32rpx;
+  opacity: 0.5;
+}
+
+.remove-btn:active .remove-icon {
+  opacity: 0.8;
+}

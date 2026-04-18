@@ -1,0 +1,115 @@
+{
+  "description": "AI 植物管家 v1775295280",
+  "packOptions": {
+    "ignore": [
+      {
+        "value": "aizhinengpeiban",
+        "type": "folder"
+      },
+      {
+        "value": "Q4-习惯打卡项目",
+        "type": "folder"
+      },
+      {
+        "value": "maze-game",
+        "type": "folder"
+      },
+      {
+        "value": "docs",
+        "type": "folder"
+      },
+      {
+        "value": ".trae",
+        "type": "folder"
+      },
+      {
+        "value": "home-video-v12.mp4",
+        "type": "file"
+      },
+      {
+        "value": "home-video-v11.mp4",
+        "type": "file"
+      },
+      {
+        "value": "image/scenes/home-video-v11.mp4",
+        "type": "file"
+      }
+    ],
+    "include": []
+  },
+  "cloudfunctionRoot": "cloudfunctions/",
+  "cloudfunctionTemplateRoot": "cloudfunctionTemplate/",
+  "setting": {
+    "urlCheck": false,
+    "es6": true,
+    "enhance": true,
+    "postcss": true,
+    "preloadBackgroundData": false,
+    "minified": true,
+    "newFeature": true,
+    "coverView": true,
+    "nodeModules": false,
+    "autoAudits": false,
+    "showShadowRootInWxmlPanel": true,
+    "scopeDataCheck": false,
+    "uglifyFileName": false,
+    "checkInvalidKey": true,
+    "checkSiteMap": true,
+    "uploadWithSourceMap": true,
+    "compileHotReLoad": false,
+    "lazyloadPlaceholderEnable": false,
+    "useMultiFrameRuntime": true,
+    "useApiHook": true,
+    "useApiHostProcess": true,
+    "babelSetting": {
+      "ignore": [],
+      "disablePlugins": [],
+      "outputPath": ""
+    },
+    "bundle": false,
+    "useIsolateContext": true,
+    "userConfirmedBundleSwitch": false,
+    "packNpmManually": false,
+    "packNpmRelationList": [],
+    "minifyWXSS": true,
+    "disableUseStrict": false,
+    "showES6CompileOption": false,
+    "useCompilerPlugins": false,
+    "compileWorklet": false,
+    "minifyWXML": true,
+    "localPlugins": false,
+    "condition": false,
+    "swc": false,
+    "disableSWC": true
+  },
+  "compileType": "miniprogram",
+  "libVersion": "3.15.0",
+  "appid": "wx3dc8f726e165ec0b",
+  "projectname": "plant-encyclopedia",
+  "isGameTourist": false,
+  "condition": {
+    "search": {
+      "list": []
+    },
+    "conversation": {
+      "list": []
+    },
+    "game": {
+      "list": []
+    },
+    "plugin": {
+      "list": []
+    },
+    "gamePlugin": {
+      "list": []
+    },
+    "miniprogram": {
+      "list": []
+    }
+  },
+  "cloud": {
+    "envId": "plant-encyclopedia-8d9x10139590b"
+  },
+  "simulatorPluginLibVersion": {},
+  "editorSetting": {}
+}

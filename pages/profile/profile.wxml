@@ -1,0 +1,67 @@
+<!-- 个人中心页面 - 会员功能优化版 -->
+<view class="container">
+  <!-- 头图区域 -->
+  <view class="header-section">
+    <image class="header-bg" src="https://images.pexels.com/photos/32817410/pexels-photo-32817410.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=627&w=1200" mode="aspectFill"></image>
+    <view class="header-overlay"></view>
+    
+    <view class="header-content" style="padding-top: 180rpx;">
+      <view class="avatar" bindtap="getUserProfile">
+        <image class="avatar-img" src="https://img.icons8.com/color/96/sunflower.png" mode="aspectFill"></image>
+      </view>
+      <text class="nickname">植物爱好者 🌿</text>
+      <text class="bio">每天认识一种植物 🌿</text>
+    </view>
+  </view>
+
+  <!-- 我的服务 -->
+  <view class="section">
+    <view class="menu-list">
+      <view class="menu-item" bindtap="goToMyPlants">
+        <text class="menu-icon">🌿</text>
+        <text class="menu-text">我的花园</text>
+        <view class="menu-badge">
+          <text class="badge-num">{{plantCount}}</text>
+        </view>
+        <text class="menu-arrow">›</text>
+      </view>
+      <view class="menu-item" bindtap="goToFavorites">
+        <text class="menu-icon">❤️</text>
+        <text class="menu-text">我的收藏</text>
+        <view class="menu-badge">
+          <text class="badge-num">{{favoriteCount}}</text>
+        </view>
+        <text class="menu-arrow">›</text>
+      </view>
+      <view class="menu-item" bindtap="goToHistory">
+        <text class="menu-icon">📷</text>
+        <text class="menu-text">识别记录</text>
+        <view class="menu-badge">
+          <text class="badge-num">{{totalCount}}</text>
+        </view>
+        <text class="menu-arrow">›</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 设置 -->
+  <view class="section">
+    <view class="menu-list">
+      <view class="menu-item" bindtap="showFeedback">
+        <text class="menu-icon">💬</text>
+        <text class="menu-text">意见反馈</text>
+        <text class="menu-arrow">›</text>
+      </view>
+      <view class="menu-item" bindtap="showAbout">
+        <text class="menu-icon">ℹ️</text>
+        <text class="menu-text">关于我们</text>
+        <text class="menu-arrow">›</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 底部 -->
+  <view class="footer">
+    <text class="footer-text">AI 植物管家 v1.0.0</text>
+  </view>
+</view>

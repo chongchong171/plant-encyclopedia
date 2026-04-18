@@ -1,0 +1,13 @@
+{
+  "name": "uploadPlantImages",
+  "version": "1.0.0",
+  "description": "云函数：批量上传植物图片到云存储",
+  "main": "index.js",
+  "dependencies": {
+    "node-fetch": "^2.6.7",
+    "wx-server-sdk": "^2.6.3"
+  },
+  "engines": {
+    "node": "16.x"
+  }
+}

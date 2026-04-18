@@ -1,0 +1,9 @@
+{
+  "name": "precachePlantImages",
+  "version": "1.0.0",
+  "description": "预缓存分类植物图片到微信云存储",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "~2.6.3"
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "name": "searchPlantImage",
+  "version": "1.0.0",
+  "description": "搜索植物图片（Wikimedia Commons API，免费无限次）",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "~2.6.3"
+  }
+}

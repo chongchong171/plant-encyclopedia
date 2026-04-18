@@ -1,0 +1,132 @@
+/**
+ * AI 植物管家 - 全局样式 v2.0
+ * 配色精简：墨绿 + 亮绿 + 白 + 黑 + 灰（单色系）
+ */
+
+/* ========== 主题色变量 ========== */
+page {
+  /* 品牌色 */
+  --primary: #2E7D32;
+  --primary-light: #4CAF50;
+  
+  /* 背景色 */
+  --bg-white: #FFFFFF;
+  --bg-light: #F8F9FA;
+  --bg-green: #F0F7F0;
+  
+  /* 文字色 */
+  --text-black: #1A1A1A;
+  --text-gray: #666666;
+  --text-light: #999999;
+  --text-color: #1A1A1A;
+  --text-secondary: #888888;
+  
+  /* 状态色 */
+  --success: #52c41a;
+  --warning: #faad14;
+  --error: #ff4d4f;
+  --success-color: #52c41a;
+  --warning-color: #faad14;
+  --error-color: #ff4d4f;
+  
+  /* 组件变量 */
+  --white: #FFFFFF;
+  --card-background: #FFFFFF;
+  --card-border-radius: 20rpx;
+  --card-padding: 20rpx;
+  --image-size: 120rpx;
+  --button-size: 80rpx;
+  --gap: 12rpx;
+  
+  /* 字号 */
+  --font-xs: 22rpx;
+  --font-sm: 26rpx;
+  --font-md: 30rpx;
+  --font-lg: 34rpx;
+  --font-xl: 40rpx;
+  --font-size-xs: 22rpx;
+  --font-size-sm: 26rpx;
+  --font-size-md: 30rpx;
+  --font-size-lg: 34rpx;
+  --font-size-xl: 40rpx;
+  
+  /* 圆角 */
+  --radius-lg: 24rpx;
+  --radius-md: 20rpx;
+  --radius-sm: 16rpx;
+  
+  /* 页面布局 */
+  --section-header-margin-top: 60rpx;
+  
+  font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+  font-size: var(--font-md);
+  color: var(--text-black);
+  background-color: var(--bg-light);
+}
+
+/* ========== 常用布局 ========== */
+.flex { display: flex; }
+.flex-column { flex-direction: column; }
+.flex-center { justify-content: center; align-items: center; }
+.flex-between { justify-content: space-between; }
+.flex-1 { flex: 1; }
+
+/* ========== 文字 ========== */
+.text-primary { color: var(--primary-light); }
+.text-gray { color: var(--text-gray); }
+.text-center { text-align: center; }
+.text-bold { font-weight: 600; }
+
+/* ========== 按钮 ========== */
+.btn-primary {
+  background: var(--primary-light);
+  color: var(--bg-white);
+  border-radius: var(--radius-lg);
+  padding: 24rpx 48rpx;
+  font-size: var(--font-md);
+  font-weight: 500;
+}
+
+.btn-primary:active {
+  background: var(--primary);
+}
+
+/* ========== 卡片 ========== */
+.card {
+  background: var(--bg-white);
+  border-radius: var(--radius-md);
+  padding: 24rpx;
+}
+
+/* ========== 间距 ========== */
+.mt-32 { margin-top: 32rpx; }
+.mt-section-header { margin-top: var(--section-header-margin-top); }
+.mb-32 { margin-bottom: 32rpx; }
+.p-32 { padding: 32rpx; }
+
+/* ========== 图片 ========== */
+.img-cover {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* ========== 空状态 ========== */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80rpx 40rpx;
+}
+
+.empty-icon {
+  font-size: 80rpx;
+  margin-bottom: 24rpx;
+  opacity: 0.6;
+}
+
+.empty-text {
+  font-size: var(--font-md);
+  color: var(--text-gray);
+}

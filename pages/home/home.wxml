@@ -1,0 +1,329 @@
+<!-- AI 植物管家 - 首页 v11.1 -->
+<!-- 完整意图系统 + 拍照识别 -->
+
+<view class="page">
+
+  <!-- 静态海报图（首屏立即显示，视频加载前占位） -->
+  <image 
+    class="home-poster"
+    src="/image/scenes/home-poster.jpg"
+    mode="aspectFill"
+    wx:if="{{!videoLoaded}}"
+  ></image>
+
+  <!-- 全屏视频（腾讯云服务器加载完成后淡入） -->
+  <video 
+    id="bgVideo"
+    class="main-video {{videoLoaded ? 'fade-in' : ''}}"
+    src="{{videoUrl}}"
+    object-fit="fill"
+    loop
+    muted
+    autoplay
+    show-center-play-btn="{{false}}"
+    show-play-btn="{{false}}"
+    controls="{{false}}"
+    show-fullscreen-btn="{{false}}"
+    enable-progress-gesture="{{false}}"
+    enable-danmu="{{false}}"
+    page-gesture="{{false}}"
+    playsinline
+    webkit-playsinline
+    bindplay="onVideoPlay"
+    binderror="onVideoError"
+    bindloadedmetadata="onVideoLoaded"
+  ></video>
+
+  <!-- 首屏文字（对话展开时隐藏） -->
+  <view class="header-text" wx:if="{{!isExpanded}}">
+    <text class="header-title">发现植物</text>
+    <text class="header-subtitle">拍照识花，一键获取养护指南</text>
+  </view>
+  
+  <!-- AI 胶囊对话框 -->
+  <view class="ai-capsule {{isExpanded ? 'expanded' : ''}} {{isPCMode ? 'pc-mode' : ''}}" 
+        style="{{isExpanded ? 'height: ' + dialogHeight + 'px' : ''}}"
+        bindtap="onCapsuleTap">
+    
+    <!-- 胶囊模式 -->
+    <view class="capsule-mode" wx:if="{{!isExpanded}}">
+      <view class="ai-icon">💬</view>
+      <text class="ai-text">{{currentPrompt}}</text>
+      <text class="ai-arrow">›</text>
+    </view>
+    
+    <!-- 对话模式 -->
+    <view class="dialog-mode" wx:if="{{isExpanded}}">
+      <!-- 头部 -->
+      <view class="dialog-header">
+        <text class="dialog-title">AI 植物管家</text>
+        <view class="dialog-close" catchtap="collapseDialog">收起</view>
+      </view>
+      
+      <!-- 消息区域 -->
+      <scroll-view class="messages-area" scroll-y scroll-into-view="{{scrollToView}}" scroll-with-animation="true" scroll-anchoring="true">
+        <!-- 欢迎卡片（第一条消息时显示，加号菜单打开时隐藏） -->
+        <view wx:if="{{messages.length === 0 && !showPlusMenu}}" class="welcome-msg">
+          <view class="welcome-title">你好！我是 AI 植物管家 🌿</view>
+          <view class="welcome-subtitle">我可以帮你识别植物、提醒养护、诊断问题</view>
+          <view class="welcome-hint" style="margin-bottom: 12px; font-size: 12px; color: rgba(255, 255, 255, 0.7);">
+            直接提问，或点击右下角加号识别植物
+          </view>
+          <view class="welcome-examples">
+            <view class="example-item" bindtap="onExampleTap" data-text="推荐一些好养的植物">🌸 推荐一些好养的植物</view>
+            <view class="example-item" bindtap="onExampleTap" data-text="查看我的花园有哪些植物">🏡 查看我的花园有哪些植物</view>
+            <view class="example-item" bindtap="onExampleTap" data-text="今天需要给哪些植物浇水">💧 今天需要给哪些植物浇水</view>
+          </view>
+        </view>
+        
+        <!-- 普通消息列表 -->
+        <view wx:for="{{messages}}" wx:key="id" id="msg-{{item.id}}" class="msg {{item.role}}">
+          <!-- 识别结果包裹容器（整体居中） -->
+          <view class="identify-result-wrapper" wx:if="{{item.identifyResult}}">
+            <!-- 识别结果顶部图片 -->
+            <view class="identify-result-image" wx:if="{{item.identifyResult.imageUrl}}">
+              <image src="{{item.identifyResult.imageUrl}}" mode="aspectFill" bindtap="previewImage" data-url="{{item.identifyResult.imageUrl}}"></image>
+            </view>
+
+            <!-- 文字消息 -->
+            <view class="msg-bubble" wx:if="{{item.content}}">
+              <view class="msg-text" user-select="true">{{item.content}}</view>
+            </view>
+
+            <!-- 识别结果操作按钮 -->
+            <view class="identify-actions">
+              <view class="action-btn action-btn-primary" bindtap="addToGardenFromResult" data-info="{{item.identifyResult}}">
+                <text>🌱 加入我的花园</text>
+              </view>
+              <view class="action-btn action-btn-secondary" bindtap="goToDiscover">
+                <text>📖 更多信息</text>
+              </view>
+            </view>
+          </view>
+
+          <!-- 非识别结果的普通消息 -->
+          <block wx:else>
+            <!-- 植物添加成功卡片 -->
+              <!-- 🔖 测试标记 2026-04-04 -->
+            <view class="add-plant-card" wx:if="{{item.plantCard}}">
+              <view class="plant-card-header">
+                <view class="plant-card-icon">🌱</view>
+                <text class="plant-card-title">{{item.plantCard.name}}</text>
+                <view class="plant-card-badge">新成员</view>
+              </view>
+              
+              <view class="plant-card-body">
+                <!-- 第一行：健康状态 + 养护难度 -->
+                <view class="plant-info-row-inline">
+                  <view class="plant-info-item" wx:if="{{item.plantCard.healthStatus}}">
+                    <text class="plant-info-label">💚 状态</text>
+                    <text class="plant-info-value">{{item.plantCard.healthStatus}}</text>
+                  </view>
+                  <view class="plant-info-item" wx:if="{{item.plantCard.difficulty}}">
+                    <text class="plant-info-label">📊 难度</text>
+                    <text class="plant-info-value">{{item.plantCard.difficulty}}</text>
+                  </view>
+                </view>
+                
+                <!-- 第二行：浇水周期 + 光照需求 -->
+                <view class="plant-info-row-inline">
+                  <view class="plant-info-item" wx:if="{{item.plantCard.wateringCycle}}">
+                    <text class="plant-info-label">💧 浇水</text>
+                    <text class="plant-info-value">{{item.plantCard.wateringCycle}}</text>
+                  </view>
+                  <view class="plant-info-item" wx:if="{{item.plantCard.lightNeed}}">
+                    <text class="plant-info-label">☀️ 光照</text>
+                    <text class="plant-info-value">{{item.plantCard.lightNeed}}</text>
+                  </view>
+                </view>
+                
+                <!-- 第三行：位置 + 入驻日期（可选） -->
+                <view class="plant-info-row" wx:if="{{item.plantCard.location}}">
+                  <text class="plant-info-label">📍 位置</text>
+                  <text class="plant-info-value">{{item.plantCard.location}}</text>
+                </view>
+                <view class="plant-info-row" wx:if="{{item.plantCard.purchaseDate}}">
+                  <text class="plant-info-label">📅 入驻日期</text>
+                  <text class="plant-info-value">{{item.plantCard.purchaseDate}}</text>
+                </view>
+                
+                <!-- 养护小贴士 -->
+                <view class="plant-tip" wx:if="{{item.plantCard.tip}}">
+                  <text class="plant-tip-icon">💡</text>
+                  <text class="plant-tip-text">{{item.plantCard.tip}}</text>
+                </view>
+              </view>
+              
+              <view class="plant-card-footer">
+                <text class="plant-card-hint">💡 跟我说「{{item.plantCard.name}}怎么养」获取养护指南</text>
+              </view>
+            </view>
+
+            <!-- 图片消息 -->
+          <view class="msg-image" wx:if="{{item.image}}">
+            <image src="{{item.image}}" mode="widthFix" bindtap="previewImage" data-url="{{item.image}}"></image>
+          </view>
+          <!-- 文字消息 -->
+          <view class="msg-bubble {{item.plantCard ? 'has-plant-card' : ''}}" wx:if="{{item.content}}">
+            <view class="msg-text" user-select="true">{{item.content}}</view>
+          </view>
+          
+          <!-- 植物推荐横向滚动卡片 -->
+          <view class="recommend-scroll" wx:if="{{item.recommendPlants && item.recommendPlants.length > 0}}">
+            <scroll-view scroll-x class="scroll-container">
+              <view class="recommend-card" wx:for="{{item.recommendPlants}}" wx:key="name" bindtap="onRecommendTap" data-plant="{{item}}">
+                <image class="recommend-img" src="{{item.image}}" mode="aspectFill"></image>
+                <view class="recommend-info">
+                  <text class="recommend-name">{{item.name}}</text>
+                  <text class="recommend-desc">{{item.desc}}</text>
+                </view>
+              </view>
+            </scroll-view>
+          </view>
+          
+          <!-- 养护技巧网格（2列） -->
+          <view class="tips-grid" wx:if="{{item.careTips && item.careTips.length > 0}}">
+            <view class="tip-item" wx:for="{{item.careTips}}" wx:key="title">
+              <view class="tip-icon-wrap">
+                <text class="tip-icon">{{item.icon}}</text>
+              </view>
+              <view class="tip-text">
+                <text class="tip-title">{{item.title}}</text>
+                <text class="tip-desc">{{item.desc}}</text>
+              </view>
+            </view>
+          </view>
+          
+          <!-- 热门搜索标签云 -->
+          <view class="hot-tags" wx:if="{{item.hotTags && item.hotTags.length > 0}}">
+            <view class="hot-tag" wx:for="{{item.hotTags}}" wx:key="*this" bindtap="onHotTagTap" data-tag="{{item}}">
+              <text>{{item}}</text>
+            </view>
+          </view>
+          
+          <!-- 植物卡片列表（纵向） -->
+          <view class="plant-cards" wx:if="{{item.plants && item.plants.length > 0}}">
+            <view class="plant-card" wx:for="{{item.plants}}" wx:key="name" bindtap="onPlantCardTap" data-plant="{{item}}">
+              <view class="plant-card-image">
+                <image wx:if="{{item.imageUrl}}" src="{{item.imageUrl}}" mode="aspectFill"></image>
+                <text wx:else class="plant-card-emoji">🌱</text>
+              </view>
+              <view class="plant-card-info">
+                <view class="plant-card-name">{{item.name}}</view>
+                <view class="plant-card-status">{{item.status}}</view>
+              </view>
+            </view>
+          </view>
+          
+          <!-- 花园查看更多按钮 -->
+          <view class="garden-link" wx:if="{{item.showGardenLink}}" bindtap="goToGarden">
+            <text>查看完整花园 ›</text>
+          </view>
+          
+          <!-- 确认按钮 -->
+          <view class="confirm-buttons" wx:if="{{item.confirm}}">
+            <button class="confirm-btn" type="warn" bindtap="onConfirmTap" data-action="{{item.confirm.action}}" data-plant="{{item.confirm.plantName}}">{{item.confirm.confirmText}}</button>
+            <button class="cancel-btn" type="default" bindtap="onCancelTap" data-action="{{item.confirm.action}}">{{item.confirm.cancelText}}</button>
+          </view>
+
+          </block>
+        </view>
+        <view wx:if="{{isLoading}}" class="msg assistant" id="msg-loading">
+          <view class="msg-bubble loading">
+            <text class="msg-text">{{loadingText || '思考中...'}}</text>
+          </view>
+        </view>
+        
+        <!-- 底部占位元素，确保滚动时消息不会被输入框遮住 -->
+        <view style="height: 30px; flex-shrink: 0;"></view>
+      </scroll-view>
+      
+      <!-- 快捷操作 -->
+      <view class="quick-actions" wx:if="{{showQuickActions}}">
+        <view class="quick-action" bindtap="takePhoto">
+          <image class="quick-icon-img" src="/image/icons/camera-action.svg" mode="aspectFit"/>
+          <text class="quick-text">拍照识别</text>
+        </view>
+        <view class="quick-action" bindtap="chooseFromAlbum">
+          <image class="quick-icon-img" src="/image/icons/album-action.svg" mode="aspectFit"/>
+          <text class="quick-text">相册选择</text>
+        </view>
+      </view>
+      
+      <!-- 确认卡片 -->
+      <view class="confirm-card" wx:if="{{confirmCard}}">
+        <view class="card-header">
+          <text class="card-icon">{{confirmCard.icon}}</text>
+          <text class="card-title">{{confirmCard.title}}</text>
+        </view>
+        <!-- 植物图片 -->
+        <view class="card-image" wx:if="{{confirmCard.image}}">
+          <image src="{{confirmCard.image}}" mode="aspectFill"></image>
+        </view>
+        <view class="card-fields">
+          <view class="card-field" wx:for="{{confirmCard.fields}}" wx:key="label">
+            <text class="field-label">{{item.label}}：</text>
+            <text class="field-value">{{item.value}}</text>
+          </view>
+        </view>
+        <view class="card-actions">
+          <view class="card-btn cancel" bindtap="onConfirmCancel">取消</view>
+          <view class="card-btn confirm" bindtap="onConfirmSave">{{confirmCard.actionText}}</view>
+        </view>
+      </view>
+      
+      <!-- 输入框 -->
+      <view class="input-area" wx:if="{{!showQuickActions}}">
+        <view class="input-action" bindtap="togglePlusMenu" style="-webkit-text-fill-color: #8B0000; color: #8B0000; font-weight: bold;">+</view>
+        
+        <input 
+          class="input-field"
+          type="text"
+          placeholder="问我任何关于植物的问题..."
+          value="{{inputText}}"
+          bindinput="onInput"
+          bindconfirm="sendMessage"
+          confirm-type="send"
+        />
+        <view class="input-action emoji-btn" bindtap="onEmoji">😊</view>
+        <view class="send-btn {{inputText ? 'active' : ''}}" bindtap="sendMessage">发送</view>
+      </view>
+      
+      <!-- 加号展开的操作面板 -->
+      <view class="action-panel" wx:if="{{showPlusMenu}}" bindtap="togglePlusMenu">
+        <view class="action-panel-content" catchtap="stopPropagation">
+          <view class="action-panel-title">选择图片</view>
+          <view class="action-panel-grid">
+            <view class="action-panel-item" bindtap="takePhoto">
+              <view class="action-panel-icon">📷</view>
+              <view class="action-panel-label">拍照识别</view>
+            </view>
+            <view class="action-panel-item" bindtap="chooseFromAlbum">
+              <view class="action-panel-icon">🖼️</view>
+              <view class="action-panel-label">相册上传</view>
+            </view>
+          </view>
+          <view class="action-panel-cancel" bindtap="togglePlusMenu">取消</view>
+        </view>
+      </view>
+
+      <!-- 表情选择面板 -->
+      <view class="emoji-panel" wx:if="{{showEmojiPanel}}" catchtap="stopPropagation">
+        <view class="emoji-panel-header">
+          <text class="emoji-panel-title">常用表情</text>
+          <text class="emoji-panel-close" bindtap="toggleEmojiPanel">收起</text>
+        </view>
+        <scroll-view scroll-y class="emoji-scroll">
+          <view class="emoji-grid">
+            <view class="emoji-item" wx:for="{{emojiList}}" wx:key="*this" bindtap="insertEmoji" data-emoji="{{item}}">
+              <text>{{item}}</text>
+            </view>
+          </view>
+        </scroll-view>
+      </view>
+
+
+    </view>
+  </view>
+
+</view>

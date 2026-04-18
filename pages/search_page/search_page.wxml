@@ -1,0 +1,83 @@
+<!-- AI 植物管家 - 搜索页面 -->
+<view class="container">
+  <!-- 搜索框 -->
+  <view class="search-section">
+    <view class="search-box">
+      <text class="search-icon">🔍</text>
+      <input 
+        class="search-input" 
+        placeholder="搜索植物名称..." 
+        value="{{keyword}}"
+        bindinput="onInput"
+        bindconfirm="onSearch"
+        confirm-type="search"
+        focus="{{focus}}"
+      />
+    </view>
+  </view>
+
+  <!-- 搜索建议 -->
+  <view class="suggest-section" wx:if="{{showSuggest}}">
+    <view 
+      class="suggest-item" 
+      wx:for="{{suggestList}}" 
+      wx:key="index"
+      data-keyword="{{item}}"
+      bindtap="selectSuggest"
+    >
+      <text class="suggest-icon">🔍</text>
+      <text class="suggest-text">{{item}}</text>
+    </view>
+  </view>
+
+  <!-- 搜索历史 -->
+  <view class="history-section" wx:if="{{showHistory && historyList.length > 0}}">
+    <view class="section-header">
+      <text class="section-title">🕐 搜索历史</text>
+      <text class="clear-btn" bindtap="clearHistory">清空</text>
+    </view>
+    <view class="history-tags">
+      <view 
+        class="history-tag" 
+        wx:for="{{historyList}}" 
+        wx:key="index"
+        data-keyword="{{item}}"
+        bindtap="selectHistory"
+      >{{item}}</view>
+    </view>
+  </view>
+
+  <!-- 热门搜索 -->
+  <view class="hot-section">
+    <text class="section-title">🔥 热门植物</text>
+    <view class="hot-tags">
+      <view 
+        class="hot-tag" 
+        wx:for="{{hotPlants}}" 
+        wx:key="index"
+        data-text="{{item}}"
+        bindtap="searchPlant"
+      >{{item}}</view>
+    </view>
+  </view>
+
+  <!-- 植物分类 -->
+  <view class="category-section">
+    <text class="section-title">🌿 常用植物分类</text>
+    <view class="category-list">
+      <view 
+        class="category-item" 
+        wx:for="{{categories}}" 
+        wx:key="id"
+        data-category="{{item.name}}"
+        bindtap="selectCategory"
+      >
+        <text class="category-icon">{{item.icon}}</text>
+        <view class="category-info">
+          <text class="category-name">{{item.name}}</text>
+          <text class="category-desc">{{item.desc}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>

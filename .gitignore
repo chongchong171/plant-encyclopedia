@@ -1,0 +1,13 @@
+
+# 高清视频素材（开发用压缩版，发布用高清版）
+image/scenes/originals/
+image/scenes/home-animation-hd.mp4
+image/scenes/*-720.mp4
+image/scenes/*-clean.mp4
+image/scenes/*-delogo.mp4
+image/scenes/*-final.mp4
+
+# 但保留静态图和最终版本
+!image/scenes/home-poster.jpg
+!image/scenes/home-video-v*.mp4
+node_modules

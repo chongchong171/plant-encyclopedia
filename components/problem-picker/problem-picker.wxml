@@ -1,0 +1,21 @@
+<!-- problem-picker.wxml -->
+<view class="problem-picker">
+  <view class="problem-picker__header">
+    <view class="problem-picker__title">选择植物问题</view>
+    <view class="problem-picker__count">已选 {{selectedCount}}/{{maxSelect}}</view>
+  </view>
+  
+  <view class="problem-picker__grid">
+    <view 
+      wx:for="{{problemTypes}}" 
+      wx:key="id"
+      class="problem-item {{item.checked ? 'problem-item--checked' : ''}}"
+      bindtap="onToggle"
+      data-id="{{item.id}}"
+    >
+      <view class="problem-item__icon">{{item.icon}}</view>
+      <view class="problem-item__name">{{item.name}}</view>
+      <view wx:if="{{item.checked}}" class="problem-item__check">✓</view>
+    </view>
+  </view>
+</view>

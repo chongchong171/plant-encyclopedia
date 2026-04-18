@@ -1,0 +1,52 @@
+<!-- AI 植物管家 - 拍照页面 -->
+<view class="container">
+  <!-- 相机授权提示 -->
+  <view class="auth-tip" wx:if="{{!hasCameraAuth}}">
+    <text class="auth-icon">📷</text>
+    <text class="auth-title">需要相机权限</text>
+    <text class="auth-desc">请允许使用相机来拍摄植物</text>
+    <button class="auth-btn" bindtap="requestCameraAuth">授权相机</button>
+  </view>
+
+  <!-- 相机 -->
+  <camera 
+    wx:if="{{hasCameraAuth}}"
+    class="camera" 
+    device-position="back" 
+    flash="auto"
+    binderror="onError"
+    bindstop="onStop"
+  ></camera>
+
+  <!-- 拍摄指导提示 -->
+  <view class="photo-tips" wx:if="{{hasCameraAuth && showTips}}">
+    <view class="tip-card">
+      <view class="tip-header">
+        <text class="tip-icon">{{currentTip.icon}}</text>
+        <text class="tip-title">{{currentTip.title}}</text>
+      </view>
+      <text class="tip-desc">{{currentTip.desc}}</text>
+      <view class="tip-dots">
+        <text class="dot {{currentIndex === 0 ? 'active' : ''}}">●</text>
+        <text class="dot {{currentIndex === 1 ? 'active' : ''}}">●</text>
+        <text class="dot {{currentIndex === 2 ? 'active' : ''}}">●</text>
+      </view>
+    </view>
+    <view class="tip-close" bindtap="hideTips">✕</view>
+  </view>
+
+  <!-- 拍照按钮 -->
+  <view class="controls" wx:if="{{hasCameraAuth}}">
+    <view class="btn-back" bindtap="goBack">
+      <text>✕</text>
+    </view>
+    
+    <view class="btn-capture" bindtap="takePhoto">
+      <view class="capture-inner"></view>
+    </view>
+    
+    <view class="btn-album" bindtap="chooseFromAlbum">
+      <text>🖼️</text>
+    </view>
+  </view>
+</view>

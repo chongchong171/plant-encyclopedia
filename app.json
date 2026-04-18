@@ -1,0 +1,63 @@
+{
+  "pages": [
+    "pages/home/home",
+    "pages/camera/camera",
+    "pages/result_swiper/result_swiper",
+    "pages/my-plants/my-plants",
+    "pages/community-garden/community-garden",
+    "pages/plant-detail/plant-detail",
+    "pages/diagnosis/diagnosis",
+    "pages/shop/shop",
+    "pages/discover/discover",
+    "pages/search_page/search_page",
+    "pages/category_list/category_list",
+    "pages/search_result/search_result",
+    "pages/favorites/favorites",
+    "pages/history/history",
+    "pages/profile/profile"
+  ],
+  "window": {
+    "backgroundTextStyle": "dark",
+    "navigationBarBackgroundColor": "#ffffff",
+    "navigationBarTitleText": "花草百科",
+    "navigationBarTextStyle": "black",
+    "backgroundColor": "#f8f9fa"
+  },
+  "tabBar": {
+    "custom": true,
+    "color": "#999999",
+    "selectedColor": "#4CAF50",
+    "backgroundColor": "#1a3a2f",
+    "borderStyle": "white",
+    "list": [
+      {
+        "pagePath": "pages/home/home",
+        "text": "首页",
+        "iconPath": "/image/tab/home-white.png",
+        "selectedIconPath": "/image/tab/home-active.png"
+      },
+      {
+        "pagePath": "pages/my-plants/my-plants",
+        "text": "花园",
+        "iconPath": "/image/tab/garden-white.png",
+        "selectedIconPath": "/image/tab/garden-active.png"
+      },
+      {
+        "pagePath": "pages/discover/discover",
+        "text": "发现",
+        "iconPath": "/image/tab/discover-white.png",
+        "selectedIconPath": "/image/tab/discover-active.png"
+      },
+      {
+        "pagePath": "pages/profile/profile",
+        "text": "我的",
+        "iconPath": "/image/tab/user-white.png",
+        "selectedIconPath": "/image/tab/user-active.png"
+      }
+    ]
+  },
+  "cloud": true,
+  "style": "v2",
+  "lazyCodeLoading": "requiredComponents",
+  "sitemapLocation": "sitemap.json"
+}

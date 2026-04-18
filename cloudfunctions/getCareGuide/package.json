@@ -1,0 +1,14 @@
+{
+  "name": "getCareGuide",
+  "version": "1.0.0",
+  "description": "云函数：调用 GLM-4-Flash 获取植物详细信息",
+  "main": "index.js",
+  "dependencies": {
+    "node-fetch": "^2.6.7",
+    "wx-server-sdk": "^2.6.3",
+    "abort-controller": "^3.0.0"
+  },
+  "engines": {
+    "node": "16.x"
+  }
+}

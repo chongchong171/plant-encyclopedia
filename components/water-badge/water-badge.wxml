@@ -1,0 +1,5 @@
+<!-- water-badge.wxml -->
+<view class="water-badge water-badge--{{status}} water-badge--{{size}} {{animated && status === 'urgent' ? 'water-badge--animated' : ''}}">
+  <view class="water-badge__icon">💧</view>
+  <view class="water-badge__text">{{text}}</view>
+</view>

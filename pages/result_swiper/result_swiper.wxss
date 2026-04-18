@@ -1,0 +1,813 @@
+/* 植物百科大全 - 识别结果页样式 */
+
+/* ========== 卡片尺寸变量（与 config/constants.js 保持一致）========== */
+page {
+  --card-border-radius: var(--card-border-radius);
+  --card-padding: var(--card-padding);
+  --card-margin: 24rpx;
+  --card-shadow: 0 8rpx 40rpx rgba(0, 0, 0, 0.08);
+}
+
+.container {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #E8F5E9 0%, #F5F5F5 100%);
+  font-size: 28rpx;
+  line-height: 1.6;
+}
+
+/* === 加载中 === */
+.loading-container {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+}
+
+.loading-image {
+  width: 100%;
+  height: 100%;
+  filter: blur(20rpx);
+  transform: scale(1.1);
+}
+
+.loading-overlay {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.loading-box {
+  background: white;
+  padding: 60rpx 80rpx;
+  border-radius: var(--card-border-radius);
+  text-align: center;
+}
+
+.loading-spinner {
+  width: 60rpx;
+  height: 60rpx;
+  border: 6rpx solid #E8F5E9;
+  border-top-color: #4CAF50;
+  border-radius: 50%;
+  margin: 0 auto 20rpx;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.loading-text {
+  font-size: 30rpx;
+  color: #4CAF50;
+  font-weight: 500;
+}
+
+/* === 识别失败 === */
+.error-container { padding: 40rpx; }
+
+.error-image {
+  width: 100%;
+  height: 400rpx;
+  border-radius: 24rpx;
+  margin-bottom: 40rpx;
+}
+
+.error-content {
+  background: white;
+  border-radius: 24rpx;
+  padding: 60rpx 40rpx;
+  text-align: center;
+}
+
+.error-icon { font-size: 80rpx; }
+
+.error-title {
+  display: block;
+  font-size: 36rpx;
+  font-weight: bold;
+  color: #333;
+  margin: 20rpx 0;
+}
+
+.error-message {
+  display: block;
+  font-size: 28rpx;
+  color: #666;
+  background: #FFF3E0;
+  padding: 24rpx;
+  border-radius: 12rpx;
+  margin-bottom: 30rpx;
+  line-height: 1.6;
+}
+
+.retry-btn {
+  background: #4CAF50;
+  color: white;
+  border-radius: 40rpx;
+  font-size: 30rpx;
+  padding: 24rpx 60rpx;
+  font-weight: 500;
+}
+
+/* === 结果展示 === */
+.result-container { 
+  padding: 0 var(--card-margin);
+  padding-bottom: 160rpx;
+}
+
+/* 顶部图片 */
+.plant-header {
+  position: relative;
+  width: 100%;
+  height: 600rpx;
+}
+
+.plant-image { width: 100%; height: 100%; object-fit: cover; }
+
+.favorite-btn {
+  position: absolute;
+  top: 40rpx;
+  right: 30rpx;
+  width: 80rpx;
+  height: 80rpx;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 36rpx;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.1);
+}
+
+/* 来源标签 */
+.source-tag {
+  position: absolute;
+  bottom: 20rpx;
+  right: 20rpx;
+  background: rgba(0, 0, 0, 0.6);
+  color: white;
+  padding: 8rpx 16rpx;
+  border-radius: var(--card-border-radius);
+  font-size: 22rpx;
+}
+
+/* 植物卡片 */
+.plant-card {
+  background: white;
+  margin: -40rpx 0 0;
+  border-radius: var(--card-border-radius);
+  padding: 32rpx;
+  box-shadow: var(--card-shadow);
+  position: relative;
+  z-index: 10;
+}
+
+/* AI 生成标识 - 低调合规版 */
+.ai-generate-tag {
+  text-align: center;
+  padding: 12rpx 0;
+  margin-top: 20rpx;
+  border-top: 1rpx solid #E8E8E8;
+}
+
+.ai-tag-text {
+  font-size: 22rpx;
+  color: #999;
+  letter-spacing: 0.5rpx;
+}
+
+/* 名称区域 */
+.name-area {
+  text-align: center;
+  padding-bottom: 30rpx;
+  border-bottom: 2rpx solid #E0E0E0;
+  margin-bottom: 24rpx;
+}
+
+.plant-name {
+  display: block;
+  font-size: 44rpx;
+  font-weight: bold;
+  color: #1B5E20;
+  margin-bottom: 12rpx;
+  line-height: 1.3;
+}
+
+.plant-common-names {
+  display: block;
+  font-size: 30rpx;
+  color: #4CAF50;
+  font-weight: 500;
+  margin-bottom: 12rpx;
+}
+
+.plant-scientific {
+  display: block;
+  font-size: 26rpx;
+  color: #999;
+  font-style: italic;
+  margin-bottom: 20rpx;
+}
+
+/* 健康诊断 */
+.health-section {
+  border-radius: 16rpx;
+  padding: 20rpx;
+  margin-bottom: 20rpx;
+  text-align: center;
+}
+
+.health-section.healthy {
+  background: linear-gradient(135deg, #E8F5E9 0%, #C8E6C9 100%);
+}
+
+.health-section.warning {
+  background: linear-gradient(135deg, #FFF8E1 0%, #FFECB3 100%);
+}
+
+.health-section.danger {
+  background: linear-gradient(135deg, #FFEBEE 0%, #FFCDD2 100%);
+}
+
+.health-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12rpx;
+}
+
+.health-icon {
+  font-size: 36rpx;
+}
+
+.health-status {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #333;
+}
+
+/* 发现问题 */
+.issues-section {
+  background: #FFF3E0;
+  border-radius: 16rpx;
+  padding: 20rpx;
+  margin-bottom: 20rpx;
+}
+
+.issues-title {
+  display: block;
+  font-size: 28rpx;
+  font-weight: bold;
+  color: #E65100;
+  margin-bottom: 16rpx;
+}
+
+.issue-item {
+  background: white;
+  border-radius: 12rpx;
+  padding: 16rpx;
+  margin-bottom: 12rpx;
+}
+
+.issue-item:last-child {
+  margin-bottom: 0;
+}
+
+.issue-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12rpx;
+}
+
+.issue-type {
+  font-size: 28rpx;
+  font-weight: bold;
+  color: #333;
+}
+
+.issue-severity {
+  font-size: 22rpx;
+  padding: 4rpx 12rpx;
+  border-radius: 16rpx;
+}
+
+.severity-light {
+  background: #E8F5E9;
+  color: #4CAF50;
+}
+
+.severity-medium {
+  background: #FFF8E1;
+  color: #F57C00;
+}
+
+.severity-severe {
+  background: #FFEBEE;
+  color: #f44336;
+}
+
+.issue-cause, .issue-solution {
+  margin-bottom: 8rpx;
+}
+
+.issue-label {
+  font-size: 24rpx;
+  color: #666;
+}
+
+.issue-value {
+  font-size: 26rpx;
+  color: #333;
+}
+
+/* 整体建议 */
+.advice-section {
+  background: linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%);
+  border-radius: 16rpx;
+  padding: 20rpx;
+  margin-bottom: 20rpx;
+}
+
+.advice-title {
+  display: block;
+  font-size: 28rpx;
+  font-weight: bold;
+  color: #1976D2;
+  margin-bottom: 12rpx;
+}
+
+.advice-text {
+  font-size: 28rpx;
+  color: #333;
+  line-height: 1.6;
+}
+
+/* 置信度条 */
+.confidence-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 24rpx 0;
+  gap: 16rpx;
+}
+
+.confidence-label {
+  font-size: 26rpx;
+  color: #666;
+}
+
+.confidence-track {
+  width: 200rpx;
+  height: 18rpx;
+  background: #E0E0E0;
+  border-radius: 12rpx;
+  overflow: hidden;
+}
+
+.confidence-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #81C784, #4CAF50);
+  border-radius: 12rpx;
+}
+
+.confidence-value {
+  font-size: 26rpx;
+  color: #4CAF50;
+  font-weight: 600;
+  min-width: 60rpx;
+  text-align: right;
+}
+
+.tag-row {
+  display: flex;
+  justify-content: center;
+  gap: 16rpx;
+  margin-top: 16rpx;
+}
+
+.tag {
+  padding: 10rpx 24rpx;
+  border-radius: var(--card-border-radius);
+  font-size: 24rpx;
+}
+
+.tag-green { background: #E8F5E9; color: #4CAF50; }
+
+/* 信息卡片 */
+.info-card {
+  background: #F8F9FA;
+  border-radius: 16rpx;
+  padding: 24rpx;
+  margin-bottom: 20rpx;
+  border: 1rpx solid #EEEEEE;
+}
+
+.info-card.highlight {
+  background: linear-gradient(135deg, #FFF8E1 0%, #FFECB3 100%);
+  border: none;
+}
+
+.info-card-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 16rpx;
+}
+
+.info-card-icon {
+  font-size: 32rpx;
+  margin-right: 12rpx;
+}
+
+.info-card-title {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #333;
+}
+
+.info-card-content {
+  font-size: 28rpx;
+  color: #555;
+  line-height: 1.8;
+  word-wrap: break-word;
+  word-break: break-all;
+}
+
+/* 养护难度 */
+.difficulty-section {
+  background: linear-gradient(135deg, #E8F5E9 0%, #C8E6C9 100%);
+  border-radius: 16rpx;
+  padding: 24rpx;
+  margin-bottom: 20rpx;
+}
+
+.difficulty-section .section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12rpx;
+}
+
+.difficulty-section .section-title {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #2E7D32;
+}
+
+.difficulty-stars {
+  display: flex;
+  gap: 8rpx;
+}
+
+.star {
+  font-size: 32rpx;
+  color: #BDBDBD;
+}
+
+.star.active {
+  color: #FFC107;
+}
+
+.difficulty-text {
+  display: block;
+  font-size: 28rpx;
+  color: #2E7D32;
+  font-weight: 500;
+}
+
+/* 养护指南 */
+.care-section {
+  margin-bottom: 24rpx;
+}
+
+.care-section-title {
+  display: block;
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 20rpx;
+  padding-left: 12rpx;
+  border-left: 6rpx solid #4CAF50;
+}
+
+/* 养护分类标题（基础养护、环境要求、进阶养护） */
+.care-category {
+  background: linear-gradient(135deg, #E8F5E9 0%, #C8E6C9 100%);
+  border-radius: 12rpx;
+  padding: 16rpx 20rpx;
+  margin-bottom: 16rpx;
+  margin-top: 20rpx;
+}
+
+.care-category:first-child {
+  margin-top: 0;
+}
+
+.care-category-title {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #2E7D32;
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+}
+
+/* 单个养护项 */
+.care-item {
+  display: flex;
+  align-items: flex-start;
+  padding: 16rpx 0;
+  border-bottom: 1rpx solid #F0F0F0;
+  gap: 12rpx;
+}
+
+.care-item:last-child {
+  border-bottom: none;
+}
+
+.care-item-emoji {
+  font-size: 32rpx;
+  flex-shrink: 0;
+  width: 40rpx;
+  text-align: center;
+}
+
+.care-item-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.care-item-label {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 6rpx;
+  display: block;
+}
+
+.care-item-value {
+  font-size: 28rpx;
+  color: #555;
+  line-height: 1.8;
+  word-wrap: break-word;
+  word-break: break-all;
+}
+
+/* 旧的 care-card 保留兼容 */
+.care-section .care-card {
+  background: #F8F9FA;
+  margin-top: 0;
+  margin-bottom: 16rpx;
+  border-radius: 16rpx;
+  padding: 24rpx;
+  border: 1rpx solid #EEEEEE;
+}
+
+.care-section .care-card-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12rpx;
+}
+
+.care-section .care-card-icon {
+  font-size: 36rpx;
+  margin-right: 12rpx;
+}
+
+.care-section .care-card-title {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #333;
+}
+
+.care-section .care-card-content {
+  font-size: 28rpx;
+  color: #555;
+  line-height: 1.8;
+  word-wrap: break-word;
+}
+
+/* 快速要点 */
+.quick-tips {
+  background: #FFF8E1;
+  border-radius: 16rpx;
+  padding: 24rpx;
+  margin-top: 24rpx;
+  border: 1rpx solid #FFE0B2;
+}
+
+.tips-title {
+  display: block;
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #F57C00;
+  margin-bottom: 16rpx;
+}
+
+.tips-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12rpx;
+}
+
+.tip-item {
+  display: flex;
+  align-items: flex-start;
+  background: white;
+  padding: 16rpx 20rpx;
+  border-radius: 12rpx;
+  font-size: 28rpx;
+  line-height: 1.6;
+}
+
+.tip-dot {
+  color: #F57C00;
+  margin-right: 12rpx;
+  flex-shrink: 0;
+}
+
+.tip-text {
+  color: #555;
+  flex: 1;
+}
+
+/* 信息区块 */
+.section { margin-bottom: 30rpx; }
+
+.section-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20rpx;
+}
+
+.section-icon {
+  font-size: 32rpx;
+  margin-right: 12rpx;
+}
+
+.section-title {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #333;
+}
+
+/* 结果行 - 拆分显示 */
+.result-lines {
+  background: #FAFAFA;
+  border-radius: var(--card-border-radius);
+  padding: 20rpx;
+}
+
+.result-line {
+  display: flex;
+  align-items: flex-start;
+  padding: 16rpx 0;
+  border-bottom: 1rpx solid #F0F0F0;
+}
+
+.result-line:last-child {
+  border-bottom: none;
+}
+
+.result-line.care {
+  background: #E8F5E9;
+  border-radius: 12rpx;
+  padding: 16rpx 12rpx;
+  margin: 8rpx 0;
+}
+
+.line-dot {
+  font-size: 28rpx;
+  margin-right: 12rpx;
+  flex-shrink: 0;
+}
+
+.line-text {
+  font-size: 28rpx;
+  color: #333;
+  line-height: 1.7;
+  flex: 1;
+}
+
+/* 养护卡片 */
+.care-card {
+  background: linear-gradient(135deg, #E8F5E9 0%, #C8E6C9 100%);
+  border-radius: var(--card-border-radius);
+  padding: 24rpx;
+  margin-top: 20rpx;
+}
+
+.care-title {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20rpx;
+}
+
+.care-icon {
+  font-size: 32rpx;
+  margin-right: 8rpx;
+}
+
+.care-title text:last-child {
+  font-size: 28rpx;
+  font-weight: bold;
+  color: #2E7D32;
+}
+
+.care-items {
+  background: white;
+  border-radius: 16rpx;
+  padding: 16rpx;
+}
+
+.care-row {
+  display: flex;
+  align-items: center;
+  padding: 16rpx 0;
+  border-bottom: 1rpx solid #F0F0F0;
+}
+
+.care-row:last-child {
+  border-bottom: none;
+}
+
+.care-emoji {
+  font-size: 36rpx;
+  margin-right: 16rpx;
+  width: 48rpx;
+  text-align: center;
+}
+
+.care-label {
+  font-size: 28rpx;
+  color: #666;
+  width: 80rpx;
+}
+
+.care-value {
+  font-size: 28rpx;
+  color: #333;
+  font-weight: 500;
+  flex: 1;
+}
+
+/* 额度提示 */
+.quota-tip {
+  text-align: center;
+  padding: 20rpx;
+  background: #FFF3E0;
+  border-radius: 12rpx;
+  margin-top: 24rpx;
+  border: 1rpx solid #FFE0B2;
+}
+
+.quota-tip text {
+  font-size: 26rpx;
+  color: #E65100;
+  font-weight: 500;
+}
+
+/* 底部按钮 */
+.bottom-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 24rpx 40rpx;
+  background: white;
+  box-shadow: 0 -4rpx 20rpx rgba(0, 0, 0, 0.08);
+  display: flex;
+  gap: 20rpx;
+}
+
+.btn-garden {
+  flex: 1;
+  height: 90rpx;
+  background: linear-gradient(135deg, #4CAF50, #2E7D32);
+  color: white;
+  border: none;
+  border-radius: 40rpx;
+  font-size: 30rpx;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-garden.added {
+  background: #E8F5E9;
+  color: #4CAF50;
+  border: 2rpx solid #4CAF50;
+}
+
+.btn-secondary {
+  flex: 1;
+  height: 90rpx;
+  background: white;
+  color: #4CAF50;
+  border: 4rpx solid #4CAF50;
+  border-radius: 40rpx;
+  font-size: 32rpx;
+  font-weight: bold;
+}
