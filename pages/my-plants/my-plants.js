@@ -689,11 +689,76 @@ Page({
   },
 
   /**
-   * 诊断入口点击
+   * 添加植物入口点击（右上角按钮）
    */
-  onDiagnosisEntry() {
+  onAddPlantEntry() {
+    wx.showActionSheet({
+      itemList: ['📷 拍照识别', '📁 从相册选择', '🔍 搜索植物库'],
+      success: (res) => {
+        if (res.tapIndex === 0) {
+          // 拍照识别
+          this.takePhotoToAdd();
+        } else if (res.tapIndex === 1) {
+          // 从相册选择
+          this.chooseFromAlbumToAdd();
+        } else if (res.tapIndex === 2) {
+          // 搜索植物库
+          this.searchAndAdd();
+        }
+      }
+    });
+  },
+
+  /**
+   * 诊断悬浮按钮点击（右下角呼吸灯）
+   */
+  onDiagnosisFloatTap() {
     wx.navigateTo({ 
       url: '/pages/diagnosis/diagnosis' 
+    });
+  },
+
+  /**
+   * 拍照识别添加植物
+   */
+  takePhotoToAdd() {
+    wx.navigateTo({
+      url: '/pages/identify/identify'
+    });
+  },
+
+  /**
+   * 从相册选择添加植物
+   */
+  chooseFromAlbumToAdd() {
+    wx.chooseMedia({
+      count: 1,
+      mediaType: ['image'],
+      sourceType: ['album'],
+      success: (res) => {
+        const tempFilePath = res.tempFiles[0].tempFilePath;
+        // 跳转到识别页面，传递图片路径
+        wx.navigateTo({
+          url: `/pages/identify/identify?imagePath=${encodeURIComponent(tempFilePath)}`
+        });
+      },
+      fail: (err) => {
+        if (err.errMsg.indexOf('cancel') === -1) {
+          wx.showToast({
+            title: '选择失败',
+            icon: 'none'
+          });
+        }
+      }
+    });
+  },
+
+  /**
+   * 搜索植物库添加植物
+   */
+  searchAndAdd() {
+    wx.navigateTo({
+      url: '/pages/discover/discover'
     });
   },
 

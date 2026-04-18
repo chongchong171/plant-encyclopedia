@@ -842,3 +842,43 @@
   font-weight: 500;
   box-shadow: 0 8rpx 24rpx rgba(0,0,0,0.2);
 }
+
+/* ========== 诊断悬浮按钮（右下角呼吸灯） ========== */
+.diagnosis-float-btn {
+  position: fixed;
+  right: 40rpx;
+  bottom: 200rpx;
+  width: 120rpx;
+  height: 120rpx;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%);
+  box-shadow: 0 8rpx 32rpx rgba(255, 107, 107, 0.4);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+  animation: breathe 2s infinite ease-in-out;
+}
+
+.float-btn-icon {
+  font-size: 52rpx;
+  margin-bottom: 4rpx;
+}
+
+.float-btn-text {
+  font-size: 20rpx;
+  color: #ffffff;
+  font-weight: 600;
+}
+
+@keyframes breathe {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 8rpx 32rpx rgba(255, 107, 107, 0.4);
+  }
+  50% {
+    transform: scale(1.08);
+    box-shadow: 0 12rpx 48rpx rgba(255, 107, 107, 0.6);
+  }
+}
