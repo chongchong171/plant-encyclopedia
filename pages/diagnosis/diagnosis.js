@@ -250,10 +250,55 @@ Page({
       selector: '.result-section',
       duration: 300
     });
+
+    // 诊断完成后自动保存（如果选择了植物）
+    if (this.data.selectedPlant) {
+      this.saveDiagnosisToPlantLog();
+    }
   },
 
   /**
-   * 保存诊断记录
+   * 保存诊断记录到植物养护日志
+   */
+  async saveDiagnosisToPlantLog() {
+    if (!this.data.diagnosisResult || !this.data.selectedPlant) return;
+
+    try {
+      const db = wx.cloud.database();
+      const plantId = this.data.selectedPlant._id;
+      const plantName = this.data.selectedPlant.name || '未知植物';
+
+      // 构建诊断记录
+      const diagnosisRecord = {
+        date: new Date().toLocaleString('zh-CN'),
+        action: 'diagnosis',
+        problems: this.data.selectedProblems,
+        causes: this.data.diagnosisResult.causes,
+        solutions: this.data.diagnosisResult.solutions,
+        notes: `AI 诊断：${this.data.selectedProblems.join('、')}`,
+        imageUrl: this.data.problemImage || ''
+      };
+
+      console.log('[Diagnosis] 保存诊断记录到植物日志:', plantName, diagnosisRecord);
+
+      // 保存到植物养护日志
+      await db.collection('my_plants').doc(plantId).update({
+        data: {
+          careLog: db.command.push(diagnosisRecord)
+        }
+      });
+
+      console.log('[Diagnosis] ✅ 诊断记录已保存到养护日志');
+
+      showSuccessToast('诊断结果已同步到花园');
+    } catch (err) {
+      console.error('[Diagnosis] 保存诊断记录失败:', err);
+      // 不显示错误提示，避免打扰用户
+    }
+  },
+
+  /**
+   * 手动保存诊断记录（保留原有功能）
    */
   async saveDiagnosis() {
     if (!this.data.diagnosisResult) return;
@@ -266,20 +311,7 @@ Page({
       return;
     }
 
-    const result = await api.diagnosis.saveDiagnosisRecord(
-      this.data.selectedPlant._id,
-      {
-        problems: this.data.selectedProblems,
-        causes: this.data.diagnosisResult.causes
-      }
-    );
-
-    if (!result.success) {
-      showErrorToast(result);
-      return;
-    }
-
-    showSuccessToast('已保存到养护日志');
+    await this.saveDiagnosisToPlantLog();
   },
 
   goToShop() {
