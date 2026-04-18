@@ -719,15 +719,9 @@ Page({
    * 拍照识别添加植物
    */
   takePhotoToAdd() {
-    // 跳转到首页，自动打开相机
-    wx.switchTab({
-      url: '/pages/home/home',
-      success: () => {
-        // 首页 onLoad 后会检测到 autoIdentify 参数，自动打开相机
-        setTimeout(() => {
-          wx.setStorageSync('auto_identify', 'camera');
-        }, 100);
-      }
+    // 直接跳转到相机页面（不经过首页）
+    wx.navigateTo({
+      url: '/pages/camera/camera?mode=identify&from=mygarden'
     });
   },
 
@@ -741,11 +735,11 @@ Page({
       sourceType: ['album'],
       success: (res) => {
         const tempFilePath = res.tempFiles[0].tempFilePath;
-        // 跳转到首页，传递图片路径
+        // 跳转到首页，传递图片路径进行识别
         wx.switchTab({
           url: '/pages/home/home',
           success: () => {
-            // 保存临时路径，首页 onShow 时检测到后自动识别
+            // 保存临时路径，首页 onLoad 时检测到后自动识别
             wx.setStorageSync('auto_identify_image', tempFilePath);
             wx.setStorageSync('auto_identify', 'album');
           }

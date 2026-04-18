@@ -183,27 +183,37 @@ Page({
     wx.removeStorageSync('auto_identify')
     
     if (autoIdentify === 'camera') {
-      // 自动打开相机拍照
-      console.log('[Home] 自动识别：打开相机')
-      this.takePhoto()
+      // 自动打开相机拍照 - 跳转到相机页面
+      console.log('[Home] 自动识别：打开相机页面')
+      this.setData({ showPlusMenu: false, showQuickActions: false })
+      wx.navigateTo({
+        url: '/pages/camera/camera?mode=identify&from=mygarden'
+      })
     } else if (autoIdentify === 'album') {
-      // 从相册选择图片
-      const imagePath = wx.getStorageSync('auto_identify_image')
-      wx.removeStorageSync('auto_identify_image')
-      
-      if (imagePath) {
-        console.log('[Home] 自动识别：从相册选择', imagePath)
-        this.chooseFromAlbumWithImage(imagePath)
-      }
+      // 从相册选择图片 - 弹出相册选择器
+      console.log('[Home] 自动识别：打开相册选择')
+      this.openAlbumForMyGarden()
     }
   },
 
   /**
-   * 从相册选择图片并识别（支持外部传入图片路径）
+   * 从相册选择图片（专门为我的花园添加植物功能）
    */
-  chooseFromAlbumWithImage(imagePath) {
-    console.log('[Home] 从相册选择图片并识别:', imagePath)
-    this.identifyPlantFromImage(imagePath)
+  openAlbumForMyGarden() {
+    this.setData({ showPlusMenu: false, showQuickActions: false })
+    wx.chooseMedia({
+      count: 1,
+      mediaType: ['image'],
+      sourceType: ['album'],
+      success: (res) => {
+        const tempFilePath = res.tempFiles[0].tempFilePath
+        console.log('[Home] 从相册选择成功:', tempFilePath)
+        this.identifyPlantFromImage(tempFilePath)
+      },
+      fail: (err) => {
+        console.error('[Home] 从相册选择失败:', err)
+      }
+    })
   },
 
   async loadGardenPlants() {
