@@ -167,6 +167,7 @@
   flex: 1;
   padding: 12px;
   height: 0;  /* 关键：让 flex: 1 在 scroll-view 中生效 */
+  background: transparent;  /* 透明背景，不遮挡视频 */
 }
 
 /* 欢迎卡片 */
@@ -280,7 +281,7 @@
 }
 
 .msg-bubble.loading {
-  background: rgba(255, 255, 255, 0.1);
+  background: transparent;  /* 完全透明，不遮挡视频背景 */
 }
 
 .msg-text {
