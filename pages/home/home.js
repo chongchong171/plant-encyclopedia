@@ -191,14 +191,24 @@ Page({
     }
     
     try {
-      const autoIdentify = wx.getStorageSync('auto_identify')
-      const autoIdentifyImage = wx.getStorageSync('auto_identify_image')
+      // 优先从全局变量获取（更可靠）
+      const app = getApp();
+      const globalData = app.autoIdentifyData;
+      
+      // 也从 Storage 获取（备选方案）
+      const storageType = wx.getStorageSync('auto_identify');
+      const storageImage = wx.getStorageSync('auto_identify_image');
       
       console.log('[Home] checkAutoIdentify 开始:', { 
-        autoIdentify, 
-        hasImage: !!autoIdentifyImage,
-        imageLength: autoIdentifyImage ? autoIdentifyImage.length : 0
+        hasGlobal: !!globalData, 
+        globalType: globalData?.type,
+        storageType,
+        hasStorageImage: !!storageImage
       })
+      
+      // 优先使用全局变量
+      let autoIdentify = globalData?.type || storageType;
+      let autoIdentifyImage = globalData?.imagePath || storageImage;
       
       if (!autoIdentify) {
         console.log('[Home] 无自动识别标记，跳过')
@@ -208,9 +218,12 @@ Page({
       // 标记为已处理，避免重复执行
       this.setData({ autoIdentifyProcessed: true })
       
-      // 先清除标记，避免重复触发
-      wx.removeStorageSync('auto_identify')
-      wx.removeStorageSync('auto_identify_image')
+      // 清除全局变量和 Storage 标记
+      if (globalData) {
+        app.autoIdentifyData = null;
+      }
+      wx.removeStorageSync('auto_identify');
+      wx.removeStorageSync('auto_identify_image');
       
       if (autoIdentify === 'camera') {
         // 自动打开相机拍照 - 跳转到相机页面

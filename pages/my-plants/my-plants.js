@@ -745,20 +745,32 @@ Page({
         const tempFilePath = res.tempFiles[0].tempFilePath;
         console.log('[MyPlants] 从相册选择成功，准备跳转首页:', tempFilePath);
         
-        // 先保存标记，再跳转（确保跳转前已写入）
-        wx.setStorageSync('auto_identify_image', tempFilePath);
-        wx.setStorageSync('auto_identify', 'album');
+        // 使用 getApp 全局变量传递数据（比 Storage 更可靠）
+        const app = getApp();
+        app.autoIdentifyData = {
+          type: 'album',
+          imagePath: tempFilePath,
+          timestamp: Date.now()
+        };
+        console.log('[MyPlants] 已设置全局变量 autoIdentifyData');
         
-        // 验证标记已保存
-        const checkImage = wx.getStorageSync('auto_identify_image');
-        const checkType = wx.getStorageSync('auto_identify');
-        console.log('[MyPlants] 标记已保存:', { type: checkType, hasImage: !!checkImage });
-        
-        // 跳转到首页，传递图片路径进行识别
+        // 跳转到首页
         wx.switchTab({
           url: '/pages/home/home',
           success: () => {
             console.log('[MyPlants] switchTab 成功');
+            // 延迟一点，确保首页 onShow 执行后再触发识别
+            setTimeout(() => {
+              console.log('[MyPlants] 触发首页自动识别');
+              const pages = getCurrentPages();
+              const homePage = pages.find(p => p.route === 'pages/home/home');
+              if (homePage && homePage.checkAutoIdentify) {
+                console.log('[MyPlants] 找到首页实例，调用 checkAutoIdentify');
+                homePage.checkAutoIdentify();
+              } else {
+                console.error('[MyPlants] 未找到首页实例');
+              }
+            }, 500);
           },
           fail: (err) => {
             console.error('[MyPlants] switchTab 失败:', err);
