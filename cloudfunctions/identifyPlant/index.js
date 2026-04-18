@@ -1,18 +1,18 @@
 /**
- * 云函数：植物识别（优化版 v2.0）
+ * 云函数：植物识别（优化版 v3.0 - 百度 AI 优先）
  * 
  * 策略：
- * 1. 优先调用 PlantNet（精准识别，500 次/天）
- * 2. PlantNet 失败时降级百度 AI（1000 次/天）
+ * 1. 优先调用百度 AI（准确度高，中国植物识别好）
+ * 2. 百度 AI 失败时降级 PlantNet（备选方案）
  * 3. 并行调用 Qwen 获取养护建议
  * 
  * ⚠️ API Key 配置：
- * - PlantNet: 云函数环境变量 PLANTNET_API_KEY
  * - 百度 AI: 云函数环境变量 BAIDU_API_KEY, BAIDU_SECRET_KEY
+ * - PlantNet: 云函数环境变量 PLANTNET_API_KEY
  * - GLM-4-Flash: 云函数环境变量 GLM_API_KEY
  * 
  * 性能优化：
- * - 云函数服务器访问国外 API 比小程序快 3-5 倍
+ * - 云函数服务器访问国内 API 更快
  * - 并行调用减少 50% 等待时间
  * - 超时时间 30 秒
  */
@@ -54,20 +54,26 @@ exports.main = async (event, context) => {
   console.log(`[identifyPlant] 图片大小：${(imageBase64.length * 0.75 / 1024).toFixed(1)} KB`)
   
   try {
-    // ========== 第一步：优先使用 PlantNet（返回拉丁学名，可准确翻译为中文）==========
-    console.log(`[identifyPlant] ${Date.now() - startTime}ms - 调用 PlantNet...`)
-    let result = await identifyWithPlantNet(imageBase64, organ)
+    // ========== 第一步：优先使用百度 AI（准确度高，中国植物识别好）==========
+    console.log(`[identifyPlant] ${Date.now() - startTime}ms - 调用百度 AI...`)
+    let result = await identifyWithBaidu(imageBase64)
     
-    // PlantNet 失败，重试 1 次
+    // 百度 AI 失败，重试 1 次
     if (!result.success) {
-      console.log(`[identifyPlant] ${Date.now() - startTime}ms - PlantNet 失败，重试...`)
-      result = await identifyWithPlantNet(imageBase64, organ)
+      console.log(`[identifyPlant] ${Date.now() - startTime}ms - 百度 AI 失败，重试...`)
+      result = await identifyWithBaidu(imageBase64)
     }
     
-    // PlantNet 两次都失败，降级百度 AI
+    // 百度 AI 两次都失败，降级 PlantNet
     if (!result.success) {
-      console.log(`[identifyPlant] ${Date.now() - startTime}ms - PlantNet 失败，降级百度 AI...`)
-      result = await identifyWithBaidu(imageBase64)
+      console.log(`[identifyPlant] ${Date.now() - startTime}ms - 百度 AI 失败，降级 PlantNet...`)
+      result = await identifyWithPlantNet(imageBase64, organ)
+      
+      // PlantNet 失败，再重试 1 次
+      if (!result.success) {
+        console.log(`[identifyPlant] ${Date.now() - startTime}ms - PlantNet 失败，重试...`)
+        result = await identifyWithPlantNet(imageBase64, organ)
+      }
     }
     
     if (!result.success) {
