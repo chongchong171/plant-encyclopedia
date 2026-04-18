@@ -264,8 +264,9 @@ Page({
       const plantName = this.data.selectedPlant.name || '未知植物';
 
       // 构建诊断记录
+      const now = new Date();
       const diagnosisRecord = {
-        date: new Date().toLocaleString('zh-CN'),
+        date: `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`,
         action: 'diagnosis',
         problems: this.data.selectedProblems,
         causes: this.data.diagnosisResult.causes,
