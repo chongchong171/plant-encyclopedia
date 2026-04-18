@@ -843,10 +843,10 @@
   box-shadow: 0 8rpx 24rpx rgba(0,0,0,0.2);
 }
 
-/* ========== 诊断悬浮按钮（右下角呼吸灯） ========== */
+/* ========== 诊断悬浮按钮（左下角呼吸灯） ========== */
 .diagnosis-float-btn {
   position: fixed;
-  right: 40rpx;
+  left: 40rpx;
   bottom: 200rpx;
   width: 120rpx;
   height: 120rpx;

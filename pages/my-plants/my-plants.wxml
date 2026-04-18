@@ -35,7 +35,7 @@
       <view class="stat-divider"></view>
       <view class="stat-item" bindtap="onAddPlantEntry">
         <text class="stat-num">➕</text>
-        <text class="stat-label">添加</text>
+        <text class="stat-label">添加植物</text>
       </view>
     </view>
   </view>
@@ -54,7 +54,7 @@
     <view class="empty-btn" bindtap="goToHome">开始识别</view>
   </view>
 
-  <!-- 诊断悬浮按钮（右下角呼吸灯） -->
+  <!-- 诊断悬浮按钮（左下角呼吸灯） -->
   <view class="diagnosis-float-btn" bindtap="onDiagnosisFloatTap">
     <text class="float-btn-icon">🩺</text>
     <text class="float-btn-text">诊断</text>
