@@ -719,6 +719,10 @@ Page({
    * 拍照识别添加植物
    */
   takePhotoToAdd() {
+    // 清理旧的 auto_identify 标记，避免干扰
+    wx.removeStorageSync('auto_identify');
+    wx.removeStorageSync('auto_identify_image');
+    
     // 直接跳转到相机页面（不经过首页）
     wx.navigateTo({
       url: '/pages/camera/camera?mode=identify&from=mygarden'
@@ -729,6 +733,10 @@ Page({
    * 从相册选择添加植物
    */
   chooseFromAlbumToAdd() {
+    // 清理旧的 auto_identify 标记，避免干扰
+    wx.removeStorageSync('auto_identify');
+    wx.removeStorageSync('auto_identify_image');
+    
     wx.chooseMedia({
       count: 1,
       mediaType: ['image'],

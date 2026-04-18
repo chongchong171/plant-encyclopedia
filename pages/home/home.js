@@ -176,11 +176,18 @@ Page({
    */
   checkAutoIdentify() {
     const autoIdentify = wx.getStorageSync('auto_identify')
+    const autoIdentifyImage = wx.getStorageSync('auto_identify_image')
     
-    if (!autoIdentify) return
+    console.log('[Home] checkAutoIdentify:', { autoIdentify, autoIdentifyImage })
     
-    // 清除标记，避免重复触发
+    if (!autoIdentify) {
+      console.log('[Home] 无自动识别标记，跳过')
+      return
+    }
+    
+    // 先清除标记，避免重复触发
     wx.removeStorageSync('auto_identify')
+    wx.removeStorageSync('auto_identify_image')
     
     if (autoIdentify === 'camera') {
       // 自动打开相机拍照 - 跳转到相机页面
@@ -191,8 +198,15 @@ Page({
       })
     } else if (autoIdentify === 'album') {
       // 从相册选择图片 - 弹出相册选择器
-      console.log('[Home] 自动识别：打开相册选择')
-      this.openAlbumForMyGarden()
+      console.log('[Home] 自动识别：打开相册选择，图片路径:', autoIdentifyImage)
+      if (autoIdentifyImage) {
+        this.setData({ showPlusMenu: false, showQuickActions: false })
+        // 直接使用保存的图片路径进行识别
+        this.identifyPlantFromImage(autoIdentifyImage)
+      } else {
+        console.error('[Home] 自动识别：缺少图片路径')
+        this.openAlbumForMyGarden()
+      }
     }
   },
 
