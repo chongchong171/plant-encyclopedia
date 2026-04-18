@@ -201,7 +201,7 @@ Page({
       return;
     }
 
-    console.log('Diagnosis result:', result);
+    console.log('[Diagnosis] 识别结果:', result.success ? '成功' : '失败');
 
     // 确保诊断结果有数据
     let causes = ['养护环境不适', '浇水不当', '营养缺乏'];
@@ -221,7 +221,7 @@ Page({
       products = result.products;
     }
 
-    console.log('Processed data:', { causes, solutions, products });
+    // 数据处理完成
 
     // 强制设置诊断结果
     const diagnosisResult = {
@@ -231,20 +231,15 @@ Page({
       products: products.slice(0, 2) // 只保留前2个商品
     };
 
-    console.log('Final diagnosis result:', diagnosisResult);
+    console.log('[Diagnosis] 数据准备完成');
 
     this.setData({
       diagnosisResult: diagnosisResult
     }, () => {
-      console.log('Data set callback:', this.data.diagnosisResult);
       // 强制刷新页面
       this.setData({ diagnosisResult: this.data.diagnosisResult });
     });
 
-    console.log('Data set successfully:', this.data.diagnosisResult);
-    console.log('Diagnosis result causes:', this.data.diagnosisResult.causes);
-    console.log('Diagnosis result solutions:', this.data.diagnosisResult.solutions);
-    console.log('Diagnosis result products:', this.data.diagnosisResult.products);
 
     wx.pageScrollTo({
       selector: '.result-section',
@@ -279,7 +274,7 @@ Page({
         imageUrl: this.data.problemImage || ''
       };
 
-      console.log('[Diagnosis] 保存诊断记录到植物日志:', plantName, diagnosisRecord);
+      console.log('[Diagnosis] 保存诊断记录:', plantName);
 
       // 保存到植物养护日志
       await db.collection('my_plants').doc(plantId).update({
@@ -288,11 +283,11 @@ Page({
         }
       });
 
-      console.log('[Diagnosis] ✅ 诊断记录已保存到养护日志');
+      console.log('[Diagnosis] ✅ 保存成功');
 
       showSuccessToast('诊断结果已同步到花园');
     } catch (err) {
-      console.error('[Diagnosis] 保存诊断记录失败:', err);
+      console.error('[Diagnosis] 保存失败:', err.message);
       // 不显示错误提示，避免打扰用户
     }
   },
