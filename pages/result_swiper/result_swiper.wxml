@@ -4,10 +4,13 @@
   <view class="loading-container" wx:if="{{loading}}">
     <image class="loading-image" src="{{imagePath}}" mode="aspectFill"></image>
     <view class="loading-overlay">
-      <view class="loading-box">
-        <view class="loading-spinner"></view>
-        <text class="loading-text">🌱 AI 正在识别...</text>
+      <view class="magnifier-loader">
+        <view class="magnifier-handle"></view>
+        <view class="magnifier-lens">
+          <view class="scan-line"></view>
+        </view>
       </view>
+      <text class="loading-text">AI 正在识别植物...</text>
     </view>
   </view>
 
