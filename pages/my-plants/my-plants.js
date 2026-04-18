@@ -721,7 +721,6 @@ Page({
   takePhotoToAdd() {
     // 清理旧的 auto_identify 标记，避免干扰
     wx.removeStorageSync('auto_identify');
-    wx.removeStorageSync('auto_identify_image');
     
     // 直接跳转到相机页面（不经过首页）
     wx.navigateTo({
@@ -730,65 +729,31 @@ Page({
   },
 
   /**
-   * 从相册选择添加植物
+   * 从相册选择添加植物 - 跳转到首页，调用首页的 chooseFromAlbum
    */
   chooseFromAlbumToAdd() {
-    // 清理旧的 auto_identify 标记，避免干扰
-    wx.removeStorageSync('auto_identify');
-    wx.removeStorageSync('auto_identify_image');
-    
-    wx.chooseMedia({
-      count: 1,
-      mediaType: ['image'],
-      sourceType: ['album'],
-      success: (res) => {
-        const tempFilePath = res.tempFiles[0].tempFilePath;
-        console.log('[MyPlants] 从相册选择成功，准备跳转首页:', tempFilePath);
-        
-        // 使用 getApp 全局变量传递数据（比 Storage 更可靠）
-        const app = getApp();
-        app.autoIdentifyData = {
-          type: 'album',
-          imagePath: tempFilePath,
-          timestamp: Date.now()
-        };
-        console.log('[MyPlants] 已设置全局变量 autoIdentifyData');
-        
-        // 跳转到首页
-        wx.switchTab({
-          url: '/pages/home/home',
-          success: () => {
-            console.log('[MyPlants] switchTab 成功');
-            // 延迟一点，确保首页 onShow 执行后再触发识别
-            setTimeout(() => {
-              console.log('[MyPlants] 触发首页自动识别');
-              const pages = getCurrentPages();
-              const homePage = pages.find(p => p.route === 'pages/home/home');
-              if (homePage && homePage.checkAutoIdentify) {
-                console.log('[MyPlants] 找到首页实例，调用 checkAutoIdentify');
-                homePage.checkAutoIdentify();
-              } else {
-                console.error('[MyPlants] 未找到首页实例');
-              }
-            }, 500);
-          },
-          fail: (err) => {
-            console.error('[MyPlants] switchTab 失败:', err);
-            wx.showToast({
-              title: '跳转失败',
-              icon: 'none'
-            });
+    // 跳转到首页
+    wx.switchTab({
+      url: '/pages/home/home',
+      success: () => {
+        // 延迟一点，确保首页加载完成
+        setTimeout(() => {
+          const pages = getCurrentPages();
+          const homePage = pages.find(p => p.route === 'pages/home/home');
+          if (homePage && homePage.chooseFromAlbum) {
+            console.log('[MyPlants] 调用首页的 chooseFromAlbum');
+            homePage.chooseFromAlbum();
+          } else {
+            console.error('[MyPlants] 未找到首页或 chooseFromAlbum 方法');
           }
-        });
+        }, 300);
       },
       fail: (err) => {
-        console.error('[MyPlants] 从相册选择失败:', err);
-        if (err.errMsg.indexOf('cancel') === -1) {
-          wx.showToast({
-            title: '选择失败',
-            icon: 'none'
-          });
-        }
+        console.error('[MyPlants] switchTab 失败:', err);
+        wx.showToast({
+          title: '跳转失败',
+          icon: 'none'
+        });
       }
     });
   },

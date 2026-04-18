@@ -71,8 +71,6 @@ Page({
     
     gardenPlants: [],
     pendingAction: null,
-    
-    autoIdentifyProcessed: false,  // 标记自动识别是否已处理，避免重复
 
     emojiList: [
       '😊', '😂', '🥰', '😍', '🤩', '😎', '🥳', '😋',
@@ -93,20 +91,7 @@ Page({
     }, 5000)
 
     // 检测是否需要自动识别（从我的花园页面跳转过来）
-    // 注意：switchTab 不会触发 onLoad，所以主要逻辑在 onShow 中
-    console.log('[Home] onLoad 执行')
-
-    // 检查是否需要用户信息授权（已移除登录提示条）
-    // const app = getApp()
-    // const hasAuthed = wx.getStorageSync('hasUserInfoAuth')
-    // const hasUserInfo = app.globalData.userInfo?.nickName
-    // const needAuth = app.globalData.needUserInfoAuth
-    //
-    // if (!hasAuthed && !hasUserInfo && needAuth) {
-    //   setTimeout(() => {
-    //     this.setData({ showAuthBar: true })
-    //   }, 1500)
-    // }
+    this.checkAutoIdentify()
   },
 
   onReady() {
@@ -146,11 +131,6 @@ Page({
     // 视频自动播放
     if (this.videoContext) this.videoContext.play()
     this.loadGardenPlants()
-    
-    // 检测是否需要自动识别（从我的花园页面跳转过来）
-    // 放在 onShow 中，因为 switchTab 会触发 onShow 而不是 onLoad
-    console.log('[Home] onShow 执行，检查自动识别')
-    this.checkAutoIdentify()
   },
 
   onHide() {
@@ -181,83 +161,22 @@ Page({
 
   /**
    * 检测是否需要自动识别（从我的花园页面跳转过来）
-   * 注意：此函数可能在 onLoad 和 onShow 中都被调用，需要确保只执行一次
    */
   checkAutoIdentify() {
-    // 如果已经处理过，直接跳过（避免重复执行）
-    if (this.data.autoIdentifyProcessed) {
-      console.log('[Home] 自动识别已处理，跳过')
-      return
-    }
+    const autoIdentify = wx.getStorageSync('auto_identify')
     
-    try {
-      // 优先从全局变量获取（更可靠）
-      const app = getApp();
-      const globalData = app.autoIdentifyData;
-      
-      // 也从 Storage 获取（备选方案）
-      const storageType = wx.getStorageSync('auto_identify');
-      const storageImage = wx.getStorageSync('auto_identify_image');
-      
-      console.log('[Home] checkAutoIdentify 开始:', { 
-        hasGlobal: !!globalData, 
-        globalType: globalData?.type,
-        storageType,
-        hasStorageImage: !!storageImage
+    if (!autoIdentify) return
+    
+    // 清除标记，避免重复触发
+    wx.removeStorageSync('auto_identify')
+    
+    if (autoIdentify === 'camera') {
+      // 自动打开相机拍照 - 跳转到相机页面
+      console.log('[Home] 自动识别：打开相机页面')
+      this.setData({ showPlusMenu: false, showQuickActions: false })
+      wx.navigateTo({
+        url: '/pages/camera/camera?mode=identify&from=mygarden'
       })
-      
-      // 优先使用全局变量
-      let autoIdentify = globalData?.type || storageType;
-      let autoIdentifyImage = globalData?.imagePath || storageImage;
-      
-      if (!autoIdentify) {
-        console.log('[Home] 无自动识别标记，跳过')
-        return
-      }
-      
-      // 标记为已处理，避免重复执行
-      this.setData({ autoIdentifyProcessed: true })
-      
-      // 清除全局变量和 Storage 标记
-      if (globalData) {
-        app.autoIdentifyData = null;
-      }
-      wx.removeStorageSync('auto_identify');
-      wx.removeStorageSync('auto_identify_image');
-      
-      if (autoIdentify === 'camera') {
-        // 自动打开相机拍照 - 跳转到相机页面
-        console.log('[Home] 自动识别：打开相机页面')
-        this.setData({ showPlusMenu: false, showQuickActions: false })
-        wx.navigateTo({
-          url: '/pages/camera/camera?mode=identify&from=mygarden'
-        })
-      } else if (autoIdentify === 'album') {
-        // 从相册选择图片 - 直接识别
-        console.log('[Home] 自动识别：从相册选择，图片路径:', autoIdentifyImage ? '有' : '无')
-        if (autoIdentifyImage && autoIdentifyImage.trim() !== '') {
-          this.setData({ showPlusMenu: false, showQuickActions: false })
-          console.log('[Home] 开始调用 identifyPlantFromImage')
-          // 使用 setTimeout 确保页面完全加载后再执行识别
-          setTimeout(() => {
-            this.identifyPlantFromImage(autoIdentifyImage).catch(err => {
-              console.error('[Home] 自动识别失败:', err)
-              wx.showToast({
-                title: '识别失败，请重试',
-                icon: 'none'
-              })
-            })
-          }, 300)
-        } else {
-          console.error('[Home] 自动识别：缺少图片路径')
-          wx.showToast({
-            title: '图片路径错误',
-            icon: 'none'
-          })
-        }
-      }
-    } catch (err) {
-      console.error('[Home] checkAutoIdentify 异常:', err)
     }
   },
 
