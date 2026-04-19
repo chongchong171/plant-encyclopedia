@@ -170,14 +170,62 @@ Page({
   },
 
   /**
-   * 聚焦搜索框
+   * 聚焦搜索框 - 打开拍照/相册选择
    */
   focusSearch() {
-    this.setData({ focusInput: true })
+    wx.showActionSheet({
+      itemList: ['📷 拍照识别', '🖼️ 从相册选择'],
+      success: (res) => {
+        if (res.tapIndex === 0) {
+          // 拍照识别
+          this.takePhotoToSearch()
+        } else if (res.tapIndex === 1) {
+          // 从相册选择
+          this.chooseFromAlbumToSearch()
+        }
+      }
+    })
   },
 
   /**
-   * 搜索输入
+   * 拍照识别
+   */
+  takePhotoToSearch() {
+    wx.navigateTo({
+      url: '/pages/camera/camera?mode=identify&from=discover'
+    })
+  },
+
+  /**
+   * 从相册选择识别
+   */
+  chooseFromAlbumToSearch() {
+    wx.chooseMedia({
+      count: 1,
+      mediaType: ['image'],
+      sourceType: ['album'],
+      success: (res) => {
+        const tempFilePath = res.tempFiles[0].tempFilePath
+        console.log('[discover] 从相册选择成功:', tempFilePath)
+        // 跳转到搜索页面（使用放大镜识别模式）
+        wx.navigateTo({
+          url: `/pages/search_page/search_page?imagePath=${encodeURIComponent(tempFilePath)}`
+        })
+      },
+      fail: (err) => {
+        console.error('[discover] 从相册选择失败:', err)
+        if (err.errMsg.indexOf('cancel') === -1) {
+          wx.showToast({
+            title: '选择失败',
+            icon: 'none'
+          })
+        }
+      }
+    })
+  },
+
+  /**
+   * 搜索输入（保留兼容）
    */
   onSearchInput(e) {
     const { value } = e.detail
@@ -187,37 +235,11 @@ Page({
   },
 
   /**
-   * 搜索确认（最终优化版）
-   * - 已知植物：直接传递缩略图（秒开，不调用云函数）
-   * - 未知植物：先跳转显示基础信息，云函数异步加载（快速响应）
+   * 搜索确认 - 改为拍照/相册识别
    */
   onSearchConfirm(e) {
-    const { value } = e.detail
-    if (!value || !value.trim()) {
-      wx.showToast({
-        title: '请输入植物名称',
-        icon: 'none'
-      })
-      return
-    }
-
-    const searchText = value.trim()
-    const knownImage = this.IMAGE_MAP[searchText]
-
-    // 已知植物：直接传递缩略图，秒开
-    if (knownImage) {
-      console.log('[discover] 已知植物，秒开:', searchText)
-      wx.navigateTo({
-        url: `/pages/search_result/search_result?search_text=${encodeURIComponent(searchText)}&image_url=${encodeURIComponent(knownImage)}`
-      })
-      return
-    }
-
-    // 未知植物：先跳转（不显示加载），让搜索结果页自己处理
-    console.log('[discover] 未知植物，跳转搜索:', searchText)
-    wx.navigateTo({
-      url: `/pages/search_result/search_result?search_text=${encodeURIComponent(searchText)}`
-    })
+    // 点击确认时也打开拍照/相册选择
+    this.focusSearch()
   },
 
   /**
