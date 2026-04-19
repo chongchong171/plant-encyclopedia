@@ -29,13 +29,9 @@ Page({
   },
 
   async identifyPlant(imagePath) {
-    wx.showLoading({ title: '识别中...' });
-    
     try {
       const base64 = await imageToBase64(imagePath)
       const result = await plantIdentify.identifyPlant(base64);
-      
-      wx.hideLoading();
       
       if (result.success && result.data) {
         // 使用符合设计规范的数据结构
@@ -97,7 +93,6 @@ Page({
         });
       }
     } catch (error) {
-      wx.hideLoading();
       console.error('识别出错:', error);
       this.setData({ 
         loading: false, 
