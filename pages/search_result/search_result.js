@@ -140,8 +140,6 @@ Page({
         return;
       }
       
-      wx.hideLoading();
-      
       const scientificNameToUse = providedScientificName || aiResult.scientificName || '';
       const imageUrlFromCloud = aiResult.imageUrl || '';
       const plant = {
