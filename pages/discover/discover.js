@@ -170,57 +170,12 @@ Page({
   },
 
   /**
-   * 聚焦搜索框 - 打开拍照/相册选择
+   * 聚焦搜索框 - 直接跳转到搜索页面
    */
   focusSearch() {
-    wx.showActionSheet({
-      itemList: ['📷 拍照识别', '🖼️ 从相册选择'],
-      success: (res) => {
-        if (res.tapIndex === 0) {
-          // 拍照识别
-          this.takePhotoToSearch()
-        } else if (res.tapIndex === 1) {
-          // 从相册选择
-          this.chooseFromAlbumToSearch()
-        }
-      }
-    })
-  },
-
-  /**
-   * 拍照识别
-   */
-  takePhotoToSearch() {
+    // 直接跳转到搜索页面，让用户在那个页面选择拍照或相册
     wx.navigateTo({
-      url: '/pages/camera/camera?mode=identify&from=discover'
-    })
-  },
-
-  /**
-   * 从相册选择识别
-   */
-  chooseFromAlbumToSearch() {
-    wx.chooseMedia({
-      count: 1,
-      mediaType: ['image'],
-      sourceType: ['album'],
-      success: (res) => {
-        const tempFilePath = res.tempFiles[0].tempFilePath
-        console.log('[discover] 从相册选择成功:', tempFilePath)
-        // 跳转到搜索页面（使用放大镜识别模式）
-        wx.navigateTo({
-          url: `/pages/search_page/search_page?imagePath=${encodeURIComponent(tempFilePath)}`
-        })
-      },
-      fail: (err) => {
-        console.error('[discover] 从相册选择失败:', err)
-        if (err.errMsg.indexOf('cancel') === -1) {
-          wx.showToast({
-            title: '选择失败',
-            icon: 'none'
-          })
-        }
-      }
+      url: '/pages/search_page/search_page'
     })
   },
 
@@ -235,12 +190,11 @@ Page({
   },
 
   /**
-   * 搜索确认 - 改为拍照/相册识别
+   * 搜索确认 - 直接跳转到搜索页面
    */
   onSearchConfirm(e) {
-    // 点击确认时也打开拍照/相册选择
     this.focusSearch()
-  },
+  }
 
   /**
    * 跳转分类
