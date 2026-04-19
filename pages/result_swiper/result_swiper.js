@@ -15,7 +15,8 @@ Page({
     addedToGarden: false,
     isAdding: false,
     identifyError: false,
-    errorMessage: ''
+    errorMessage: '',
+    fromPage: ''  // 记录来源页面
   },
 
   onLoad(options) {
@@ -24,7 +25,9 @@ Page({
       this.setData({ loading: false, identifyError: true, errorMessage: '未获取到图片' });
       return;
     }
-    this.setData({ imagePath });
+    // 记录来源页面（用于返回时正确跳转）
+    const fromPage = options.from || '';
+    this.setData({ imagePath, fromPage });
     this.identifyPlant(imagePath);
   },
 
@@ -259,6 +262,16 @@ Page({
   },
 
   retryIdentify() {
-    wx.navigateBack();
+    const { fromPage } = this.data;
+    // 根据来源页面决定返回方式
+    if (fromPage === 'mygarden') {
+      // 从花园页面来的，跳转回花园页面
+      wx.redirectTo({
+        url: '/pages/my-plants/my-plants'
+      });
+    } else {
+      // 其他情况，返回上一页
+      wx.navigateBack();
+    }
   }
 });

@@ -740,8 +740,9 @@ Page({
         const tempFilePath = res.tempFiles[0].tempFilePath;
         console.log('[MyPlants] 从相册选择成功:', tempFilePath);
         // 直接跳转到识别结果页（和相机页面拍照后的逻辑一致）
+        // 传递 from 参数，用于识别完成后正确返回
         wx.navigateTo({
-          url: `/pages/result_swiper/result_swiper?tmp_filePath=${encodeURIComponent(tempFilePath)}`
+          url: `/pages/result_swiper/result_swiper?tmp_filePath=${encodeURIComponent(tempFilePath)}&from=mygarden`
         });
       },
       fail: (err) => {
