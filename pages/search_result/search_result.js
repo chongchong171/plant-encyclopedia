@@ -23,8 +23,11 @@ Page({
     const searchText = decodeURIComponent(options.search_text || '');
     const scientificName = decodeURIComponent(options.scientific_name || '');
     const imageUrl = decodeURIComponent(options.image_url || '');  // 接收传递的缩略图
+    const identifyDataStr = options.identify_data ? decodeURIComponent(options.identify_data) : '';  // 识别结果数据
+    const identifyData = identifyDataStr ? JSON.parse(identifyDataStr) : null;
     
     const hasImage = !!imageUrl;  // 是否有传递的缩略图（已知植物）
+    const hasIdentifyData = !!identifyData;  // 是否有识别结果数据（从 search_page 传来）
     
     // 所有植物都调用云函数获取数据
     this.setData({ 
@@ -32,11 +35,13 @@ Page({
       scientificName,
       headerImage: imageUrl,
       hasImage,
+      identifyData,
+      hasIdentifyData,
       loading: true  // 都显示加载动画
     });
     
     if (searchText) {
-      this.searchPlant(searchText, scientificName, hasImage);
+      this.searchPlant(searchText, scientificName, hasImage, hasIdentifyData, identifyData);
     } else {
       this.setData({ loading: false, error: true });
     }
@@ -80,8 +85,25 @@ Page({
    * @param {string} keyword - 植物名称
    * @param {string} providedScientificName - 传入学名
    * @param {boolean} hasImage - 是否有传递的缩略图（已知植物）
+   * @param {boolean} hasIdentifyData - 是否有识别结果数据
+   * @param {object} identifyData - 识别结果数据（从 search_page 传来）
    */
-  async searchPlant(keyword, providedScientificName, hasImage) {
+  async searchPlant(keyword, providedScientificName, hasImage, hasIdentifyData, identifyData) {
+    // 有识别结果数据：直接使用（从 search_page 传来）
+    if (hasIdentifyData && identifyData) {
+      console.log('[search_result] 使用识别结果数据:', keyword);
+      const plant = this.formatIdentifyData(identifyData);
+      const stars = this.generateDifficultyStars(plant.difficultyLevel);
+      this.setData({ 
+        loading: false, 
+        error: false, 
+        plant: plant,
+        difficultyStars: stars
+      });
+      this.checkFavorite();
+      return;
+    }
+    
     // 已知植物（有图片）：直接使用预设数据，不调用云函数（速度最快）
     if (hasImage) {
       console.log('[search_result] 已知植物，使用预设数据:', keyword);
@@ -152,6 +174,31 @@ Page({
   },
 
 
+
+  /**
+   * 格式化识别结果数据
+   */
+  formatIdentifyData(data) {
+    return {
+      id: data.id || 'identify_' + Date.now(),
+      name: data.name || '未知植物',
+      scientificName: data.scientificName || '',
+      scientificNameLatin: data.scientificNameLatin || '',
+      commonNames: data.commonNames || '',
+      family: data.family || '',
+      description: data.plantProfile || data.description || '',
+      growthHabit: data.growthHabit || '',
+      mainValue: data.mainValue || '',
+      careGuide: data.careGuide || {},
+      difficultyLevel: data.difficultyLevel || 3,
+      difficultyText: data.difficultyText || '中等难度',
+      quickTips: data.quickTips || [],
+      commonProblems: data.commonProblems || [],
+      confidence: data.confidence || 0,
+      source: data.source || 'AI 识别',
+      imageUrl: data.imageUrl || ''
+    };
+  },
 
   /**
    * 获取预设植物数据（已知植物，秒开）

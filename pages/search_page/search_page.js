@@ -2,6 +2,9 @@
  * AI 植物管家 - 搜索页面
  */
 const app = getApp();
+const plantIdentify = require('../../utils/plantIdentify');
+const { imageToBase64 } = require('../../utils/image');
+const memberLimit = require('../../utils/member-limit');
 
 // 中文到拉丁学名的映射（和云函数保持一致）
 const PLANT_NAME_MAPPING = {
@@ -125,12 +128,22 @@ Page({
     ]
   },
 
-  onLoad() {
+  onLoad(options) {
     // 从全局配置获取热门植物
     this.setData({
       hotPlants: app.globalData.hotPlants || []
     });
     this.loadHistory();
+    
+    // 检查是否有传递过来的图片路径（从发现页面）
+    const imagePath = options.imagePath ? decodeURIComponent(options.imagePath) : '';
+    if (imagePath) {
+      console.log('[search_page] 接收到图片，开始识别:', imagePath);
+      // 延迟一下，确保页面已渲染
+      setTimeout(() => {
+        this.identifyPlantFromImage(imagePath);
+      }, 300);
+    }
   },
 
   onShow() {
@@ -272,5 +285,60 @@ Page({
         }
       }
     });
+  },
+
+  /**
+   * 识别植物（从图片）
+   */
+  async identifyPlantFromImage(imagePath) {
+    // 显示加载提示
+    wx.showLoading({ title: '识别中...', mask: true });
+    
+    try {
+      // 检查会员识别限制
+      const identifyCheck = await memberLimit.canIdentify();
+      
+      if (!identifyCheck.canIdentify) {
+        wx.hideLoading();
+        memberLimit.showLimitAlert('identify');
+        return;
+      }
+      
+      // 转换为 base64
+      const base64 = await imageToBase64(imagePath);
+      
+      // 使用前端直接调用 PlantNet
+      const res = await plantIdentify.identifyPlant(base64);
+      
+      wx.hideLoading();
+      
+      if (res.success && res.data) {
+        // 识别成功，跳转到搜索结果页显示结果
+        const plantName = res.data.name;
+        const scientificName = res.data.scientificName || '';
+        
+        // 保存搜索历史
+        this.saveHistory(plantName);
+        
+        // 跳转到搜索结果页（带完整数据）
+        wx.navigateTo({
+          url: `/pages/search_result/search_result?search_text=${encodeURIComponent(plantName)}&scientific_name=${encodeURIComponent(scientificName)}&identify_data=${encodeURIComponent(JSON.stringify(res.data))}`
+        });
+      } else {
+        wx.showModal({
+          title: '识别失败',
+          content: res.error || '无法识别该植物，请重试',
+          showCancel: false
+        });
+      }
+    } catch (e) {
+      wx.hideLoading();
+      console.error('[search_page] 识别失败:', e);
+      wx.showModal({
+        title: '识别失败',
+        content: '网络错误，请稍后重试',
+        showCancel: false
+      });
+    }
   }
 });
