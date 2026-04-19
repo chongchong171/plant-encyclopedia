@@ -389,7 +389,8 @@ Page({
       return
     }
 
-    const reply = res.currentQuestion || ''
+    // 清理 AI 回复中的 markdown 加粗标记（**）
+    const reply = (res.currentQuestion || '').replace(/\*\*/g, '')
     if (!reply) {
       this.addMessage('assistant', '我好像走神了，能再说一遍吗？')
       return
@@ -808,7 +809,7 @@ Page({
         }
         
         // 构建精简但有内容的识别结果
-        let msg = `${titlePrefix}**${res.data.name}**\n`
+        let msg = `${titlePrefix}${res.data.name}\n`
         
         // 置信度提示
         if (showWarning) {
@@ -821,7 +822,7 @@ Page({
         
         // ========== 详细显示植物信息（置信度≥20% 时显示完整信息）==========
         if (confidence >= 20) {
-          msg += `\n📖 **详细信息**\n`
+          msg += `\n📖 详细信息\n`
           
           // 学名（拉丁名）
           if (res.data.scientificNameLatin) {
@@ -853,7 +854,7 @@ Page({
         
         // ========== 显示多个可能的结果 ==========
         if (res.data.possibleResults && res.data.possibleResults.length > 1) {
-          msg += `\n\n🔍 **其他可能的结果**\n`
+          msg += `\n\n🔍 其他可能的结果\n`
           for (let i = 1; i < res.data.possibleResults.length; i++) {
             const possible = res.data.possibleResults[i]
             const possibleConfidence = possible.confidence
@@ -867,7 +868,7 @@ Page({
           
           // 根据最佳结果的置信度给出建议
           if (confidence < 20) {
-            msg += `\n💡 **拍摄建议**\n`
+            msg += `\n💡 拍摄建议\n`
             msg += `当前识别置信度较低，建议重新拍摄：\n`
             msg += `• 📸 换个角度，拍摄植物整体\n`
             msg += `• ☀️ 在光线充足的地方拍摄\n`
@@ -903,7 +904,7 @@ Page({
           if (res.data.careGuide.light) basicCare.push(`☀️ 光照：${cleanText(res.data.careGuide.light)}`)
           if (res.data.careGuide.water) basicCare.push(`💧 浇水：${cleanText(res.data.careGuide.water)}`)
           if (basicCare.length > 0) {
-            msg += `\n【基础养护】\n${basicCare.join('\n')}`
+            msg += `\n\n【基础养护】\n${basicCare.join('\n')}`
           }
           
           // 环境要求（温度 + 湿度 + 土壤）
