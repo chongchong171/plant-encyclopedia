@@ -809,7 +809,9 @@ Page({
         }
         
         // 构建精简但有内容的识别结果
-        let msg = `${titlePrefix}${res.data.name}\n`
+        // 清理所有文本字段中的 ** 标记
+        const cleanMarkdown = (text) => text ? text.replace(/\*\*/g, '') : ''
+        let msg = `${titlePrefix}${cleanMarkdown(res.data.name)}\n`
         
         // 置信度提示
         if (showWarning) {
@@ -826,22 +828,22 @@ Page({
           
           // 学名（拉丁名）
           if (res.data.scientificNameLatin) {
-            msg += `• 拉丁学名：${res.data.scientificNameLatin}\n`
+            msg += `• 拉丁学名：${cleanMarkdown(res.data.scientificNameLatin)}\n`
           }
           
           // 中文学名
           if (res.data.scientificName && res.data.scientificName !== res.data.name) {
-            msg += `• 中文学名：${res.data.scientificName}\n`
+            msg += `• 中文学名：${cleanMarkdown(res.data.scientificName)}\n`
           }
           
           // 别名/常见名
           if (res.data.commonNames && res.data.commonNames !== res.data.name) {
-            msg += `• 别名：${res.data.commonNames}\n`
+            msg += `• 别名：${cleanMarkdown(res.data.commonNames)}\n`
           }
           
           // 科属
           if (res.data.family) {
-            msg += `• 科属：${res.data.family}\n`
+            msg += `• 科属：${cleanMarkdown(res.data.family)}\n`
           }
           
           // 置信度
@@ -849,7 +851,7 @@ Page({
         } else {
           // 置信度<20%，只显示基本信息
           msg += ` 置信度：${confidence}%\n`
-          if (res.data.family) msg += `🌱 科属：${res.data.family}\n`
+          if (res.data.family) msg += `🌱 科属：${cleanMarkdown(res.data.family)}\n`
         }
         
         // ========== 显示多个可能的结果 ==========
@@ -860,9 +862,9 @@ Page({
             const possibleConfidence = possible.confidence
             
             if (possibleConfidence >= 20) {
-              msg += `${i + 1}. ${possible.name}（${possibleConfidence}%）\n`
+              msg += `${i + 1}. ${cleanMarkdown(possible.name)}（${possibleConfidence}%）\n`
             } else {
-              msg += `${i + 1}. 可能是${possible.name}（${possibleConfidence}%）\n`
+              msg += `${i + 1}. 可能是${cleanMarkdown(possible.name)}（${possibleConfidence}%）\n`
             }
           }
           
@@ -877,8 +879,8 @@ Page({
           }
         }
         
-        // 清理文本中的换行符，避免重复换行
-        const cleanText = (text) => text ? text.replace(/[\r\n]+/g, ' ').trim() : ''
+        // 清理文本中的换行符和 ** 标记，避免重复换行
+        const cleanText = (text) => text ? cleanMarkdown(text).replace(/[\r\n]+/g, ' ').trim() : ''
         
         // 植物档案（合并简介）
         if (res.data.plantProfile) {
@@ -929,17 +931,17 @@ Page({
         // 养护难度
         if (res.data.difficultyText) {
           const stars = '⭐'.repeat(res.data.difficultyLevel || 3)
-          msg += `\n${stars} 养护难度：${res.data.difficultyText}\n`
+          msg += `\n${stars} 养护难度：${cleanMarkdown(res.data.difficultyText)}\n`
         }
         
         // 常见问题
         if (res.data.commonProblems && res.data.commonProblems.length > 0) {
-          msg += `\n⚠️ 常见问题\n${res.data.commonProblems.map(p => `• ${p}`).join('\n')}\n`
+          msg += `\n⚠️ 常见问题\n${res.data.commonProblems.map(p => `• ${cleanMarkdown(p)}`).join('\n')}\n`
         }
         
         // 快速要点
         if (res.data.quickTips && res.data.quickTips.length > 0) {
-          msg += `\n✨ 养护要点\n${res.data.quickTips.map(t => `• ${t}`).join('\n')}\n`
+          msg += `\n✨ 养护要点\n${res.data.quickTips.map(t => `• ${cleanMarkdown(t)}`).join('\n')}\n`
         }
         
         // 添加图片消息（用户上传的）
@@ -955,12 +957,12 @@ Page({
           }
         })
         
-        // 保存识别结果
+        // 保存识别结果（清理 ** 标记）
         this.setData({
           currentIntent: 'addPlant',
           extractedInfo: {
-            plantName: res.data.name,
-            scientificName: res.data.scientificName,
+            plantName: cleanMarkdown(res.data.name),
+            scientificName: cleanMarkdown(res.data.scientificName || ''),
             imageUrl: imagePath,
             careAdvice: res.data.careGuide
           }
