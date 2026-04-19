@@ -121,7 +121,6 @@ Page({
     
     // 未知植物：调用云函数获取信息（文字 + 图片）
     console.log('[search_result] 未知植物，调用云函数:', keyword);
-    wx.showLoading({ title: '查询中...' });
     
     try {
       // 优化：使用 setTimeout 防止 UI 阻塞
@@ -129,7 +128,6 @@ Page({
         this.getPlantInfoFromCloud(keyword),
         new Promise((_, reject) => setTimeout(() => reject(new Error('请求超时')), 30000))
       ]);
-      wx.hideLoading();
       
       console.log('[search_result] 云函数返回结果:', aiResult ? '有数据' : 'null');
       
@@ -141,6 +139,8 @@ Page({
         this.checkFavorite();
         return;
       }
+      
+      wx.hideLoading();
       
       const scientificNameToUse = providedScientificName || aiResult.scientificName || '';
       const imageUrlFromCloud = aiResult.imageUrl || '';
@@ -165,7 +165,6 @@ Page({
       
     } catch (err) {
       console.error('[search_result] 搜索异常:', err);
-      wx.hideLoading();
       const fallbackPlant = this.getFallbackPlant(keyword);
       const stars = this.generateDifficultyStars(fallbackPlant.difficultyLevel);
       this.setData({ loading: false, error: false, plant: fallbackPlant, difficultyStars: stars });
