@@ -170,13 +170,11 @@ Page({
   },
 
   /**
-   * 聚焦搜索框 - 直接跳转到搜索页面
+   * 聚焦搜索框 - 让输入框获得焦点（文字搜索）
    */
   focusSearch() {
-    // 直接跳转到搜索页面，让用户在那个页面选择拍照或相册
-    wx.navigateTo({
-      url: '/pages/search_page/search_page'
-    })
+    // 文字搜索，不需要特殊处理，用户直接输入即可
+    console.log('[discover] 搜索框聚焦，等待用户输入')
   },
 
   /**
@@ -190,11 +188,36 @@ Page({
   },
 
   /**
-   * 搜索确认 - 直接跳转到搜索页面
+   * 搜索确认 - 文字搜索，跳转到搜索结果页
    */
   onSearchConfirm(e) {
-    this.focusSearch()
-  }
+    const { value } = e.detail
+    if (!value || !value.trim()) {
+      wx.showToast({
+        title: '请输入植物名称',
+        icon: 'none'
+      })
+      return
+    }
+
+    const searchText = value.trim()
+    const knownImage = this.IMAGE_MAP[searchText]
+
+    // 已知植物：直接传递缩略图，秒开
+    if (knownImage) {
+      console.log('[discover] 已知植物，秒开:', searchText)
+      wx.navigateTo({
+        url: `/pages/search_result/search_result?search_text=${encodeURIComponent(searchText)}&image_url=${encodeURIComponent(knownImage)}`
+      })
+      return
+    }
+
+    // 未知植物：跳转搜索，显示放大镜加载动画
+    console.log('[discover] 未知植物，跳转搜索:', searchText)
+    wx.navigateTo({
+      url: `/pages/search_result/search_result?search_text=${encodeURIComponent(searchText)}`
+    })
+  },
 
   /**
    * 跳转分类

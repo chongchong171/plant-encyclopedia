@@ -29,7 +29,7 @@ Page({
     const hasImage = !!imageUrl;  // 是否有传递的缩略图（已知植物）
     const hasIdentifyData = !!identifyData;  // 是否有识别结果数据（从 search_page 传来）
     
-    // 所有植物都调用云函数获取数据
+    // 所有植物都显示加载动画（放大镜）
     this.setData({ 
       searchText, 
       scientificName,
@@ -37,7 +37,7 @@ Page({
       hasImage,
       identifyData,
       hasIdentifyData,
-      loading: true  // 都显示加载动画
+      loading: true
     });
     
     if (searchText) {

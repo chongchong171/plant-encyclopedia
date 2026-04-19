@@ -20,21 +20,21 @@
     </view>
   </view>
 
-  <!-- 搜索输入框（胶囊对话框 - 拍照/相册识别） -->
+  <!-- 搜索输入框（胶囊对话框 - 文字搜索） -->
   <view class="search-section">
     <view class="search-capsule">
-      <view class="search-input-wrap" bindtap="focusSearch">
+      <view class="search-input-wrap">
         <text class="search-icon">🔍</text>
         <input
           class="search-input"
-          placeholder="点击拍照或从相册选择植物..."
+          placeholder="输入植物名称，AI 为你解答..."
           value="{{searchText}}"
           bindinput="onSearchInput"
           bindconfirm="onSearchConfirm"
           confirm-type="search"
           cursor-spacing="200"
-          disabled="true"
         />
+        <text class="search-ai-icon" wx:if="{{searchText}}">🤖</text>
       </view>
     </view>
   </view>

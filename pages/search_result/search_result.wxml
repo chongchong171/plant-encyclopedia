@@ -1,10 +1,15 @@
 <!-- 搜索结果页 - 重构版 -->
 <view class="container">
   
-  <!-- 加载中 -->
-  <view class="loading-container text-loading" wx:if="{{loading && !headerImage}}">
-    <view class="loading-spinner"></view>
-    <text class="loading-text">🔍 正在查询...</text>
+  <!-- 加载中（放大镜动画） -->
+  <view class="loading-container magnifier-loading" wx:if="{{loading}}">
+    <view class="magnifier-loader">
+      <view class="magnifier-handle"></view>
+      <view class="magnifier-lens">
+        <view class="scan-line"></view>
+      </view>
+    </view>
+    <text class="loading-text">AI 正在查询植物信息...</text>
   </view>
 
   <!-- 查询结果 -->

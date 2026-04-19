@@ -10,4 +10,17 @@ image/scenes/*-final.mp4
 # 但保留静态图和最终版本
 !image/scenes/home-poster.jpg
 !image/scenes/home-video-v*.mp4
-node_modules
+
+# 依赖和构建
+node_modules/
+package-lock.json
+
+# IDE 配置
+.trae/
+.openclaw/
+*.swp
+*.swo
+
+# 临时文件
+*.log
+.DS_Store

@@ -13,6 +13,106 @@ page {
   padding-bottom: 120rpx;
 }
 
+/* ========== 放大镜加载动画（和 result_swiper 一致）========== */
+.loading-container.magnifier-loading {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(180deg, #E8F5E9 0%, #F5F5F5 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 40rpx;
+  z-index: 999;
+}
+
+/* 放大镜加载动画 */
+.magnifier-loader {
+  position: relative;
+  width: 120rpx;
+  height: 120rpx;
+  animation: magnifier-rotate 2s ease-in-out infinite;
+}
+
+/* 镜柄 */
+.magnifier-handle {
+  position: absolute;
+  bottom: -50rpx;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 24rpx;
+  height: 60rpx;
+  background: linear-gradient(180deg, #81C784, #4CAF50);
+  border-radius: 12rpx;
+}
+
+/* 镜片 */
+.magnifier-lens {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100rpx;
+  height: 100rpx;
+  background: rgba(255, 255, 255, 0.1);
+  border: 8rpx solid #81C784;
+  border-radius: 50%;
+  box-shadow: 
+    0 0 30rpx rgba(76, 175, 80, 0.6),
+    inset 0 0 20rpx rgba(76, 175, 80, 0.3);
+  overflow: hidden;
+}
+
+/* 扫描光线 */
+.scan-line {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 6rpx;
+  background: linear-gradient(90deg, 
+    transparent, 
+    #4CAF50, 
+    #81C784, 
+    #4CAF50, 
+    transparent
+  );
+  animation: scan-move 1.5s ease-in-out infinite;
+  box-shadow: 0 0 10rpx #4CAF50;
+}
+
+@keyframes magnifier-rotate {
+  0%, 100% { 
+    transform: rotate(-10deg);
+  }
+  50% { 
+    transform: rotate(10deg);
+  }
+}
+
+@keyframes scan-move {
+  0% { 
+    top: 10%;
+    opacity: 0.3;
+  }
+  50% { 
+    opacity: 1;
+  }
+  100% { 
+    top: 90%;
+    opacity: 0.3;
+  }
+}
+
+.loading-container.magnifier-loading .loading-text {
+  font-size: 32rpx;
+  color: #333;
+  font-weight: 500;
+  letter-spacing: 1rpx;
+}
+
 /* ========== 结果容器 ========== */
 .result-container {
   padding: 24rpx;
