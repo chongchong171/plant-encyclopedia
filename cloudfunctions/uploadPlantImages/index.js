@@ -22,21 +22,17 @@ const OLD_FILES = [
 ];
 
 exports.main = async (event, context) => {
-  console.log('[uploadPlantImages] 开始上传 2 张植物图片...');
   
   const results = { upload: [], delete: [] };
   
   try {
     // 1. 先删除旧图片
-    console.log('[uploadPlantImages] 删除旧图片...');
     const deleteRes = await cloud.deleteFile({ fileList: OLD_FILES });
     results.delete = deleteRes.fileList;
-    console.log('[uploadPlantImages] 删除完成:', results.delete.length);
     
     // 2. 上传新图片（只上传 2 张）
     for (const img of IMAGE_URLS) {
       try {
-        console.log('[uploadPlantImages] 上传', img.name, '...');
         
         const res = await fetch(img.url);
         const buffer = await res.buffer();
@@ -53,7 +49,6 @@ exports.main = async (event, context) => {
           fileURL: uploadRes.fileURL
         });
         
-        console.log('[uploadPlantImages]', img.name, '上传成功:', uploadRes.fileID);
         
       } catch (err) {
         results.upload.push({
@@ -68,7 +63,6 @@ exports.main = async (event, context) => {
     const uploadSuccess = results.upload.filter(r => r.success).length;
     const deleteSuccess = results.delete.filter(f => f.status === 0).length;
     
-    console.log('[uploadPlantImages] 执行完成');
     
     return {
       success: true,

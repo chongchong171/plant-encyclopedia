@@ -28,8 +28,19 @@ exports.main = async (event, context) => {
   }
   
   const { nickName, avatarUrl, gender, country, province, city } = event;
-  
-  console.log('[updateUserInfo] 更新用户信息:', { openId, nickName });
+
+  // 输入验证
+  if (nickName && (typeof nickName !== 'string' || nickName.length > 50)) {
+    return { success: false, error: '昵称格式错误' };
+  }
+  if (avatarUrl && !/^https?:\/\/.+/.test(avatarUrl)) {
+    return { success: false, error: '头像URL格式错误' };
+  }
+  if (gender !== undefined && ![0, 1, 2].includes(gender)) {
+    return { success: false, error: '性别参数错误' };
+  }
+
+  const maskedOpenId = openId.substring(0, 4) + '****' + openId.substring(openId.length - 4);
   
   try {
     // 检查 user_stats 表是否已有记录
@@ -53,9 +64,8 @@ exports.main = async (event, context) => {
       // 已有记录，更新
       await db.collection('user_stats')
         .where({ _openid: openId })
-        .update(updateData);
-      
-      console.log('[updateUserInfo] 更新成功');
+        .update({ data: updateData });
+
     } else {
       // 新用户，创建记录
       await db.collection('user_stats').add({
@@ -75,22 +85,23 @@ exports.main = async (event, context) => {
           createdAt: new Date().toISOString()
         }
       });
-      
-      console.log('[updateUserInfo] 创建成功');
+
     }
-    
+
     // 同时更新 analytics_users（用户档案）
     const analyticsRef = db.collection('analytics_users').doc(`user_${openId}`);
     const analyticsDoc = await analyticsRef.get();
-    
+
     if (analyticsDoc.data) {
       await analyticsRef.update({
-        nickName,
-        avatarUrl,
-        gender,
-        country,
-        province,
-        city
+        data: {
+          nickName: nickName || '',
+          avatarUrl: avatarUrl || '',
+          gender: gender !== undefined ? gender : 0,
+          country: country || '',
+          province: province || '',
+          city: city || ''
+        }
       });
     }
     

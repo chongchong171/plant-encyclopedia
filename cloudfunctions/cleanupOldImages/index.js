@@ -6,7 +6,6 @@ const cloud = require('wx-server-sdk');
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV });
 
 exports.main = async (event, context) => {
-  console.log('[cleanupOldImages] 开始清理旧图片...');
   
   // 需要删除的旧文件
   const oldFiles = [
@@ -24,7 +23,6 @@ exports.main = async (event, context) => {
     
     const results = [];
     deleteRes.fileList.forEach(file => {
-      console.log(`[cleanupOldImages] 删除 ${file.filePath}: 状态 ${file.status}`);
       results.push({
         filePath: file.filePath,
         status: file.status,

@@ -58,6 +58,20 @@
   height: 100%;
 }
 
+.avatar-icon-wrap {
+  width: 100%;
+  height: 100%;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.avatar-flower {
+  font-size: 90rpx;
+  line-height: 1;
+}
+
 .nickname {
   font-size: 40rpx;
   font-weight: 600;
@@ -220,6 +234,32 @@
   color: #CCC;
 }
 
+/* ========== 管理员入口 ========== */
+.admin-entry {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 32rpx 24rpx;
+  padding: 24rpx 32rpx;
+  background: #fff;
+  border-radius: 24rpx;
+  box-shadow: 0 4rpx 24rpx rgba(0,0,0,0.04);
+}
+
+.admin-entry:active {
+  background: #FAFAFA;
+}
+
+.admin-icon {
+  font-size: 32rpx;
+  margin-right: 12rpx;
+}
+
+.admin-text {
+  font-size: 26rpx;
+  color: #666;
+}
+
 /* ========== 底部 ========== */
 .footer {
   text-align: center;
@@ -229,4 +269,229 @@
 .footer-text {
   font-size: 24rpx;
   color: #BBB;
+}
+
+/* ========== 完善资料弹窗 ========== */
+.profile-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.profile-modal-content {
+  background: #ffffff;
+  border-radius: 24rpx;
+  width: 640rpx;
+  box-sizing: border-box;
+  box-shadow: 0 12rpx 40rpx rgba(0,0,0,0.25);
+  position: relative;
+  overflow: hidden;
+  padding: 48rpx 40rpx 40rpx;
+}
+
+.profile-modal-accent {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 6rpx;
+  background: linear-gradient(90deg, #5a8f4a 0%, #7cb342 100%);
+}
+
+.profile-modal-close {
+  position: absolute;
+  top: 20rpx;
+  right: 20rpx;
+  width: 56rpx;
+  height: 56rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32rpx;
+  color: #999999;
+  border-radius: 50%;
+}
+
+.profile-modal-close:active {
+  background: #f5f5f5;
+}
+
+/* 头像区域 */
+.profile-avatar-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 32rpx;
+}
+
+.avatar-wrapper {
+  width: 180rpx;
+  height: 180rpx;
+  border-radius: 50%;
+  overflow: hidden;
+  position: relative;
+  background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+  border: 3rpx solid #e8f5e9;
+  box-sizing: border-box;
+}
+
+/* 头像呼吸动画 */
+.avatar-breathing {
+  animation: avatarBreathe 2.5s ease-in-out infinite;
+  box-shadow: 0 0 0 0 rgba(90, 143, 74, 0.4);
+}
+
+@keyframes avatarBreathe {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(90, 143, 74, 0.35);
+  }
+  50% {
+    transform: scale(1.03);
+    box-shadow: 0 0 0 16rpx rgba(90, 143, 74, 0);
+  }
+}
+
+.avatar-display {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.avatar-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.avatar-placeholder text {
+  font-size: 72rpx;
+}
+
+.avatar-hint {
+  font-size: 24rpx;
+  color: #5a8f4a;
+  margin-top: 12rpx;
+}
+
+.avatar-btn {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  padding: 0;
+  margin: 0;
+  border: none;
+  background: transparent;
+}
+
+.avatar-btn::after {
+  border: none;
+}
+
+/* 头像右下角相机图标 */
+.avatar-camera-badge {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 52rpx;
+  height: 52rpx;
+  background: #5a8f4a;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 4rpx solid #ffffff;
+  box-shadow: 0 2rpx 8rpx rgba(0,0,0,0.15);
+  pointer-events: none;
+}
+
+.avatar-camera-icon {
+  font-size: 26rpx;
+}
+
+/* 文案 */
+.profile-modal-body {
+  text-align: center;
+  margin-bottom: 32rpx;
+}
+
+.profile-modal-title {
+  font-size: 36rpx;
+  font-weight: 700;
+  color: #333333;
+  display: block;
+  margin-bottom: 12rpx;
+}
+
+.profile-modal-desc {
+  font-size: 26rpx;
+  color: #888888;
+  line-height: 1.6;
+  display: block;
+}
+
+/* 表单 */
+.profile-form-item {
+  margin-bottom: 32rpx;
+}
+
+.profile-form-input {
+  width: 100%;
+  height: 96rpx;
+  background: #f8f8f8;
+  border-radius: 16rpx;
+  padding: 0 32rpx;
+  font-size: 30rpx;
+  color: #333333;
+  box-sizing: border-box;
+  text-align: center;
+}
+
+/* 按钮 */
+.profile-modal-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20rpx;
+}
+
+.profile-modal-btn {
+  width: 100%;
+  padding: 28rpx 0;
+  border-radius: 16rpx;
+  font-size: 30rpx;
+  font-weight: 600;
+  text-align: center;
+}
+
+.profile-modal-btn-confirm {
+  background: linear-gradient(145deg, #5a8f4a 0%, #4a7a3a 100%);
+  color: #ffffff;
+  box-shadow: 0 4rpx 16rpx rgba(90, 143, 74, 0.3);
+}
+
+.profile-modal-btn-confirm:active {
+  transform: scale(0.98);
+}
+
+.profile-modal-skip {
+  font-size: 26rpx;
+  color: #999999;
+  padding: 8rpx 16rpx;
+}
+
+.profile-modal-skip:active {
+  color: #666666;
 }

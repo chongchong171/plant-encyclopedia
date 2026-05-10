@@ -42,7 +42,6 @@ exports.main = async (event) => {
   let skipCount = 0
   let failCount = 0
 
-  console.log('[batchCache] 开始写入 25 张植物图片缓存')
 
   for (const plant of PLANTS) {
     // 正确的 cloud:// fileID 格式：cloud://{env-id}/{file-path}
@@ -65,7 +64,6 @@ exports.main = async (event) => {
           }
         })
         skipCount++
-        console.log(`[更新] ${plant.name} -> ${cloudPath}`)
         results.push({ name: plant.name, status: 'updated', cloudUrl: cloudPath })
       } else {
         // 新增
@@ -77,18 +75,14 @@ exports.main = async (event) => {
           }
         })
         successCount++
-        console.log(`[新增] ${plant.name} -> ${cloudPath}`)
         results.push({ name: plant.name, status: 'created', cloudUrl: cloudPath })
       }
     } catch (err) {
       failCount++
-      console.log(`[失败] ${plant.name}: ${err.message}`)
       results.push({ name: plant.name, status: 'error', error: err.message })
     }
   }
 
-  console.log(`=== 完成 ===`)
-  console.log(`新增: ${successCount} | 更新: ${skipCount} | 失败: ${failCount}`)
 
   return {
     success: true,

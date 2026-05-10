@@ -18,7 +18,7 @@ const MODULE_NAME = 'intentClassify'
 
 // GLM-4-Flash API 配置
 const API_URL = 'https://open.bigmodel.cn/api/paas/v4/chat/completions'
-const API_KEY = '4a03151c4db7420489e67247e0a3383f'  // 智谱 AI API Key
+const API_KEY = process.env.GLM_API_KEY || ''
 
 // 工具定义
 const TOOLS = [

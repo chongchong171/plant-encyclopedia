@@ -2,14 +2,17 @@
 <view class="container">
   <!-- 头图区域 -->
   <view class="header-section">
-    <image class="header-bg" src="https://images.pexels.com/photos/32817410/pexels-photo-32817410.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=627&w=1200" mode="aspectFill"></image>
+    <image class="header-bg" src="cloud://plant-encyclopedia-8d9x10139590b.706c-plant-encyclopedia-8d9x10139590b-1416656727/plant-images/AI植物管家个人中心头图(1).png" mode="aspectFill"></image>
     <view class="header-overlay"></view>
     
     <view class="header-content" style="padding-top: 180rpx;">
       <view class="avatar" bindtap="getUserProfile">
-        <image class="avatar-img" src="https://img.icons8.com/color/96/sunflower.png" mode="aspectFill"></image>
+        <image wx:if="{{userInfo.avatarUrl}}" class="avatar-img" src="{{userInfo.avatarUrl}}" mode="aspectFill" binderror="onAvatarError"></image>
+        <view wx:else class="avatar-icon-wrap">
+          <text class="avatar-flower">🌺</text>
+        </view>
       </view>
-      <text class="nickname">植物爱好者 🌿</text>
+      <text class="nickname">{{userInfo.nickName || '植物爱好者 🌿'}}</text>
       <text class="bio">每天认识一种植物 🌿</text>
     </view>
   </view>
@@ -41,6 +44,11 @@
         </view>
         <text class="menu-arrow">›</text>
       </view>
+      <view class="menu-item" bindtap="goToRanking" wx:if="{{featureFlags.showRanking !== false}}">
+        <text class="menu-icon">🏆</text>
+        <text class="menu-text">花友排行榜</text>
+        <text class="menu-arrow">›</text>
+      </view>
     </view>
   </view>
 
@@ -60,8 +68,82 @@
     </view>
   </view>
 
+  <!-- 管理员入口（仅管理员可见） -->
+  <view class="admin-entry" wx:if="{{isAdmin}}" bindtap="goToAdmin">
+    <text class="admin-icon">⚙️</text>
+    <text class="admin-text">管理控制台</text>
+  </view>
+
   <!-- 底部 -->
   <view class="footer">
     <text class="footer-text">AI 植物管家 v1.0.0</text>
+  </view>
+
+  <!-- 个人信息弹窗 -->
+  <view wx:if="{{showProfileGuide}}" class="profile-modal-overlay" bindtap="closeProfileGuide">
+    <view class="profile-modal-content" catchtap="preventBubble">
+      <!-- 顶部绿色装饰条 -->
+      <view class="profile-modal-accent"></view>
+
+      <!-- 关闭 -->
+      <view class="profile-modal-close" bindtap="closeProfileGuide">✕</view>
+
+      <!-- 展示模式：个人信息卡片 -->
+      <block wx:if="{{profileModalMode === 'view'}}">
+        <view class="profile-avatar-section">
+          <view class="avatar-wrapper avatar-breathing">
+            <image wx:if="{{userInfo.avatarUrl}}" class="avatar-display" src="{{userInfo.avatarUrl}}" mode="aspectFill"/>
+            <view wx:else class="avatar-placeholder">
+              <text>🌺</text>
+            </view>
+          </view>
+        </view>
+
+        <view class="profile-modal-body">
+          <text class="profile-modal-title">{{userInfo.nickName || '植物爱好者'}}</text>
+          <text class="profile-modal-desc">点击按钮修改你的头像和昵称</text>
+        </view>
+
+        <view class="profile-modal-actions">
+          <view class="profile-modal-btn profile-modal-btn-confirm" bindtap="enterEditMode">修改昵称和图片</view>
+          <view class="profile-modal-skip" bindtap="closeProfileGuide">关闭</view>
+        </view>
+      </block>
+
+      <!-- 编辑模式：新用户引导设置 / 老用户修改资料 -->
+      <block wx:if="{{profileModalMode === 'edit'}}">
+        <view class="profile-avatar-section">
+          <view class="avatar-wrapper avatar-breathing">
+            <image wx:if="{{tempAvatarUrl}}" class="avatar-display" src="{{tempAvatarUrl}}" mode="aspectFill"/>
+            <view wx:else class="avatar-placeholder">
+              <text>🌿</text>
+            </view>
+            <button class="avatar-btn" open-type="chooseAvatar" bind:chooseavatar="onChooseAvatar"></button>
+            <!-- 相机图标提示可点击 -->
+            <view class="avatar-camera-badge">
+              <text class="avatar-camera-icon">📷</text>
+            </view>
+          </view>
+          <text class="avatar-hint">{{isNewUser ? '👆 点我换头像' : '点击更换头像'}}</text>
+        </view>
+
+        <!-- 昵称（放在头像下方） -->
+        <view class="profile-form-item">
+          <input type="nickname" class="profile-form-input" placeholder="给自己起个好听的昵称" value="{{tempNickname}}" bindblur="onNicknameInput"/>
+        </view>
+
+        <!-- 文案 -->
+        <view class="profile-modal-body">
+          <text class="profile-modal-title">{{isNewUser ? '开启你的植物社交' : '设置你的植物名片'}}</text>
+          <text wx:if="{{isNewUser}}" class="profile-modal-desc">设置头像和昵称，参与植物养护排行榜，和花友们一起打卡</text>
+        </view>
+
+        <!-- 按钮 -->
+        <view class="profile-modal-actions">
+          <view class="profile-modal-btn profile-modal-btn-confirm" bindtap="saveProfile">{{isNewUser ? '保存并进入' : '保存'}}</view>
+          <view class="profile-modal-skip" bindtap="closeProfileGuide">{{isNewUser ? '稍后再说' : '取消'}}</view>
+        </view>
+      </block>
+    </view>
   </view>
 </view>

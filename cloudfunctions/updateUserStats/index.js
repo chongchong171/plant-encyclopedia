@@ -32,7 +32,7 @@ exports.main = async (event, context) => {
   
   const { action, plantId } = event
   
-  console.log('更新用户统计:', { action, openid })
+  const maskedOpenId = openid ? openid.substring(0, 4) + '****' + openid.substring(openid.length - 4) : '';
   
   try {
     // 获取用户当前所有植物
@@ -43,7 +43,6 @@ exports.main = async (event, context) => {
       .get()
     
     const plants = plantsRes.data
-    console.log('用户植物数量:', plants.length)
     
     // 计算统计数据
     const plantCount = plants.length
@@ -107,7 +106,6 @@ exports.main = async (event, context) => {
       updatedAt: new Date().toISOString()
     }
     
-    console.log('统计数据:', statsData.stats)
     
     // 检查是否已存在记录
     const existingRes = await db.collection('user_stats')
@@ -124,14 +122,12 @@ exports.main = async (event, context) => {
         .update({
           data: statsData
         })
-      console.log('更新统计记录成功')
     } else {
       // 创建新记录
       statsData.createdAt = new Date().toISOString()
       await db.collection('user_stats').add({
         data: statsData
       })
-      console.log('创建统计记录成功')
     }
     
     return {

@@ -42,18 +42,14 @@ const CLOUD_BASE_PATH = 'cloud://plant-encyclopedia-8d9x10139590b.706c-plant-enc
 function getImageUrl(plantName) {
   const filename = IMAGE_MAP[plantName];
   if (!filename) {
-    console.log(`警告：${plantName} 没有配置图片`);
     return '';
   }
   return CLOUD_BASE_PATH + filename;
 }
 
 // 测试所有植物
-console.log('植物图片 URL 列表：');
-console.log('================');
 Object.keys(IMAGE_MAP).forEach(plantName => {
   const url = getImageUrl(plantName);
-  console.log(`${plantName}: ${url}`);
 });
 
 module.exports = {

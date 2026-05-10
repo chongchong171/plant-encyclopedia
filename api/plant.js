@@ -388,23 +388,44 @@ async function uploadPlantImage(plantId, tempFilePath) {
 }
 
 /**
- * 检查植物是否已存在（同名 + 同图片）
+ * 检查植物是否已存在（仅检查当前用户的花园）
  *
- * @param {object} db 数据库实例
+ * 通过 getMyPlants 云函数获取数据（云函数会按 _openid 过滤），
+ * 然后在客户端做名称和图片匹配，避免直接查询数据库时跨用户匹配。
+ *
+ * @param {object} db 数据库实例（已废弃，保留参数以兼容旧调用）
  * @param {string} plantName 植物名称
  * @param {string} imageUrl 图片 URL（可选）
- * @returns {Promise<{nameCount: number, imageCount: number, needConfirm: boolean, reason: string}>}
+ * @returns {Promise<{nameCount: number, imageCount: number, maxCount: number, needConfirm: boolean, reason: string}>}
  */
 async function checkPlantExists(db, plantName, imageUrl) {
-  const nameCountRes = await db.collection('my_plants').where({
-    name: db.RegExp({ regexp: plantName, options: 'i' })
-  }).count()
-  const nameCount = nameCountRes.total
+  // 使用云函数获取当前用户的植物列表（服务端按 _openid 过滤）
+  const plantsRes = await getMyPlants()
 
+  if (!plantsRes.success || !plantsRes.plants) {
+    return { nameCount: 0, imageCount: 0, maxCount: 0, needConfirm: false, reason: '' }
+  }
+
+  const userPlants = plantsRes.plants
+  const targetName = (plantName || '').trim().toLowerCase()
+
+  // 按名称匹配:同时检查 name、commonNames、scientificName
+  let nameCount = 0
+  if (targetName) {
+    nameCount = userPlants.filter(p => {
+      const name = (p.name || '').toLowerCase()
+      const commonNames = (p.commonNames || '').toLowerCase()
+      const scientificName = (p.scientificName || '').toLowerCase()
+      return name.includes(targetName) ||
+             commonNames.includes(targetName) ||
+             scientificName.includes(targetName)
+    }).length
+  }
+
+  // 按图片 URL 精确匹配
   let imageCount = 0
   if (imageUrl) {
-    const imageCountRes = await db.collection('my_plants').where({ imageUrl }).count()
-    imageCount = imageCountRes.total
+    imageCount = userPlants.filter(p => p.imageUrl === imageUrl).length
   }
 
   const maxCount = nameCount > imageCount ? nameCount : imageCount

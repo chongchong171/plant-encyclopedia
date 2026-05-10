@@ -11,12 +11,11 @@
       <view class="navbar-left" bindtap="goBack">
         <text class="back-icon">‹</text>
       </view>
-      <text class="navbar-title">我的花园</text>
       <view class="navbar-right"></view>
     </view>
     <view class="header-content">
       <text class="header-title">我的花园</text>
-      <text class="header-subtitle">用心呵护每一株生命</text>
+      <text class="header-subtitle">{{uiConfig.gardenSubtitle || '用心呵护每一株生命'}}</text>
     </view>
   </view>
 
@@ -49,15 +48,18 @@
   <!-- 空状态 -->
   <view wx:if="{{!loading && actualPlantCount === 0}}" class="empty-state">
     <text class="empty-icon">🌱</text>
-    <text class="empty-title">你的花园还是空的</text>
-    <text class="empty-tip">去首页识别植物，添加第一盆吧</text>
+    <text class="empty-title">{{uiConfig.gardenEmptyTitle || '你的花园还是空的'}}</text>
+    <text class="empty-tip">{{uiConfig.gardenEmptyTip || '去首页识别植物，添加第一盆吧'}}</text>
     <view class="empty-btn" bindtap="goToHome">开始识别</view>
   </view>
 
-  <!-- 诊断悬浮按钮（左下角呼吸灯） -->
-  <view class="diagnosis-float-btn" bindtap="onDiagnosisFloatTap">
-    <text class="float-btn-icon">🩺</text>
-    <text class="float-btn-text">诊断</text>
+  <!-- 诊断悬浮按钮（左下角呼吸灯+脉冲光圈） -->
+  <view class="diagnosis-float-wrap" bindtap="onDiagnosisFloatTap" wx:if="{{diagnosisEnabled}}">
+    <view class="diagnosis-pulse-ring"></view>
+    <view class="diagnosis-float-btn">
+      <text class="float-btn-icon">🩺</text>
+      <text class="float-btn-text">诊断</text>
+    </view>
   </view>
 
   <!-- 植物陈列列表 -->
@@ -171,6 +173,50 @@
       <view class="delete-modal-actions">
         <view class="delete-modal-btn delete-modal-btn-cancel" bindtap="closeDeleteModal">取消</view>
         <view class="delete-modal-btn delete-modal-btn-confirm" bindtap="confirmDelete">删除</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 完善资料引导弹窗 -->
+  <view wx:if="{{showProfileGuide}}" class="profile-modal-overlay" bindtap="closeProfileGuide">
+    <view class="profile-modal-content" catchtap="preventBubble">
+      <!-- 顶部绿色装饰条 -->
+      <view class="profile-modal-accent"></view>
+
+      <!-- 关闭 -->
+      <view class="profile-modal-close" bindtap="skipProfileGuide">✕</view>
+
+      <!-- 大头像 -->
+      <view class="profile-avatar-section">
+        <view class="avatar-wrapper">
+          <image wx:if="{{tempAvatarUrl}}" class="avatar-display" src="{{tempAvatarUrl}}" mode="aspectFill"/>
+          <view wx:else class="avatar-placeholder">
+            <text>🌿</text>
+          </view>
+          <button class="avatar-btn" open-type="chooseAvatar" bind:chooseavatar="onChooseAvatar"></button>
+          <!-- 相机图标提示可点击 -->
+          <view class="avatar-camera-badge">
+            <text class="avatar-camera-icon">📷</text>
+          </view>
+        </view>
+        <text class="avatar-hint">👆 点我换头像</text>
+      </view>
+
+      <!-- 昵称（放在头像下方） -->
+      <view class="profile-form-item">
+        <input type="nickname" class="profile-form-input" placeholder="给自己起个好听的昵称" value="{{tempNickname}}" bindblur="onNicknameInput"/>
+      </view>
+
+      <!-- 文案 -->
+      <view class="profile-modal-body">
+        <text class="profile-modal-title">开启你的植物社交</text>
+        <text class="profile-modal-desc">设置头像和昵称，参与植物养护排行榜，和花友们一起打卡</text>
+      </view>
+
+      <!-- 按钮 -->
+      <view class="profile-modal-actions">
+        <view class="profile-modal-btn profile-modal-btn-confirm" bindtap="saveProfile">保存并进入花园</view>
+        <view class="profile-modal-skip" bindtap="skipProfileGuide">稍后再说</view>
       </view>
     </view>
   </view>

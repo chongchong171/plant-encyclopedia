@@ -23,9 +23,7 @@ exports.main = async (event, context) => {
   const wxContext = cloud.getWXContext()
   const { plantId } = event
   
-  console.log('deletePlant 被调用')
-  console.log('OPENID:', wxContext.OPENID)
-  console.log('plantId:', plantId)
+  const maskedOpenId = wxContext.OPENID ? wxContext.OPENID.substring(0, 4) + '****' + wxContext.OPENID.substring(wxContext.OPENID.length - 4) : '';
   
   // 检查用户是否登录
   if (!wxContext.OPENID) {
@@ -56,7 +54,6 @@ exports.main = async (event, context) => {
       })
       .remove()
     
-    console.log('删除成功，删除了', res.stats.removed, '条记录')
     
     return {
       success: true,

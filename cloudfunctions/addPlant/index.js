@@ -35,8 +35,8 @@ exports.main = async (event, context) => {
     // }
     
     // 判断植物类型，计算浇水周期
-    const wateringDays = calculateWateringDays(plantData.scientificName)
-    
+    const wateringDays = calculateWateringDays(plantData)
+
     // 计算下次浇水日期
     const today = new Date()
     const nextWatering = addDays(today, wateringDays)
@@ -81,7 +81,6 @@ exports.main = async (event, context) => {
         name: 'updateUserStats',
         data: { action: 'add_plant' }
       })
-      console.log('更新统计结果:', statsRes.result)
     } catch (err) {
       console.error('更新统计数据失败:', err)
       // 统计失败不影响添加植物，但记录错误
@@ -106,33 +105,55 @@ exports.main = async (event, context) => {
 }
 
 /**
- * 根据植物学名判断浇水周期
+ * 根据植物信息判断浇水周期
+ * 同时检查中文名、拉丁学名和科属信息
  */
-function calculateWateringDays(scientificName) {
-  // 多肉植物
-  const succulents = ['Crassulaceae', 'Sedum', 'Echeveria', 'Aloe', 'Haworthia', 'Cactaceae']
-  // 热带植物
-  const tropicals = ['Epipremnum', 'Monstera', 'Philodendron', 'Pothos', 'Dieffenbachia']
-  // 开花植物
-  const flowering = ['Rosa', 'Jasminum', 'Orchidaceae', 'Hibiscus']
-  
-  const name = scientificName?.toLowerCase() || ''
-  
-  // 多肉：10-14 天
-  if (succulents.some(s => name.includes(s.toLowerCase()))) {
+function calculateWateringDays(plantData) {
+  const identifyResult = plantData.identifyResult || {}
+
+  // 收集所有可能的名称来源
+  const names = [
+    plantData.scientificName,           // 中文学名
+    identifyResult.scientificName,      // 识别结果中文学名
+    identifyResult.scientificNameLatin, // 拉丁学名
+    identifyResult.family,              // 科属
+    plantData.name                      // 植物名称
+  ].filter(Boolean).map(n => n.toLowerCase())
+
+  // 多肉/仙人掌类：14天
+  const succulents = [
+    'cactaceae', 'crassulaceae', 'sedum', 'echeveria', 'aloe',
+    'haworthia', 'cactus', 'succulent', '多肉', '仙人掌', '芦荟',
+    '石莲花', '景天', '虎尾兰', '龙舌兰'
+  ]
+  if (names.some(name => succulents.some(keyword => name.includes(keyword)))) {
     return 14
   }
-  
-  // 热带植物：5-7 天
-  if (tropicals.some(s => name.includes(s.toLowerCase()))) {
+
+  // 热带植物：5天
+  const tropicals = [
+    'epipremnum', 'monstera', 'philodendron', 'pothos', 'dieffenbachia',
+    '绿萝', '龟背竹', '喜林芋', '万年青', '竹芋', '蕨类', '吊兰'
+  ]
+  if (names.some(name => tropicals.some(keyword => name.includes(keyword)))) {
     return 5
   }
-  
-  // 开花植物：5-7 天
-  if (flowering.some(s => name.includes(s.toLowerCase()))) {
+
+  // 开花植物：5天
+  const flowering = [
+    'rosa', 'jasminum', 'orchidaceae', 'hibiscus', '百合', '玫瑰',
+    '月季', '茉莉', '兰花', '杜鹃', '栀子', '绣球', '茶花'
+  ]
+  if (names.some(name => flowering.some(keyword => name.includes(keyword)))) {
     return 5
   }
-  
+
+  // 水生/湿生植物：3天
+  const aquatic = ['荷花', '睡莲', '水培', '铜钱草', '菖蒲']
+  if (names.some(name => aquatic.some(keyword => name.includes(keyword)))) {
+    return 3
+  }
+
   // 默认：7 天
   return 7
 }

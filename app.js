@@ -19,7 +19,6 @@ App({
     
     // API Key 配置 - 建议从云函数环境变量获取
     // 本地开发时可临时配置以下值（生产环境请移除）
-    // qwenApiKey: 云函数环境变量 QWEN_API_KEY
     // plantnetApiKey: 云函数环境变量 PLANTNET_API_KEY
     // baiduApiKey: 云函数环境变量 BAIDU_API_KEY
     // baiduSecretKey: 云函数环境变量 BAIDU_SECRET_KEY
@@ -43,28 +42,75 @@ App({
 
   async onLaunch() {
     console.log('🌸 AI 植物管家启动~');
-    
+
     // 记录启动时间
     this.globalData.launchTime = Date.now();
-    
+
     if (wx.cloud) {
       wx.cloud.init({
         env: 'plant-encyclopedia-8d9x10139590b',
         traceUser: true
       });
     }
-    
-    // 先登录获取 openid
-    await this.login();
+
+    // 并行执行独立的初始化任务，减少串行阻塞
+    await Promise.all([
+      this.loadAppConfig().catch(err => {
+        console.warn('[app] 配置加载失败:', err);
+      }),
+      this.login().catch(err => {
+        console.warn('[app] 登录失败:', err);
+      })
+    ]);
+
+    // 本地操作不阻塞
     this.getUserInfo();
     this.loadLocalData();
-    
-    // 记录用户访问埋点
+
+    // 埋点不阻塞主流程
     this.trackAnalytics('user_visit');
-    
+
     // 标记需要引导授权（在首页由用户点击触发）
     if (this.globalData.needUserInfoAuth) {
       console.log('[app] 需要引导用户授权信息');
+    }
+  },
+
+  /**
+   * 加载远程配置（云数据库）
+   * 配置化改造核心：把会变的东西放到云端，无需重新发版审核
+   */
+  async loadAppConfig() {
+    const now = Date.now();
+    const CACHE_TTL = 5 * 60 * 1000; // 5 分钟缓存
+
+    // 如果缓存有效，直接返回
+    if (this.globalData._configCacheTime &&
+        now - this.globalData._configCacheTime < CACHE_TTL) {
+      return;
+    }
+
+    try {
+      const res = await wx.cloud.callFunction({
+        name: 'getAppConfig',
+        timeout: 5000 // 缩短超时，避免阻塞
+      });
+
+      if (res.result && res.result.success) {
+        this.globalData.appConfig = res.result.config || {};
+        this.globalData.featureFlags = res.result.flags || {};
+        this.globalData._configCacheTime = now;
+        console.log('[app] 远程配置加载成功', this.globalData.featureFlags);
+      } else {
+        console.warn('[app] 远程配置加载失败，使用本地默认');
+      }
+    } catch (err) {
+      console.error('[app] 加载远程配置出错:', err);
+      // 出错时不覆盖已有缓存，避免功能开关突然失效
+      if (!this.globalData._configCacheTime) {
+        this.globalData.appConfig = {};
+        this.globalData.featureFlags = {};
+      }
     }
   },
 
@@ -82,14 +128,18 @@ App({
         this.globalData.openid = openid;
         this.globalData.hasLogin = true;
         wx.setStorageSync('openid', openid);
-        
+
+        const maskedOpenId = openid.substring(0, 4) + '****' + openid.substring(openid.length - 4);
+
         // 检查是否已有用户信息
         if (res.result.hasUserInfo && res.result.userInfo) {
           this.globalData.userInfo = res.result.userInfo;
           wx.setStorageSync('userInfo', res.result.userInfo);
-          console.log('✅ 登录成功，OPENID:', openid, '用户信息已存在');
+          console.log('✅ 登录成功，OPENID:', maskedOpenId, '用户信息已存在');
+          console.log('📋 完整 OPENID（复制到管理员白名单）:', openid);
         } else {
-          console.log('✅ 登录成功，OPENID:', openid, '需要引导用户授权信息');
+          console.log('✅ 登录成功，OPENID:', maskedOpenId, '需要引导用户授权信息');
+          console.log('📋 完整 OPENID（复制到管理员白名单）:', openid);
           // 标记需要引导授权
           this.globalData.needUserInfoAuth = true;
         }
@@ -145,6 +195,8 @@ App({
       favorites.unshift({ ...plant, addTime: Date.now() });
       this.globalData.favorites = favorites;
       wx.setStorageSync('favorites', favorites);
+      // 埋点：收藏植物
+      this.trackAnalytics('favorite_plant', { plantName: plant.name || plant.plantName });
       return true;
     }
     return false;
@@ -172,20 +224,26 @@ App({
   },
 
   /**
-   * 数据分析埋点
+   * 数据分析埋点（批量合并，2秒内的事件合并发送）
    */
   trackAnalytics(eventType, extraData = {}) {
-    const openId = this.globalData.openId || wx.getStorageSync('openid');
-    if (!openId) return;
-    
+    this._analyticsQueue = this._analyticsQueue || [];
+    this._analyticsQueue.push({ event: eventType, data: extraData, time: Date.now() });
+
+    // 防抖：2 秒内的事件合并发送
+    clearTimeout(this._analyticsTimer);
+    this._analyticsTimer = setTimeout(() => this._flushAnalytics(), 2000);
+  },
+
+  _flushAnalytics() {
+    if (!this._analyticsQueue || this._analyticsQueue.length === 0) return;
+
+    const events = this._analyticsQueue.splice(0, this._analyticsQueue.length);
+
     wx.cloud.callFunction({
       name: 'analytics_track',
-      data: {
-        event: eventType,
-        openId,
-        data: extraData
-      },
-      timeout: 5000  // 不阻塞，超时也不影响主流程
+      data: { events },
+      timeout: 5000
     }).catch(err => {
       console.warn('[analytics] 埋点失败:', err);
     });
@@ -209,82 +267,43 @@ App({
 
   /**
    * 引导用户授权获取用户信息（昵称、头像）
+   * ⚠️ wx.getUserProfile 已于 2022 年 10 月废弃，不再返回真实用户信息
    */
   guideUserInfoAuth() {
-    // 检查是否已经授权过
+    // 检查是否已经响应过引导
     const hasAuthed = wx.getStorageSync('hasUserInfoAuth');
     if (hasAuthed) return;
-    
-    // 弹窗引导
+
+    // 弹窗引导（文案已更新，不再承诺获取真实微信信息）
     wx.showModal({
       title: '完善个人信息',
-      content: '授权后我们将保存您的昵称和头像，用于排行榜展示和会员服务～',
-      confirmText: '立即授权',
-      cancelText: '以后再说',
-      success: (res) => {
-        if (res.confirm) {
-          this.getUserProfile();
-        }
+      content: '微信已调整用户信息获取规则，自动获取昵称和头像功能已不可用。如需展示在排行榜中，请前往个人中心手动设置。',
+      confirmText: '知道了',
+      showCancel: false,
+      success: () => {
+        wx.setStorageSync('hasUserInfoAuth', true);
+        this.globalData.needUserInfoAuth = false;
       }
     });
   },
 
   /**
    * 获取用户信息（微信授权）
+   * ⚠️ wx.getUserProfile 已废弃，调用只会返回固定昵称"微信用户"和默认灰色头像
+   * 此方法保留供兼容，实际不再调用微信 API
    */
   getUserProfile() {
-    wx.getUserProfile({
-      desc: '用于完善会员信息',
-      success: (res) => {
-        const userInfo = res.userInfo;
-
-        // 存储到本地
-        this.globalData.userInfo = userInfo;
-        wx.setStorageSync('userInfo', userInfo);
-        wx.setStorageSync('hasUserInfoAuth', true);
-
-        // 上传到云数据库
-        wx.cloud.callFunction({
-          name: 'updateUserInfo',
-          data: {
-            nickName: userInfo.nickName,
-            avatarUrl: userInfo.avatarUrl,
-            gender: userInfo.gender,
-            country: userInfo.country,
-            province: userInfo.province,
-            city: userInfo.city
-          },
-          timeout: 10000
-        }).then(() => {
-          console.log('✅ 用户信息已保存');
-          this.globalData.needUserInfoAuth = false;
-
-          // 记录埋点
-          this.trackAnalytics('user_info_auth', { success: true });
-
-          // 关闭首页的授权提示条（如果在首页）
-          const pages = getCurrentPages()
-          const currentPage = pages[pages.length - 1]
-          if (currentPage && currentPage.setData && currentPage.data.showAuthBar !== undefined) {
-            currentPage.setData({ showAuthBar: false })
-          }
-
-          // 刷新当前页面数据
-          if (currentPage && currentPage.setData) {
-            currentPage.setData({ userInfo });
-          }
-
-          wx.showToast({ title: '授权成功', icon: 'success', duration: 2000 })
-        }).catch(err => {
-          console.warn('❌ 保存用户信息失败:', err);
-          wx.showToast({ title: '保存失败', icon: 'none' });
-        });
-      },
-      fail: (err) => {
-        console.log('用户拒绝授权');
-        this.trackAnalytics('user_info_auth', { success: false });
-      }
+    wx.showModal({
+      title: '提示',
+      content: '微信已调整用户信息获取规则，自动获取昵称头像功能已不可用。如需设置个人信息，请使用编辑资料功能。',
+      showCancel: false,
+      confirmText: '知道了'
     });
+
+    // 记录已响应，避免重复弹窗
+    wx.setStorageSync('hasUserInfoAuth', true);
+    this.globalData.needUserInfoAuth = false;
+    this.trackAnalytics('user_info_auth', { success: false, reason: 'deprecated_api' });
   }
 
 });

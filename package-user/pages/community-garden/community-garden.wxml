@@ -1,0 +1,17 @@
+<!--社区花园页面 - 花友排行榜（筹备中）-->
+<view class="container">
+
+  <!-- 页面头部 -->
+  <view class="header">
+    <text class="title">🏆 花友排行榜</text>
+    <text class="subtitle">参与植物养护排行榜，和花友们一起打卡</text>
+  </view>
+
+  <!-- 筹备中提示 -->
+  <view class="empty-state">
+    <text class="empty-icon">🏆</text>
+    <text class="empty-title">花友排行榜正在筹备中</text>
+    <text class="empty-desc">敬请期待，和花友们一起比拼养护成果</text>
+  </view>
+
+</view>

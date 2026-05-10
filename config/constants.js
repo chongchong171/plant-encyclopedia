@@ -1,28 +1,55 @@
 /**
  * 全局常量配置
- * 
+ *
  * 包含：额度限制、默认值、阈值等
+ *
+ * ⚠️ 配置化改造说明：
+ * 易变配置（大模型、额度、文案、开关）已迁移到云数据库 app_config / feature_flags
+ * 通过 getAppConfig 云函数动态读取，无需重新发版审核即可调整。
+ * 本文件保留不易变的硬编码（AppID、缓存键名、存储键名等）。
  */
 
+/**
+ * 获取远程配置（带本地兜底）
+ * @param {string} key 配置键，支持点路径如 'aiModel.name'
+ * @param {*} defaultValue 默认值
+ * @returns {*}
+ */
+function getConfig(key, defaultValue) {
+  const app = getApp ? getApp() : null;
+  const config = app?.globalData?.appConfig || {};
+  const keys = key.split('.');
+  let value = config;
+  for (const k of keys) {
+    if (value === null || value === undefined) break;
+    value = value[k];
+  }
+  return value !== undefined ? value : defaultValue;
+}
+
+/**
+ * 获取功能开关（带本地兜底）
+ * @param {string} flag 开关名
+ * @param {boolean} defaultValue 默认值
+ * @returns {boolean}
+ */
+function isFeatureEnabled(flag, defaultValue = false) {
+  const app = getApp ? getApp() : null;
+  const flags = app?.globalData?.featureFlags || {};
+  return flags[flag] !== undefined ? flags[flag] : defaultValue;
+}
+
 module.exports = {
+  // 配置读取工具
+  getConfig,
+  isFeatureEnabled,
   // ========== API 额度限制 ==========
-  
+
   /**
    * PlantNet 每日识别次数限制
    */
   PLANTNET_DAILY_LIMIT: 500,
-  
-  /**
-   * Qwen-Turbo 免费额度（Token）
-   */
-  QWEN_FREE_LIMIT: 1000000,  // 100万
-  
-  /**
-   * Qwen 额度预警阈值
-   * 剩余低于此值时发出警告
-   */
-  QWEN_WARNING_THRESHOLD: 100000,  // 10万
-  
+
   // ========== 养护默认值 ==========
   
   /**
@@ -53,30 +80,20 @@ module.exports = {
   CARD_PADDING: 30,  // rpx
   CARD_MARGIN: 24,  // rpx
   CARD_SHADOW: '0 8rpx 40rpx rgba(0, 0, 0, 0.08)',
-  
+
   /**
    * PlantNet 置信度阈值
    * 低于此值判定为"无法确定"
    */
   PLANTNET_CONFIDENCE_THRESHOLD: 0.3,  // 30%
-  
+
   // ========== UI 常量 ==========
-  
-  /**
-   * 卡片圆角（rpx）
-   */
-  CARD_BORDER_RADIUS: 20,
-  
-  /**
-   * 卡片内边距（rpx）
-   */
-  CARD_PADDING: 20,
-  
+
   /**
    * 图片尺寸（rpx）
    */
   IMAGE_SIZE: 120,
-  
+
   /**
    * 按钮尺寸（rpx）
    */
@@ -86,7 +103,6 @@ module.exports = {
   
   STORAGE_KEYS: {
     PLANTNET_QUOTA: 'plantnet_quota',
-    QWEN_TOKEN_USED: 'qwen_token_used',
     FAVORITES: 'favorites',
     USER_STATS: 'user_stats',
     MY_PLANTS_CACHE: 'my_plants_cache'
@@ -110,7 +126,7 @@ module.exports = {
   /**
    * 小程序 AppID
    */
-  APP_ID: 'wx286acd0921cd1cae',
+  APP_ID: 'wx3dc8f726e165ec0b',
   
   /**
    * 订阅消息模板 ID（浇水提醒）

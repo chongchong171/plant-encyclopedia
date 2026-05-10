@@ -1,0 +1,9 @@
+{
+  "name": "batchUploadPlants",
+  "version": "1.0.0",
+  "description": "批量上传植物数据到云数据库",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "~2.6.3"
+  }
+}

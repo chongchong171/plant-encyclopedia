@@ -46,7 +46,8 @@ Page({
     currentPrompt: PROMPTS[0],
     videoUrl: VIDEO_CONFIG.videoUrl,
     videoLoaded: false,
-    
+    enableVideo: false, // 延迟加载，低端机不加载
+
     isExpanded: false,
     dialogHeight: null,
     messages: [],
@@ -83,71 +84,104 @@ Page({
   },
 
   onLoad() {
-    this.promptTimer = setInterval(() => {
-      if (!this.data.isExpanded) {
-        let i = (PROMPTS.indexOf(this.data.currentPrompt) + 1) % PROMPTS.length
-        this.setData({ currentPrompt: PROMPTS[i] })
-      }
-    }, 5000)
+    // 启动提示文字轮播（8秒间隔，减少 setData 频率）
+    this._startPromptTimer()
+
+    // 视频加载策略：默认立即启用（云存储速度快），仅低端机降级为静态海报
+    let isLowEnd = false
+    try {
+      const deviceInfo = wx.getDeviceInfo()
+      const isDevTools = deviceInfo.environment === 'devtools'
+      const isPC = deviceInfo.platform === 'windows' || deviceInfo.platform === 'mac'
+      isLowEnd = !isDevTools && !isPC && deviceInfo.benchmarkLevel > 0 && deviceInfo.benchmarkLevel <= 10
+      console.log('[home] 设备检测:', {
+        platform: deviceInfo.platform,
+        benchmarkLevel: deviceInfo.benchmarkLevel,
+        isLowEnd
+      })
+    } catch (e) {
+      console.warn('[home] 设备检测失败，默认按非低端机处理:', e)
+    }
+
+    if (!isLowEnd) {
+      console.log('[home] 启用视频加载, URL:', this.data.videoUrl)
+      this.setData({ enableVideo: true })
+    } else {
+      console.log('[home] 低端机，保持静态海报')
+    }
 
     // 检测是否需要自动识别（从我的花园页面跳转过来）
     this.checkAutoIdentify()
   },
 
+  _startPromptTimer() {
+    if (this.promptTimer) return
+    this.promptTimer = setInterval(() => {
+      if (!this.data.isExpanded) {
+        const i = (PROMPTS.indexOf(this.data.currentPrompt) + 1) % PROMPTS.length
+        this.setData({ currentPrompt: PROMPTS[i] })
+      }
+    }, 8000)
+  },
+
   onReady() {
     this.videoContext = wx.createVideoContext('bgVideo', this)
-    
-    // 检测是否是 PC/开发者工具环境
+
+    // 检测是否是 PC/开发者工具/大屏环境
+    let isPCMode = false
     try {
-      const systemInfo = wx.getSystemInfoSync()
-      console.log('[home] systemInfo:', JSON.stringify(systemInfo))
-      
-      // 开发者工具环境
-      const isDevTools = systemInfo.environment === 'devtools'
-      // PC 平台（Windows/Mac）
-      const isPC = systemInfo.platform === 'windows' || systemInfo.platform === 'mac'
-      // 屏幕宽度大于 500px 认为是 PC
-      const isWideScreen = systemInfo.windowWidth > 500
-      
-      console.log('[home] isDevTools:', isDevTools, 'isPC:', isPC, 'isWideScreen:', isWideScreen)
-      
-      if (isDevTools || isPC || isWideScreen) {
-        this.setData({ isPCMode: true })
-        console.log('[home] 已启用 PC 模式')
+      const deviceInfo = wx.getDeviceInfo()
+      const isDevTools = deviceInfo.environment === 'devtools'
+      const isPC = deviceInfo.platform === 'windows' || deviceInfo.platform === 'mac'
+
+      if (isDevTools || isPC) {
+        isPCMode = true
+      } else {
+        const windowInfo = wx.getWindowInfo()
+        if (windowInfo && windowInfo.windowWidth > 500) {
+          isPCMode = true
+        }
       }
     } catch (e) {
-      console.log('[home] 平台检测失败:', e)
-      // 默认启用 PC 模式（保守策略）
-      this.setData({ isPCMode: true })
+      console.warn('[home] PC 模式检测失败，默认启用 PC 模式:', e)
+      isPCMode = true
     }
 
-
+    this.setData({ isPCMode })
   },
 
   onShow() {
     if (typeof this.getTabBar === 'function' && this.getTabBar()) {
       this.getTabBar().setData({ selected: 0, homePage: true })
     }
+    // 恢复提示文字轮播
+    this._startPromptTimer()
     // 视频自动播放
     if (this.videoContext) this.videoContext.play()
     this.loadGardenPlants()
   },
 
   onHide() {
+    // 清理定时器，防止后台运行
+    if (this.promptTimer) {
+      clearInterval(this.promptTimer)
+      this.promptTimer = null
+    }
     if (this.videoContext) this.videoContext.pause()
   },
 
   onUnload() {
-    if (this.promptTimer) clearInterval(this.promptTimer)
+    if (this.promptTimer) {
+      clearInterval(this.promptTimer)
+      this.promptTimer = null
+    }
   },
 
   onVideoPlay() { 
-    console.log('📼 视频开始播放，淡入切换')
     this.setData({ videoLoaded: true })
   },
   
   onVideoLoaded() {
-    console.log('✅ 视频元数据加载成功')
     this.setData({ videoLoaded: true })
   },
   
@@ -155,7 +189,6 @@ Page({
     console.error('❌ 视频加载失败:', e.detail || e)
     console.error('视频 URL:', this.data.videoUrl)
     // 视频解码失败，保持显示静态海报图
-    console.log('视频解码不支持，使用静态海报图')
     // 不设置 videoLoaded，保持显示静态图
   },
 
@@ -172,10 +205,9 @@ Page({
     
     if (autoIdentify === 'camera') {
       // 自动打开相机拍照 - 跳转到相机页面
-      console.log('[Home] 自动识别：打开相机页面')
       this.setData({ showPlusMenu: false, showQuickActions: false })
       wx.navigateTo({
-        url: '/pages/camera/camera?mode=identify&from=mygarden'
+        url: '/package-camera/pages/camera/camera?mode=identify&from=mygarden'
       })
     }
   },
@@ -191,7 +223,6 @@ Page({
       sourceType: ['album'],
       success: (res) => {
         const tempFilePath = res.tempFiles[0].tempFilePath
-        console.log('[Home] 从相册选择成功:', tempFilePath)
         this.identifyPlantFromImage(tempFilePath)
       },
       fail: (err) => {
@@ -200,50 +231,67 @@ Page({
     })
   },
 
+  /**
+   * 获取带缓存的临时文件 URL
+   */
+  async _getCachedTempUrl(fileID) {
+    const CACHE_TTL = 2 * 60 * 60 * 1000; // 2 小时
+    const cache = this._tempUrlCache || {};
+    const cached = cache[fileID];
+
+    if (cached && Date.now() - cached.time < CACHE_TTL) {
+      return cached.url;
+    }
+
+    try {
+      const res = await wx.cloud.getTempFileURL({ fileList: [fileID] });
+      if (res.fileList && res.fileList[0]) {
+        const url = res.fileList[0].tempFileURL;
+        cache[fileID] = { url, time: Date.now() };
+        this._tempUrlCache = cache;
+        return url;
+      }
+    } catch (e) {
+      console.error('[home] 获取临时 URL 失败:', e);
+    }
+    return '';
+  },
+
   async loadGardenPlants() {
     try {
       const res = await api.getMyPlants()
       if (res.success && res.plants) {
-        // 处理图片 URL：优先使用云存储永久路径
+        // 处理图片 URL：优先使用云存储永久路径，临时 URL 带缓存
         const plantsWithImages = await Promise.all(res.plants.map(async (plant) => {
           let imageUrl = ''
-          
+
           // 1. 优先使用 userImageUrl（云存储永久路径）
           if (plant.userImageUrl) {
             imageUrl = plant.userImageUrl
-            console.log('[home] 使用 userImageUrl:', imageUrl.substring(0, 50))
           }
           // 2. 其次使用 imageUrl 的云存储路径（如果有 cloud:// 前缀）
           else if (plant.imageUrl && plant.imageUrl.startsWith('cloud://')) {
-            try {
-              const tempUrlRes = await wx.cloud.getTempFileURL({
-                fileList: [plant.imageUrl]
-              })
-              if (tempUrlRes.fileList && tempUrlRes.fileList[0]) {
-                imageUrl = tempUrlRes.fileList[0].tempFileURL
-                console.log('[home] 使用 cloud 临时 URL:', imageUrl.substring(0, 50))
-              }
-            } catch (e) {
-              console.error('[home] 获取图片临时 URL 失败:', e)
-            }
+            imageUrl = await this._getCachedTempUrl(plant.imageUrl)
           }
           // 3. 最后尝试 identifyResult 中的图片
           else if (plant.identifyResult?.imageUrl) {
             imageUrl = plant.identifyResult.imageUrl
-            console.log('[home] 使用 identifyResult 图片')
           }
-          
+
           return {
             ...plant,
             imageUrl: imageUrl
           }
         }))
-        
-        console.log('[home] 加载完成，共', plantsWithImages.length, '盆植物，有图片的:', plantsWithImages.filter(p => p.imageUrl).length)
+
         this.setData({ gardenPlants: plantsWithImages })
+
+        // 标记花园数据已变更,通知其他页面刷新
+        const app = getApp()
+        if (app.globalData) app.globalData.plantsNeedRefresh = true
       }
-    } catch (e) { 
-      console.error('[home] 加载花园数据失败:', e) 
+    } catch (e) {
+      console.error('[home] 加载花园数据失败:', e)
     }
   },
 
@@ -292,10 +340,10 @@ Page({
   async sendMessage() {
     const text = this.data.inputText.trim()
     if (!text || this.data.isLoading) return
-    
+
     this.addMessage('user', text)
     this.setData({ inputText: '', isLoading: true, showQuickActions: false, loadingText: '思考中...' })
-    
+
     // 滚动到 loading 提示位置（延迟稍长，确保 DOM 更新完成）
     setTimeout(() => {
       this.setData({ scrollToView: 'msg-loading' })
@@ -320,7 +368,6 @@ Page({
     
     // 如果是确认添加植物，直接调用确认处理
     if (isConfirmingAddPlant) {
-      console.log('[home] 用户确认添加植物:', text)
       // 防御性检查：确保 extractedInfo 和 plantName 存在
       const plantName = this.data.extractedInfo?.plantName || '植物'
       this.onConfirmTap({
@@ -339,14 +386,11 @@ Page({
     
     // 只有真正询问花园状态时才刷新数据
     if (isGardenStatusQuery) {
-      console.log('[home] 检测到花园相关问题，开始刷新数据...')
       await this.loadGardenPlants()
-      console.log('[home] 花园数据刷新完成，当前植物数量:', this.data.gardenPlants.length)
       
       // 打印每盆植物的浇水状态
       this.data.gardenPlants.forEach(plant => {
         const status = gardenService.calculateWaterStatus(plant)
-        console.log(`[home] 植物：${plant.name}, 需要浇水：${status.needsWater}, 状态：${status.statusText}`)
       })
     }
     
@@ -371,7 +415,6 @@ Page({
         const errMsg = e.errMsg || e.message || ''
         if ((errMsg.includes('TIME_LIMIT') || errMsg.includes('timed out')) && retryCount < maxRetry) {
           retryCount++
-          console.log(`[home] 超时重试 ${retryCount}/${maxRetry}`)
           continue
         }
         this.addMessage('assistant', '网络有点慢，稍后再试吧～')
@@ -383,8 +426,10 @@ Page({
       const errorMsg = res.error || ''
       if (errorMsg.includes('TIME_LIMIT') || errorMsg.includes('timeout')) {
         this.addMessage('assistant', 'AI 想太久了，再问一次吧～')
+      } else if (errorMsg.includes('API Key') || errorMsg.includes('认证') || errorMsg.includes('Unauthorized')) {
+        this.addMessage('assistant', 'AI 服务还没配置好，请联系管理员检查一下～')
       } else {
-        this.addMessage('assistant', '出了一点问题，稍后再试')
+        this.addMessage('assistant', '抱歉，AI 暂时没反应过来：' + errorMsg)
       }
       return
     }
@@ -398,42 +443,38 @@ Page({
 
     // 处理 AI 工具调用
     if (res.toolName === 'addPlant' && res.toolData && res.toolData.plantName) {
-      // 添加植物 - 先幽默地询问用户确认
-      const plantName = res.toolData.plantName
-      const extractedInfo = {
-        plantName: plantName,
-        location: res.toolData.location || '',
-        purchaseDate: res.toolData.purchaseDate || '',
-        healthStatus: res.toolData.healthStatus || '健康',
-        scientificName: '',
-        imageUrl: '',
-        careAdvice: {}
+      const message = res.currentQuestion || res.toolData.message || `${res.toolData.plantName}可以加入你的花园`
+
+      if (res.toolData.alreadyExists) {
+        // 植物已存在，只展示AI文本回复
+        this.addMessage('assistant', message)
+        this.setData({
+          currentIntent: null,
+          extractedInfo: {}
+        })
+      } else if (res.toolData.canAdd) {
+        // 预检通过，展示AI回复，然后询问是否拍照
+        this.addMessage('assistant', message)
+
+        // 保存提取的信息供后续创建档案使用
+        const extractedInfo = {
+          plantName: res.toolData.plantName,
+          scientificName: res.toolData.scientificName || '',
+          imageUrl: '',
+          location: res.toolData.location || '',
+          purchaseDate: res.toolData.purchaseDate || '',
+          healthStatus: res.toolData.healthStatus || '健康'
+        }
+
+        this.setData({
+          currentIntent: 'addPlant',
+          extractedInfo: extractedInfo
+        })
+
+        // 询问是否拍照建立档案
+        this.askForPhoto(extractedInfo)
       }
-      
-      // 保存提取的信息
-      this.setData({
-        currentIntent: 'addPlant',
-        extractedInfo: extractedInfo
-      })
-      
-      // 幽默地询问用户确认
-      const confirmMessages = [
-        `好的呀～要在你的花园里添加一盆「${plantName}」吗？🌱`,
-        `收到！让我确认一下：你想在花园里养一盆「${plantName}」，对吗？✨`,
-        `太棒了！你的花园要迎来新成员「${plantName}」啦～确认添加吗？🎉`,
-        `哇哦～「${plantName}」将成为你的花园新宠！要现在添加吗？💚`
-      ]
-      const randomConfirm = confirmMessages[Math.floor(Math.random() * confirmMessages.length)]
-      
-      // 显示确认消息，带上"确认"和"取消"按钮
-      this.addMessage('assistant', randomConfirm, null, null, {
-        type: 'confirm',
-        action: 'addPlant',
-        plantName: plantName,
-        confirmText: '✅ 确认添加',
-        cancelText: '❌ 下次再说'
-      })
-      
+
     } else if (res.toolName === 'deletePlant' && res.toolData && res.toolData.plantName) {
       // 删除植物
       this.deletePlantByVoice(res.toolData.plantName)
@@ -441,8 +482,6 @@ Page({
       // 显示花园植物卡片列表（带图片）- 只显示前 5 个
       const toolPlants = res.toolData.plants || []
       
-      console.log('[home] getGardenStatus toolData.plants:', toolPlants.length, '个植物')
-      console.log('[home] 前端花园数据 gardenPlants:', this.data.gardenPlants.length, '个植物')
       
       // 优先使用工具返回的 imageUrl，如果没有则从前端花园数据查找
       const plantsWithImages = toolPlants.slice(0, 5).map(toolPlant => {
@@ -455,7 +494,6 @@ Page({
           imageUrl = gardenPlant ? (gardenPlant.userImageUrl || gardenPlant.imageUrl) : ''
         }
         
-        console.log('[home] 匹配植物:', toolPlant.name, '图片:', imageUrl ? '有' : '无', imageUrl)
         return {
           name: toolPlant.name,
           status: toolPlant.status || toolPlant.desc || '',
@@ -463,7 +501,6 @@ Page({
         }
       }).filter(p => p.name) // 过滤掉空数据
       
-      console.log('[home] 最终 plantsWithImages:', plantsWithImages.length, '个植物')
       
       // 显示植物卡片列表（前 5 个）
       this.addMessage('assistant', res.toolData.message, null, plantsWithImages)
@@ -665,7 +702,7 @@ Page({
   takePhoto() {
     this.setData({ showPlusMenu: false, showQuickActions: false })
     wx.navigateTo({
-      url: '/pages/camera/camera?mode=identify'
+      url: '/package-camera/pages/camera/camera?mode=identify'
     })
   },
 
@@ -678,10 +715,34 @@ Page({
       sourceType: ['album'],
       success: (res) => {
         const tempFilePath = res.tempFiles[0].tempFilePath
-        this.identifyPlantFromImage(tempFilePath)
+        
+        // 检查是否是网络图片（https://开头）
+        if (tempFilePath.startsWith('http')) {
+          // 下载网络图片到本地
+          wx.downloadFile({
+            url: tempFilePath,
+            success: (downloadRes) => {
+              this.identifyPlantFromImage(downloadRes.tempFilePath)
+            },
+            fail: (err) => {
+              console.error('❌ 下载失败:', err)
+              wx.showToast({
+                title: '图片下载失败',
+                icon: 'none'
+              })
+            }
+          })
+        } else {
+          // 本地图片，直接使用
+          this.identifyPlantFromImage(tempFilePath)
+        }
       },
       fail: (err) => {
         console.error('选择图片失败:', err)
+        wx.showToast({
+          title: '选择图片失败',
+          icon: 'none'
+        })
       }
     })
   },
@@ -708,8 +769,6 @@ Page({
             height = maxLength
           }
           
-          console.log(`📐 原图尺寸：${originalWidth}x${originalHeight}`)
-          console.log(`📐 压缩尺寸：${width}x${height}`)
           
           // 压缩并保存
           wx.compressImage({
@@ -718,18 +777,27 @@ Page({
             compressedWidth: width,
             compressedHeight: height,
             success: (res) => {
-              console.log(`✅ 压缩成功：${res.tempFilePath}`)
-              resolve(res.tempFilePath)
+              // 立即验证文件是否存在
+              wx.getFileSystemManager().access({
+                path: res.tempFilePath,
+                success: () => {
+                  resolve(res.tempFilePath)
+                },
+                fail: (accessErr) => {
+                  console.error('❌ 压缩文件验证失败，使用原图', accessErr)
+                  resolve(imagePath)
+                }
+              })
             },
-            fail: () => {
+            fail: (compressErr) => {
               // 压缩失败，返回原图
-              console.log('⚠️ 压缩失败，使用原图')
+              console.error('⚠️ 压缩失败，使用原图', compressErr)
               resolve(imagePath)
             }
           })
         },
-        fail: () => {
-          console.log('⚠️ 获取图片信息失败，使用原图')
+        fail: (infoErr) => {
+          console.error('⚠️ 获取图片信息失败，使用原图', infoErr)
           resolve(imagePath)
         }
       })
@@ -753,15 +821,51 @@ Page({
     this.setData({ scrollToView: 'msg-loading' })
     
     try {
+      // ========== 治本方案：先上传原图到云存储 ==========
+      let userImageUrl = '';
+      try {
+        const uploadRes = await wx.cloud.uploadFile({
+          cloudPath: `plant-images/user-uploads/${Date.now()}_${Math.random().toString(36).slice(2, 8)}.jpg`,
+          filePath: imagePath
+        });
+        userImageUrl = uploadRes.fileID;
+      } catch (uploadErr) {
+        console.error('[home] ️ 原图上传失败，后续将无头图:', uploadErr);
+      }
+      
       // 压缩图片（目标：1MB 以内，最大不超过 2MB）
       const compressedPath = await this.compressImage(imagePath)
+      
+      // 验证压缩后的文件是否存在
+      const fileExists = await new Promise((resolve) => {
+        wx.getFileSystemManager().access({
+          path: compressedPath,
+          success: () => resolve(true),
+          fail: () => resolve(false)
+        })
+      })
+      
+      if (!fileExists) {
+        console.error('❌ 压缩后的文件不存在，使用原图')
+        // 尝试使用原图
+        const originalExists = await new Promise((resolve) => {
+          wx.getFileSystemManager().access({
+            path: imagePath,
+            success: () => resolve(true),
+            fail: () => resolve(false)
+          })
+        })
+        
+        if (!originalExists) {
+          throw new Error('图片文件不存在')
+        }
+      }
       
       // 转换为 base64
       const base64 = await imageToBase64(compressedPath)
       
       // 检查压缩后的大小
       const sizeKB = base64.length * 0.75 / 1024
-      console.log(`📐 压缩后图片大小：${sizeKB.toFixed(1)} KB`)
       
       if (sizeKB > 5000) {
         this.setData({ isLoading: false, loadingText: '' })
@@ -951,22 +1055,22 @@ Page({
         this.addMessage('assistant', msg, null, null, { 
           identifyResult: {
             plantName: res.data.name,
-            scientificName: res.data.scientificName,
-            imageUrl: imagePath,
-            careAdvice: res.data.careGuide
-          }
-        })
-        
-        // 保存识别结果（清理 ** 标记）
-        this.setData({
-          currentIntent: 'addPlant',
-          extractedInfo: {
-            plantName: cleanMarkdown(res.data.name),
-            scientificName: cleanMarkdown(res.data.scientificName || ''),
-            imageUrl: imagePath,
-            careAdvice: res.data.careGuide
-          }
-        })
+          scientificName: res.data.scientificName,
+          imageUrl: userImageUrl,  // 使用云存储 URL，而不是本地临时路径
+          careAdvice: res.data.careGuide
+        }
+      })
+      
+      // 保存识别结果（清理 ** 标记）
+      this.setData({
+        currentIntent: 'addPlant',
+        extractedInfo: {
+          plantName: cleanMarkdown(res.data.name),
+          scientificName: cleanMarkdown(res.data.scientificName || ''),
+          imageUrl: userImageUrl,  // 使用云存储 URL，而不是本地临时路径
+          careAdvice: res.data.careGuide
+        }
+      })
         
       } else {
         this.addMessage('assistant', res.error || '识别失败，请重试')
@@ -1218,14 +1322,17 @@ Page({
       try {
         const tempFilePath = await this.downloadImageToTemp(imageUrl)
         await api.plant.uploadPlantImage(createRes.plantId, tempFilePath)
-        console.log('[home] 照片上传成功')
       } catch (uploadErr) {
         console.error('[home] 照片上传失败:', uploadErr)
         // 照片上传失败不阻断流程，只记录错误
       }
       
       wx.hideLoading()
-      
+
+      // 埋点：添加植物成功
+      const app = getApp();
+      app.trackAnalytics('add_plant', { plantName: extractedInfo.plantName });
+
       let successMsg = `✅「${extractedInfo.plantName}」已加入花园`
       if (exists.nameCount > 0) {
         const nextCount = exists.nameCount + 1
@@ -1337,7 +1444,6 @@ Page({
       }
 
       const tempFilePath = chooseRes.tempFiles[0].tempFilePath
-      console.log('[home] 拍照成功:', tempFilePath)
 
       // 先创建植物档案
       const createRes = await this.createPlantRecord(extractedInfo)
@@ -1617,13 +1723,8 @@ Page({
       
       // 1. 优先精确匹配（完全一致）
       matchedPlant = plants.find(p => p.name === plantName)
-      
-      // 2. 如果没有精确匹配，尝试包含匹配
-      if (!matchedPlant) {
-        matchedPlant = plants.find(p => p.name === plantName)
-      }
-      
-      // 3. 如果还是没有，尝试模糊匹配（植物名包含关键词）
+
+      // 2. 如果没有精确匹配，尝试模糊匹配（植物名包含关键词）
       if (!matchedPlant) {
         matchedPlant = plants.find(p => 
           (p.name && p.name.includes(plantName)) || 
@@ -1636,7 +1737,6 @@ Page({
         return
       }
 
-      console.log('[home] 找到要删除的植物:', matchedPlant.name, 'ID:', matchedPlant._id)
 
       // 确认删除
       wx.showModal({
@@ -1675,7 +1775,6 @@ Page({
       wx.hideLoading()
 
       if (res.result && res.result.success) {
-        console.log('[home] 删除成功:', plantName, 'ID:', plantId)
         
         // 删除成功后，先清空花园列表，再重新加载（确保显示最新数据）
         this.setData({ gardenPlants: [] })
@@ -1683,7 +1782,6 @@ Page({
         // 稍微延迟后再加载，确保云数据库已经更新
         setTimeout(() => {
           this.loadGardenPlants().then(() => {
-            console.log('[home] 花园列表刷新完成，当前植物数量:', this.data.gardenPlants.length)
           })
         }, 500)
         

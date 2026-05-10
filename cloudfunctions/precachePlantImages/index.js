@@ -112,11 +112,9 @@
  async function downloadAndUpload(plantName, sourceUrl) {
    try {
      const cloudPath = `plant-images/categories/${plantName}.jpg`
-     console.log(`  正在下载: ${plantName}`)
 
      const buffer = await httpGetWithRedirect(sourceUrl)
 
-     console.log(`  正在上传: ${plantName} (${(buffer.length/1024).toFixed(1)}KB)`)
      const uploadRes = await cloud.uploadFile({
        cloudPath: cloudPath,
        fileContent: buffer
@@ -173,7 +171,6 @@
    let failCount = 0
    let skipCount = 0
 
-   console.log(`[precache] 开始预缓存 ${PLANTS_TO_CACHE.length} 种植物图片`)
 
    for (const plant of PLANTS_TO_CACHE) {
      // 跳过已缓存的
@@ -181,7 +178,6 @@
      if (existingCloudUrl) {
        results.push({ name: plant.name, status: 'skipped', cloudUrl: existingCloudUrl })
        skipCount++
-       console.log(`[precache] 跳过已缓存: ${plant.name}`)
        continue
      }
 
@@ -191,7 +187,6 @@
      if (!sourceUrl) {
        results.push({ name: plant.name, status: 'not_found' })
        failCount++
-       console.log(`[precache] 未找到图片: ${plant.name}`)
        continue
      }
 

@@ -19,14 +19,26 @@ const _ = db.command
 
 exports.main = async (event, context) => {
   const wxContext = cloud.getWXContext()
-  const { orderBy = 'plantCount', limit = 20 } = event
-  
+  let { orderBy = 'plantCount', limit = 20 } = event
+
+  // 兼容前端传入的 careDays
+  if (orderBy === 'careDays') {
+    orderBy = 'totalCareDays'
+  }
+
   try {
     // 获取所有用户的统计数据
     // 注意：云数据库一次最多返回 100 条记录
     const res = await db.collection('user_stats')
       .where({
         'stats.plantCount': _.gt(0)  // 至少有 1 盆植物
+      })
+      .field({
+        _openid: true,
+        nickName: true,
+        avatarUrl: true,
+        stats: true,
+        featuredPlant: true
       })
       .limit(100)
       .get()
@@ -48,7 +60,6 @@ exports.main = async (event, context) => {
     rankings = rankings.map((item, index) => ({
       rank: index + 1,
       _id: item._id,
-      _openid: item._openid,
       nickName: item.nickName || '植物达人',
       avatarUrl: item.avatarUrl || '',
       stats: item.stats,
@@ -57,7 +68,7 @@ exports.main = async (event, context) => {
     }))
     
     // 找到当前用户的排名
-    const myIndex = rankings.findIndex(r => r._openid === wxContext.OPENID)
+    const myIndex = rankings.findIndex(r => r.isMe)
     let myRank = null
     
     if (myIndex >= 0) {
@@ -88,7 +99,6 @@ exports.main = async (event, context) => {
         
         myRank = {
           rank: countRes.total + 1,
-          _openid: wxContext.OPENID,
           nickName: myStats.nickName || '我',
           stats: myStats.stats,
           featuredPlant: myStats.featuredPlant,

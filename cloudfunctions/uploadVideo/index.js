@@ -34,20 +34,16 @@ exports.main = async (event, context) => {
     // 由于无法直接访问本地文件，需要从服务器下载
     const videoUrl = 'https://plant.yg-crystal.com/videos/home-intro.mp4';
     
-    console.log('[下载] 从服务器下载原视频...');
     const buffer = await downloadFile(videoUrl);
-    console.log(`[下载完成] 大小：${(buffer.length/1024).toFixed(1)}KB`);
     
     // 上传到云存储
     const cloudPath = 'videos/home-intro-fixed.mp4';
-    console.log('[上传] 上传到云存储...');
     
     const uploadRes = await cloud.uploadFile({
       cloudPath: cloudPath,
       fileContent: buffer
     });
     
-    console.log('[上传成功]', uploadRes);
     
     return {
       success: true,

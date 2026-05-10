@@ -20,7 +20,7 @@ async function getUserStats() {
  * 获取好友排行榜
  * 
  * @param {object} options 排行榜选项
- * @param {string} options.type 排行类型：plantCount, survivalRate, careDays
+ * @param {string} options.type 排行类型：plantCount, survivalRate, totalCareDays
  * @param {number} options.limit 返回数量
  * @returns {Promise<{success: boolean, rankings?: Array, myRank?: object, error?: string}>}
  */

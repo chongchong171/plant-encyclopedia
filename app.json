@@ -1,21 +1,55 @@
 {
   "pages": [
     "pages/home/home",
-    "pages/camera/camera",
-    "pages/result_swiper/result_swiper",
     "pages/my-plants/my-plants",
-    "pages/community-garden/community-garden",
-    "pages/plant-detail/plant-detail",
-    "pages/diagnosis/diagnosis",
-    "pages/shop/shop",
     "pages/discover/discover",
-    "pages/search_page/search_page",
-    "pages/category_list/category_list",
-    "pages/search_result/search_result",
-    "pages/favorites/favorites",
-    "pages/history/history",
     "pages/profile/profile"
   ],
+  "subpackages": [
+    {
+      "root": "package-camera",
+      "pages": [
+        "pages/camera/camera",
+        "pages/result_swiper/result_swiper"
+      ]
+    },
+    {
+      "root": "package-plant",
+      "pages": [
+        "pages/plant-detail/plant-detail",
+        "pages/search_result/search_result",
+        "pages/search_page/search_page",
+        "pages/category_list/category_list"
+      ]
+    },
+    {
+      "root": "package-user",
+      "pages": [
+        "pages/favorites/favorites",
+        "pages/history/history",
+        "pages/diagnosis/diagnosis",
+        "pages/community-garden/community-garden",
+        "pages/shop/shop"
+      ]
+    },
+    {
+      "root": "package-admin",
+      "pages": [
+        "pages/admin/admin",
+        "pages/admin/dashboard"
+      ]
+    }
+  ],
+  "preloadRule": {
+    "pages/home/home": {
+      "network": "all",
+      "packages": ["package-camera"]
+    },
+    "pages/discover/discover": {
+      "network": "all",
+      "packages": ["package-plant"]
+    }
+  },
   "window": {
     "backgroundTextStyle": "dark",
     "navigationBarBackgroundColor": "#ffffff",

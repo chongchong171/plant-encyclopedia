@@ -19,7 +19,6 @@ exports.main = async (event, context) => {
       fileList: [fileID]
     })
     
-    console.log('获取临时链接成功:', result)
     
     return {
       success: true,

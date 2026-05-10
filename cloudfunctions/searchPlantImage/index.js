@@ -36,12 +36,10 @@ async function getImageFromCache(query) {
       const cached = res.data[0]
       const cacheAge = Date.now() - cached.createdAt
       if (cacheAge < 30 * 24 * 60 * 60 * 1000) {
-        console.log('[searchPlantImage] 命中缓存:', query)
         return cached.imageUrl
       }
     }
   } catch (err) {
-    console.log('[searchPlantImage] 缓存查询失败:', err)
   }
   return null
 }
@@ -59,7 +57,6 @@ async function saveImageToCache(query, imageUrl, imageUrlThumb) {
         createdAt: Date.now()
       }
     })
-    console.log('[searchPlantImage] 已缓存:', query)
   } catch (err) {
     console.error('[searchPlantImage] 缓存保存失败:', err)
   }
@@ -81,7 +78,6 @@ async function searchFromWikimedia(query) {
       '&format=json' +
       '&srprop=size'
 
-    console.log('[searchPlantImage] 搜索:', query)
 
     // 使用云函数 HTTP 能力
     const { data } = await cloud.openapi.http.post({
@@ -117,7 +113,6 @@ async function searchFromWikimedia(query) {
             const thumbUrl = info.thumburl || info.url
             const fullUrl = info.url
 
-            console.log('[searchPlantImage] 找到图片:', page.title, thumbUrl)
             return { thumbUrl, fullUrl }
           }
         }
@@ -140,7 +135,6 @@ exports.main = async (event, context) => {
     }
   }
 
-  console.log('[searchPlantImage] 开始搜索:', query)
 
   // 1. 先查缓存
   const cachedUrl = await getImageFromCache(query)

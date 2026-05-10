@@ -25,7 +25,6 @@ exports.main = async (event, context) => {
   const now = new Date()
   const today = now.toISOString().split('T')[0]
   
-  console.log(`[sendAiReminder] 开始执行: ${today}`)
   
   try {
     // 1. 获取所有需要提醒的植物
@@ -66,7 +65,7 @@ async function getPlantsNeedingWater() {
   const now = Date.now()
   
   try {
-    const res = await db.collection('plants')
+    const res = await db.collection('my_plants')
       .where({
         nextWateringDate: _.lte(now),
         isDead: _.neq(true)
@@ -111,7 +110,7 @@ async function sendReminder(openid, plantList) {
   try {
     const result = await cloud.openapi.subscribeMessage.send({
       touser: openid,
-      page: `pages/chat/chat?intent=watering`,
+      page: `pages/my-plants/my-plants`,
       data: {
         thing1: { value: `${plantNames}${extraCount}` },  // 植物名称
         time2: { value: formatDate(new Date()) },          // 时间
@@ -121,11 +120,12 @@ async function sendReminder(openid, plantList) {
       miniprogramState: 'developer'
     })
     
-    console.log(`[sendAiReminder] 发送成功: ${openid}`)
+    const maskedOpenId = openid ? openid.substring(0, 4) + '****' + openid.substring(openid.length - 4) : '';
     return { success: true }
-    
+
   } catch (err) {
-    console.error(`[sendAiReminder] 发送失败: ${openid}`, err)
+    const maskedOpenId = openid ? openid.substring(0, 4) + '****' + openid.substring(openid.length - 4) : '';
+    console.error(`[sendAiReminder] 发送失败: ${maskedOpenId}`, err)
     return { success: false, error: err.message }
   }
 }

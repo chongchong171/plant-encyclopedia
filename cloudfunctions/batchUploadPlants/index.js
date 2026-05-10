@@ -595,7 +595,6 @@ const PLANTS_DATA = [
 
 exports.main = async (event, context) => {
   const startTime = Date.now();
-  console.log('[batchUploadPlants] 开始批量上传植物文字数据到云数据库...');
   
   try {
     // 批量插入或更新植物数据到云数据库
@@ -612,7 +611,6 @@ exports.main = async (event, context) => {
     
     const results = await Promise.all(tasks);
     
-    console.log(`[batchUploadPlants] ✅ 成功上传 ${results.length} 种植物数据`);
     
     // 创建推荐配置
     await db.collection('plant_recommendations').doc('hot_searches').set({
@@ -640,7 +638,6 @@ exports.main = async (event, context) => {
       }
     });
     
-    console.log('[batchUploadPlants] ✅ 推荐配置创建成功');
     
     return {
       success: true,

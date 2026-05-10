@@ -12,9 +12,7 @@ const db = cloud.database()
 
 exports.main = async (event, context) => {
   const wxContext = cloud.getWXContext()
-  const { targetOpenId } = event  // 可选，获取指定用户的统计
-  
-  const openId = targetOpenId || wxContext.OPENID
+  const openId = wxContext.OPENID
   
   try {
     const res = await db.collection('user_stats')

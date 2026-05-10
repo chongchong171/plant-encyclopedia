@@ -6,9 +6,9 @@
  * 入参：
  * {
  *   event: "user_visit" | "session_end" | "identify_plant" | "get_care_guide" | "diagnose_plant" | "add_plant" | "favorite_plant",
- *   openId: "用户 openId",
  *   data: { ... }  // 额外数据
  * }
+ * 注意：openId 由云函数通过 getWXContext() 安全获取，不依赖前端传递
  */
 
 const cloud = require('wx-server-sdk');
@@ -19,7 +19,7 @@ const _ = db.command;
 
 exports.main = async (event, context) => {
   const wxContext = cloud.getWXContext();
-  const openId = event.openId || wxContext.OPENID;
+  const openId = wxContext.OPENID;
   
   if (!openId) {
     console.error('[analytics] openId 为空');
@@ -30,8 +30,8 @@ exports.main = async (event, context) => {
   const today = new Date().toISOString().split('T')[0];  // "2026-04-13"
   const now = new Date().toISOString();
   
-  console.log(`[analytics] 收到事件：${eventType}, openId: ${openId}, date: ${today}`);
-  
+  const maskedOpenId = openId.substring(0, 4) + '****' + openId.substring(openId.length - 4);
+
   try {
     // 1. 更新用户档案 (analytics_users)
     await updateUserProfile(openId, eventType, data, today, now);
@@ -58,7 +58,6 @@ async function updateUserProfile(openId, eventType, data, today, now) {
   
   if (!userDoc.data) {
     // 新用户，创建档案
-    console.log(`[analytics] 新用户：${openId}`);
     await userRef.set({
       openId,
       registerDate: today,
@@ -168,6 +167,10 @@ async function updateDailyStats(eventType, openId, data, today, now) {
   // 会话时长
   if (eventType === 'session_end' && data?.duration) {
     updateData.totalSessions = _.inc(data.duration);
+    // 计算平均会话时长（总时长 / 访问次数）
+    const prevTotal = dailyDoc.data?.totalSessions || 0;
+    const prevActive = dailyDoc.data?.activeUsers || 1;
+    updateData.avgSession = Math.round((prevTotal + data.duration) / prevActive);
   }
   
   if (Object.keys(updateData).length > 0) {

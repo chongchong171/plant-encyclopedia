@@ -9,7 +9,7 @@
  * ⚠️ API Key 配置：
  * - 百度 AI: 云函数环境变量 BAIDU_API_KEY, BAIDU_SECRET_KEY
  * - PlantNet: 云函数环境变量 PLANTNET_API_KEY
- * - GLM-4-Flash: 云函数环境变量 GLM_API_KEY
+ * - GLM-4.5-Air: 云函数环境变量 GLM_API_KEY
  * 
  * 性能优化：
  * - 云函数服务器访问国内 API 更快
@@ -24,6 +24,9 @@ cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV })
 
 const db = cloud.database();
 
+// 内存缓存：百度 Token（云函数实例复用时可避免重复查询数据库）
+let memoryTokenCache = null
+
 // 从环境变量读取 API Key（安全配置）
 const PLANTNET_API_KEY = process.env.PLANTNET_API_KEY
 const BAIDU_API_KEY = process.env.BAIDU_API_KEY
@@ -35,60 +38,184 @@ const BAIDU_TOKEN_URL = 'https://aip.baidubce.com/oauth/2.0/token'
 const BAIDU_PLANT_URL = 'https://aip.baidubce.com/rest/2.0/image-classify/v1/plant'
 const GLM_API_URL = 'https://open.bigmodel.cn/api/paas/v4/chat/completions'
 
+// 常见植物关键词映射（用于兜底翻译）
+const COMMON_PLANT_KEYWORDS = {
+  'rose': '月季',
+  'lily': '百合',
+  'orchid': '兰花',
+  'sunflower': '向日葵',
+  'tulip': '郁金香',
+  'daisy': '雏菊',
+  'carnation': '康乃馨',
+  'chrysanthemum': '菊花',
+  'peony': '牡丹',
+  'lotus': '荷花',
+  'bamboo': '竹子',
+  'pine': '松树',
+  'maple': '枫树',
+  'willow': '柳树',
+  'cactus': '仙人掌',
+  'succulent': '多肉植物',
+  'fern': '蕨类植物',
+  'ivy': '常春藤',
+  'palm': '棕榈',
+  'jasmine': '茉莉花',
+  'lavender': '薰衣草',
+  'mint': '薄荷',
+  'basil': '罗勒',
+  'aloe': '芦荟',
+  'begonia': '秋海棠',
+  'geranium': '天竺葵',
+  'hibiscus': '木槿',
+  'hydrangea': '绣球花',
+  'magnolia': '木兰',
+  'daffodil': '水仙花',
+  'iris': '鸢尾花',
+  'poppy': '罂粟花',
+  'violet': '紫罗兰',
+  'camellia': '山茶花',
+  'azalea': '杜鹃花',
+  'rhododendron': '杜鹃花',
+  'gardenia': '栀子花',
+  'oleander': '夹竹桃',
+  'olea': '橄榄',
+  'ficus': '榕树',
+  'monstera': '龟背竹',
+  'philodendron': '喜林芋',
+  'pothos': '绿萝',
+  'snake plant': '虎尾兰',
+  'spider plant': '吊兰',
+  'peace lily': '白掌',
+  'rubber plant': '橡皮树',
+  'jade plant': '玉树',
+  'zz plant': '金钱树',
+  'money tree': '发财树',
+  'lucky bamboo': '富贵竹',
+  'bonsai': '盆景',
+  'bonsai tree': '盆景树'
+}
+
 exports.main = async (event, context) => {
   const startTime = Date.now()
   let { imageBase64, organ = 'auto' } = event
   
-  console.log(`[identifyPlant] ========== 开始识别 (t=0ms) ==========`)
   
   if (!imageBase64) {
     return { success: false, error: '请上传图片' }
   }
-  
+
+  // 额度检查：每个用户每日最多 500 次
+  const wxContext = cloud.getWXContext()
+  const userOpenId = wxContext.OPENID
+  if (!userOpenId) {
+    return { success: false, error: '用户未登录' }
+  }
+
+  const today = new Date().toISOString().split('T')[0]
+  const quotaKey = `identify_quota_${userOpenId}_${today}`
+  try {
+    const quotaDoc = await db.collection('daily_quota').doc(quotaKey).get()
+    if (quotaDoc.data && quotaDoc.data.count >= 500) {
+      return { success: false, error: '今日识别次数已达上限，请明天再试' }
+    }
+  } catch (e) {
+    // 文档不存在表示今日还没识别过，继续执行
+  }
+
   // 清理 base64
   if (imageBase64.includes(',')) {
     imageBase64 = imageBase64.split(',')[1]
   }
   imageBase64 = imageBase64.replace(/\s/g, '')
   
-  console.log(`[identifyPlant] 图片大小：${(imageBase64.length * 0.75 / 1024).toFixed(1)} KB`)
   
   try {
-    // ========== 第一步：优先使用百度 AI（准确度高，中国植物识别好）==========
-    console.log(`[identifyPlant] ${Date.now() - startTime}ms - 调用百度 AI...`)
-    let result = await identifyWithBaidu(imageBase64)
-    
-    // 百度 AI 失败，重试 1 次
-    if (!result.success) {
-      console.log(`[identifyPlant] ${Date.now() - startTime}ms - 百度 AI 失败，重试...`)
-      result = await identifyWithBaidu(imageBase64)
+    // ========== 第一步：并行调用百度 AI + PlantNet（取最快成功结果）==========
+    // 先获取/刷新百度 Token（缓存命中几乎零耗时，未命中约 3-5s）
+    let accessToken = null
+    if (BAIDU_API_KEY && BAIDU_SECRET_KEY) {
+      try {
+        accessToken = await getBaiduToken()
+      } catch (tokenErr) {
+        console.error(`[identifyPlant] ${Date.now() - startTime}ms - Token 获取失败:`, tokenErr.message)
+        accessToken = null
+      }
+    } else {
+      console.error('[identifyPlant] ❌ 百度 API Key 未配置（BAIDU_API_KEY / BAIDU_SECRET_KEY）')
     }
-    
-    // 百度 AI 两次都失败，降级 PlantNet
+
+    // 辅助：从 allSettled 结果中选择最佳识别结果（优先百度）
+    function pickBestResult(settledResults) {
+      const baidu = settledResults[0].status === 'fulfilled' ? settledResults[0].value : null
+      const plantnet = settledResults[1].status === 'fulfilled' ? settledResults[1].value : null
+      if (baidu?.success) return { result: baidu, source: 'baidu' }
+      if (plantnet?.success) return { result: plantnet, source: 'plantnet' }
+      return null
+    }
+
+    // 第一次并行请求
+    let settled = await Promise.allSettled([
+      accessToken ? identifyWithBaidu(imageBase64, accessToken) : Promise.resolve({ success: false, error: '百度Token未获取' }),
+      PLANTNET_API_KEY ? identifyWithPlantNet(imageBase64, organ) : Promise.resolve({ success: false, error: 'PlantNet API Key未配置' })
+    ])
+    let best = pickBestResult(settled)
+
+    // 都失败则等待 1s 后重试一次
+    if (!best) {
+      await sleep(1000)
+      settled = await Promise.allSettled([
+        accessToken ? identifyWithBaidu(imageBase64, accessToken) : Promise.resolve({ success: false, error: '百度Token未获取' }),
+        PLANTNET_API_KEY ? identifyWithPlantNet(imageBase64, organ) : Promise.resolve({ success: false, error: 'PlantNet API Key未配置' })
+      ])
+      best = pickBestResult(settled)
+    }
+
+    if (!best) {
+      const baiduErr = settled[0].status === 'fulfilled' ? settled[0].value?.error : settled[0].reason?.message
+      const plantnetErr = settled[1].status === 'fulfilled' ? settled[1].value?.error : settled[1].reason?.message
+      console.error(`[identifyPlant] ${Date.now() - startTime}ms - 全部失败：百度=${baiduErr}, PlantNet=${plantnetErr}`)
+      const missingKeys = []
+      if (!BAIDU_API_KEY) missingKeys.push('BAIDU_API_KEY')
+      if (!BAIDU_SECRET_KEY) missingKeys.push('BAIDU_SECRET_KEY')
+      if (!PLANTNET_API_KEY) missingKeys.push('PLANTNET_API_KEY')
+      if (missingKeys.length > 0) {
+        return {
+          success: false,
+          error: `识别服务配置不完整，缺少环境变量：${missingKeys.join('、')}。请在云函数控制台配置对应 API Key。`
+        }
+      }
+      return {
+        success: false,
+        error: '网络连接不稳定，请稍后重试。如果多次失败，建议检查网络或换个时间段再试。'
+      }
+    }
+
+    let result = best.result
+
     if (!result.success) {
-      console.log(`[identifyPlant] ${Date.now() - startTime}ms - 百度 AI 失败，降级 PlantNet...`)
-      result = await identifyWithPlantNet(imageBase64, organ)
-      
-      // PlantNet 失败，再重试 1 次
-      if (!result.success) {
-        console.log(`[identifyPlant] ${Date.now() - startTime}ms - PlantNet 失败，重试...`)
-        result = await identifyWithPlantNet(imageBase64, organ)
+      console.error(`[identifyPlant] ${Date.now() - startTime}ms - 全部失败：`, result.error)
+      return {
+        success: false,
+        error: '网络连接不稳定，请稍后重试。如果多次失败，建议检查网络或换个时间段再试。'
       }
     }
     
-    if (!result.success) {
-      console.error(`[identifyPlant] ${Date.now() - startTime}ms - 全部失败：`, result.error)
-      return result
-    }
-    
-    console.log(`[identifyPlant] ${Date.now() - startTime}ms - ✅ 识别成功：${result.data.name}`)
     
     // ========== 第二步：并行获取补充信息（全部可选，失败不影响主结果）==========
-    const [careAdvice, baiduInfo, imageUrl] = await Promise.allSettled([
+    // 添加整体 5 秒超时，避免补充信息获取拖慢整体响应
+    const supplementaryPromise = Promise.allSettled([
       getCareAdvice(result.data),
       getBaiduBaike(result.data.name),
       fetchPlantImage(result.data.name)
     ])
+    const timeoutPromise = new Promise((resolve) => {
+      setTimeout(() => resolve([
+        { status: 'rejected', reason: new Error('补充信息获取超时') },
+        { status: 'rejected', reason: new Error('补充信息获取超时') },
+        { status: 'rejected', reason: new Error('补充信息获取超时') }
+      ]), 5000)
+    })
+    const [careAdvice, baiduInfo, imageUrl] = await Promise.race([supplementaryPromise, timeoutPromise])
     
     // 提取养护建议（GLM 可能超时）
     let careData = careAdvice.status === 'fulfilled' ? careAdvice.value?.data : null
@@ -108,19 +235,17 @@ exports.main = async (event, context) => {
       const defaultGuide = getDefaultCareGuide(result.data.name)
       result.data.careGuide = defaultGuide
       // 构建 mock careData 供前端使用
-      // 优先使用识别结果中的 plantProfile，其次使用百度百科，最后使用通用描述
-      const profileDesc = result.data.plantProfile || 
-                          `${result.data.name}，学名${result.data.scientificName || result.data.name}，是一种常见的观赏植物，具有较高的园艺价值。`
+      const profileDesc = result.data.plantProfile || generateFallbackProfile(result.data.name)
       careData = {
         commonNames: result.data.name,
         scientificName: result.data.scientificName || '',
         plantProfile: profileDesc,
         growthHabit: result.data.growthHabit || getDefaultGrowthHabit(result.data.name),
-        mainValue: result.data.mainValue || '具有较高观赏价值，适合室内装饰和园艺栽培',
+        mainValue: result.data.mainValue || generateFallbackMainValue(result.data.name),
         careGuide: defaultGuide,
         difficultyLevel: 3,
         difficultyText: '养护难度中等',
-        quickTips: ['保持适当光照', '定期浇水', '注意通风']
+        quickTips: generateFallbackTips(result.data.name)
       }
     }
     
@@ -130,23 +255,38 @@ exports.main = async (event, context) => {
     }
     
     const totalDuration = Date.now() - startTime;
-    console.log(`[identifyPlant] ${totalDuration}ms - ========== 完成 (${totalDuration}ms) ==========`)
     
-    // 埋点：记录识图成功
+    // 埋点：记录识图成功（统一走 analytics_track，同时更新 daily 和 users）
     const wxContext = cloud.getWXContext();
     const openId = wxContext.OPENID;
     if (openId && result.data?.name) {
-      db.collection('analytics_events').add({
-        date: new Date().toISOString().split('T')[0],
-        openId,
-        event: 'identify_plant',
-        timestamp: new Date().toISOString(),
-        duration: totalDuration,
-        success: true,
-        extra: { plantName: result.data.name, source: result.source }
+      cloud.callFunction({
+        name: 'analytics_track',
+        data: {
+          event: 'identify_plant',
+          data: {
+            plantName: result.data.name,
+            source: result.source,
+            success: true,
+            duration: totalDuration
+          }
+        }
       }).catch(() => {});
     }
-    
+
+    // 更新今日识别额度计数
+    try {
+      const quotaKey = `identify_quota_${openId}_${today}`
+      await db.collection('daily_quota').doc(quotaKey).set({
+        count: db.command.inc(1),
+        date: today,
+        openId: openId,
+        updatedAt: new Date().toISOString()
+      })
+    } catch (e) {
+      // 额度计数失败不影响主结果
+    }
+
     return {
       success: true,
       ...result.data,
@@ -163,18 +303,20 @@ exports.main = async (event, context) => {
     const totalDuration = Date.now() - startTime;
     console.error(`[identifyPlant] ${totalDuration}ms - 识别失败:`, err)
     
-    // 埋点：记录识图失败
+    // 埋点：记录识图失败（统一走 analytics_track）
     const wxContext = cloud.getWXContext();
     const openId = wxContext.OPENID;
     if (openId) {
-      db.collection('analytics_events').add({
-        date: new Date().toISOString().split('T')[0],
-        openId,
-        event: 'identify_plant',
-        timestamp: new Date().toISOString(),
-        duration: totalDuration,
-        success: false,
-        extra: { error: err.message }
+      cloud.callFunction({
+        name: 'analytics_track',
+        data: {
+          event: 'identify_plant',
+          data: {
+            success: false,
+            duration: totalDuration,
+            error: err.message
+          }
+        }
       }).catch(() => {});
     }
     
@@ -217,14 +359,11 @@ async function identifyWithPlantNet(imageBase64, organ) {
     
     const url = `${PLANTNET_API_URL}?api-key=${PLANTNET_API_KEY}`
     
-    console.log(`[PlantNet] ${Date.now() - startTime}ms - 开始请求 PlantNet API...`)
-    console.log(`[PlantNet] 器官：${organ}, 图片大小：${(imageBuffer.length / 1024).toFixed(1)} KB`)
-    console.log(`[PlantNet] API URL: ${url.substring(0, 80)}...`)
     
     let res
     let data
     
-    // 使用 Promise.race 实现超时
+    // 使用 Promise.race 实现超时（PlantNet 是国外 API，超时设短一些，避免占用太多时间）
     try {
       const fetchPromise = fetch(url, {
         method: 'POST',
@@ -235,25 +374,22 @@ async function identifyWithPlantNet(imageBase64, organ) {
       })
       
       const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => reject(new Error('请求超时（15 秒）')), 15000)
+        setTimeout(() => reject(new Error('请求超时（4 秒）')), 4000)
       })
       
       res = await Promise.race([fetchPromise, timeoutPromise])
     } catch (fetchErr) {
       console.error(`[PlantNet] ${Date.now() - startTime}ms - 网络请求失败：${fetchErr.message}`)
       console.error(`[PlantNet] 错误类型：${fetchErr.name}`)
-      console.error(`[PlantNet] 错误堆栈：${fetchErr.stack}`)
       return { 
         success: false, 
-        error: `PlantNet 网络错误：${fetchErr.message}`,
+        error: `PlantNet 连接超时（国外服务器可能不稳定）`,
         timing: Date.now() - startTime 
       }
     }
     
     try {
       const text = await res.text()
-      console.log(`[PlantNet] ${Date.now() - startTime}ms - 状态码：${res.status}`)
-      console.log(`[PlantNet] 原始响应：`, text.substring(0, 500))
       
       // 解析 JSON
       try {
@@ -276,7 +412,6 @@ async function identifyWithPlantNet(imageBase64, organ) {
       }
     }
     
-    console.log(`[PlantNet] 解析后的数据：`, JSON.stringify(data).substring(0, 500))
     
     if (data.statusCode && data.statusCode !== 200) {
       console.error(`[PlantNet] API 返回错误：${data.message}`)
@@ -284,7 +419,6 @@ async function identifyWithPlantNet(imageBase64, organ) {
     }
     
     if (!data.results || data.results.length === 0) {
-      console.log(`[PlantNet] 未识别到植物`)
       return { success: false, error: '未识别到植物', timing: Date.now() - startTime }
     }
     
@@ -297,8 +431,8 @@ async function identifyWithPlantNet(imageBase64, organ) {
       const species = result.species
       const score = result.score || 0
       
-      // 只添加置信度 > 15% 的结果
-      if (score < 0.15) continue
+      // 只添加置信度 >= 30% 的结果（提高阈值减少误判）
+      if (score < 0.30) continue
       
       // 提取图片
       let imageUrl = ''
@@ -384,55 +518,131 @@ async function identifyWithPlantNet(imageBase64, organ) {
 }
 
 /**
- * 百度 AI 植物识别（备选方案）
+ * 延时辅助函数
  */
-async function identifyWithBaidu(imageBase64) {
-  const startTime = Date.now()
-  
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms))
+}
+
+/**
+ * 带重试的 fetch 请求（兼容 Node.js 12/14，不使用 AbortController）
+ */
+async function fetchWithRetry(url, options, maxRetries = 2, retryDelay = 1000) {
+  let lastError
+
+  for (let i = 0; i <= maxRetries; i++) {
+    try {
+      const timeout = options?.timeout
+      const fetchOptions = { ...options }
+      delete fetchOptions.timeout
+
+      if (timeout) {
+        const fetchPromise = fetch(url, fetchOptions)
+        const timeoutPromise = new Promise((_, reject) => {
+          setTimeout(() => reject(new Error(`请求超时（${timeout}ms）`)), timeout)
+        })
+        const res = await Promise.race([fetchPromise, timeoutPromise])
+        return res
+      } else {
+        const res = await fetch(url, fetchOptions)
+        return res
+      }
+    } catch (err) {
+      lastError = err
+      if (i < maxRetries) {
+        await sleep(retryDelay)
+      }
+    }
+  }
+
+  throw lastError
+}
+
+/**
+ * 百度 AI 植物识别（国内服务，优先使用）
+ */
+/**
+ * 获取百度 Access Token（带云数据库缓存，30天有效期）
+ */
+async function getBaiduToken() {
+  const cacheKey = 'baidu_access_token'
+  const now = Date.now()
+
+  // 1. 优先检查内存缓存（最快，0ms）
+  if (memoryTokenCache && memoryTokenCache.expires_at > now + 600000) {
+    return memoryTokenCache.access_token
+  }
+
+  // 2. 其次检查数据库缓存
   try {
-    // 1. 获取 Access Token（5 秒超时）
-    let tokenData
-    try {
-      const tokenRes = await fetch(`${BAIDU_TOKEN_URL}?grant_type=client_credentials&client_id=${BAIDU_API_KEY}&client_secret=${BAIDU_SECRET_KEY}`, {
-        method: 'POST',
-        timeout: 5000
-      })
-      tokenData = await tokenRes.json()
-    } catch (tokenErr) {
-      console.log(`[BaiduAI] ${Date.now() - startTime}ms - Token 请求失败：${tokenErr.message}`)
-      return { success: false, error: '百度 AI 服务不可用', timing: Date.now() - startTime }
+    const cacheDoc = await db.collection('api_token_cache').doc(cacheKey).get()
+    if (cacheDoc.data) {
+      const { access_token, expires_at } = cacheDoc.data
+      if (access_token && expires_at && expires_at > now + 600000) {
+        // 同步到内存缓存
+        memoryTokenCache = { access_token, expires_at }
+        return access_token
+      }
     }
-    
-    if (!tokenData || !tokenData.access_token) {
-      console.log(`[BaiduAI] ${Date.now() - startTime}ms - Token 获取失败`, tokenData)
-      return { success: false, error: '百度 AI 认证失败', timing: Date.now() - startTime }
-    }
-    
-    // 2. 调用植物识别（10 秒超时）
-    let plantRes
-    let plantData
-    try {
-      plantRes = await fetch(`${BAIDU_PLANT_URL}?access_token=${tokenData.access_token}`, {
+  } catch (e) {
+    // 缓存不存在或读取失败
+  }
+
+  // 3. 重新获取 Token（3秒超时，不重试，快速失败）
+  const tokenRes = await fetchWithTimeout(
+    `${BAIDU_TOKEN_URL}?grant_type=client_credentials&client_id=${BAIDU_API_KEY}&client_secret=${BAIDU_SECRET_KEY}`,
+    3000,
+    { method: 'POST' }
+  )
+  const tokenData = await tokenRes.json()
+
+  if (!tokenData || !tokenData.access_token) {
+    throw new Error('百度 AI 认证失败: ' + (tokenData?.error_description || '未知错误'))
+  }
+
+  // 4. 保存到内存缓存和数据库缓存
+  const expiresIn = tokenData.expires_in || 2592000
+  const expiresAt = now + expiresIn * 1000
+  memoryTokenCache = { access_token: tokenData.access_token, expires_at: expiresAt }
+  try {
+    await db.collection('api_token_cache').doc(cacheKey).set({
+      data: {
+        access_token: tokenData.access_token,
+        expires_at: expiresAt,
+        updatedAt: new Date().toISOString()
+      }
+    })
+  } catch (e) {
+  }
+
+  return tokenData.access_token
+}
+
+async function identifyWithBaidu(imageBase64, accessToken) {
+  const startTime = Date.now()
+
+  try {
+    // 调用植物识别（5秒超时，1次重试）
+    const plantRes = await fetchWithRetry(
+      `${BAIDU_PLANT_URL}?access_token=${accessToken}`,
+      {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: `image=${imageBase64}&baike_num=1`,
-        timeout: 10000
-      })
-      
-      if (!plantRes.ok) {
-        throw new Error(`HTTP ${plantRes.status}`)
-      }
-      
-      plantData = await plantRes.json()
-    } catch (apiErr) {
-      console.log(`[BaiduAI] ${Date.now() - startTime}ms - API 调用失败：${apiErr.message}`)
-      return { success: false, error: '百度 AI 识别失败', timing: Date.now() - startTime }
+        body: `image=${encodeURIComponent(imageBase64)}&baike_num=1`,
+        timeout: 5000
+      },
+      1,
+      500
+    )
+
+    if (!plantRes.ok) {
+      throw new Error(`HTTP ${plantRes.status}`)
     }
+
+    const plantData = await plantRes.json()
     
-    console.log(`[BaiduAI] ${Date.now() - startTime}ms - 状态：${plantRes.status}`)
     
     if (!plantData.result || !plantData.result.classification_result || plantData.result.classification_result.length === 0) {
-      console.log(`[BaiduAI] ${Date.now() - startTime}ms - 未识别到植物`)
       return { success: false, error: '百度 AI 未识别', timing: Date.now() - startTime }
     }
     
@@ -444,8 +654,8 @@ async function identifyWithBaidu(imageBase64) {
       const match = plantData.result.classification_result[i]
       const score = match.score || 0
       
-      // 只添加置信度 > 15% 的结果
-      if (score < 0.15) continue
+      // 只添加置信度 >= 30% 的结果（提高阈值减少误判）
+      if (score < 0.30) continue
       
       const baikeInfo = match.baike_info || {}
       const scientificNameLatin = match.scientific_name || ''
@@ -458,19 +668,16 @@ async function identifyWithBaidu(imageBase64) {
       const hasChinese = /[\u4e00-\u9fa5]/.test(rawName)
       
       if (!hasChinese) {
-        // 没有中文，必须翻译
+        // 没有中文，需要翻译
         chineseName = await translatePlantName(rawName)
-      } else {
-        // 有中文，但可能是"某属植物"格式，尝试优化
+      } else if (rawName.includes('属植物')) {
+        // 是"某属植物"的模糊名称，尝试找到更具体的中文名
         const translatedName = await translatePlantName(rawName)
-        // 如果翻译结果更好（不是"某属植物"格式），使用翻译结果
-        if (translatedName && !translatedName.includes('属植物') && translatedName !== '未知植物') {
+        if (translatedName && translatedName !== rawName && translatedName !== '观赏植物' && translatedName !== '未知植物') {
           chineseName = translatedName
-        } else {
-          // 保持原有中文名
-          chineseName = rawName
         }
       }
+      // 否则保持百度返回的原始中文名（通常已准确）
       
       // 特殊处理：确保常见植物有标准中文名
       const standardNames = {
@@ -537,7 +744,7 @@ async function identifyWithBaidu(imageBase64) {
 }
 
 /**
- * 调用 GLM-4-Flash 获取养护建议
+ * 调用 GLM-4.5-Air 获取养护建议（带重试和超时保护）
  */
 async function getCareAdvice(plantInfo) {
   const startTime = Date.now()
@@ -546,74 +753,109 @@ async function getCareAdvice(plantInfo) {
     return { timing: 0, data: null }
   }
   
-  try {
-    const prompt = `你是植物养护专家，请为"${plantInfo.name || plantInfo.plantName}"提供详细实用的养护资料，以 JSON 格式返回。
+  const prompt = `你是植物养护专家，请为"${plantInfo.name || plantInfo.plantName}"提供详细实用的养护资料，以 JSON 格式返回。
 
 【文案要求】
-- 内容详细实用，每句 25-35 字
-- 分段清晰，便于阅读
-- 给出具体养护方法和注意事项
+- 内容自然流畅，像专家给朋友介绍植物一样，不要机械罗列
+- 每种植物的描述要有自己的特色，避免不同植物出现雷同的句式
+- 给出具体、实用的养护方法和注意事项
+- 字数灵活，以表达清楚为准，不要硬凑字数
 
 {
-  "commonNames": "常见别名（逗号分隔）",
-  "scientificName": "学名中文翻译",
+  "commonNames": "常见别名",
+  "scientificName": "学名中文",
   "scientificNameLatin": "拉丁学名",
-  "family": "科属信息",
-  "origin": "原产地和分布地区",
-  "plantProfile": "植物档案（80-120 字，详细介绍形态特征、观赏价值）",
-  "growthHabit": "生长习性（60-80 字，介绍生长环境、生长速度等）",
-  "mainValue": "主要价值（50-70 字，观赏、净化空气、药用等）",
+  "family": "科属",
+  "origin": "原产地",
+  "plantProfile": "植物档案（形态特征、观赏价值，自然描述）",
+  "growthHabit": "生长习性（环境偏好、生长特点）",
+  "mainValue": "主要价值",
   "careGuide": {
-    "light": "光照（25-35 字，如：喜充足光照，每天 4-6 小时，夏季避免强烈直射，可放在阳台或窗边）",
-    "water": "浇水（25-35 字，如：保持土壤湿润但不积水，春夏每周 2-3 次，秋冬减少至每周 1 次）",
-    "temperature": "温度（25-35 字，如：适宜 18-28°C，冬季不低于 10°C，夏季超过 30°C 需通风降温）",
-    "humidity": "湿度（25-35 字，如：喜欢湿润环境，空气干燥时可向叶片喷水，或放在加湿器附近）",
-    "fertilizer": "施肥（25-35 字，如：生长期每月施 1-2 次稀薄液肥，冬季停止施肥，可用复合肥或有机肥）",
-    "soil": "土壤（25-35 字，如：疏松、排水良好的沙质壤土，可用腐叶土 + 珍珠岩 + 园土混合配制）",
-    "pruning": "修剪（25-35 字，如：及时修剪枯黄叶片和过密枝条，花后修剪残花，促进新枝萌发）",
-    "propagation": "繁殖（25-35 字，如：可通过分株、扦插或播种繁殖，春秋季节进行，成活率较高）"
+    "light": "光照建议",
+    "water": "浇水建议",
+    "temperature": "温度建议",
+    "humidity": "湿度建议",
+    "fertilizer": "施肥建议",
+    "soil": "土壤建议",
+    "pruning": "修剪建议",
+    "propagation": "繁殖建议"
   },
-  "difficultyLevel": 1-5 的数字（1 最容易，5 最难）,
-  "difficultyText": "养护难度说明（15-25 字，如：适合新手养护，耐旱耐阴）",
-  "quickTips": ["养护要点 1（20 字内）", "要点 2（20 字内）", "要点 3（20 字内）", "要点 4（20 字内）"]
+  "difficultyLevel": 1-5,
+  "difficultyText": "养护难度说明",
+  "quickTips": ["实用要点1", "实用要点2", "实用要点3"]
 }`
 
-    const res = await fetch(GLM_API_URL, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${GLM_API_KEY}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        model: 'glm-4-flash',
-        messages: [{ role: 'user', content: prompt }],
-        max_tokens: 1000
-      }),
-      timeout: 8000  // 8 秒超时
-    })
-    
-    const data = await res.json()
-    const content = data.choices?.[0]?.message?.content || ''
-    
-    console.log(`[GLM] ${Date.now() - startTime}ms - 响应长度：${content.length}`)
-    
-    // 解析 JSON
-    const jsonMatch = content.match(/\{[\s\S]*\}/)
-    if (jsonMatch) {
-      try {
-        const advice = JSON.parse(jsonMatch[0])
-        return { timing: Date.now() - startTime, data: advice }
-      } catch (e) {
-        console.error('[GLM] JSON 解析失败:', e)
+  // 最多重试 1 次，超时 8 秒（避免超过云函数 30 秒限制）
+  for (let retry = 0; retry <= 1; retry++) {
+    try {
+      if (retry > 0) {
+        await sleep(500)
       }
+      
+      const res = await fetchWithTimeout(GLM_API_URL, 8000, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${GLM_API_KEY}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          model: 'glm-4-flash',
+          messages: [{ role: 'user', content: prompt }],
+          max_tokens: 1000,
+          temperature: 0.4  // 适度随机性，让描述更有个性
+        })
+      })
+      
+      if (!res.ok) {
+        console.error(`[GLM] HTTP 错误: ${res.status}`)
+        continue  // 重试
+      }
+      
+      const data = await res.json()
+      
+      // 检查 API 返回的错误
+      if (data.error) {
+        console.error('[GLM] API 返回错误:', data.error)
+        continue  // 重试
+      }
+      
+      const content = data.choices?.[0]?.message?.content || ''
+      
+      if (!content) {
+        continue  // 重试
+      }
+      
+      
+      // 解析 JSON
+      const jsonMatch = content.match(/\{[\s\S]*\}/)
+      if (jsonMatch) {
+        try {
+          const advice = JSON.parse(jsonMatch[0])
+          return { timing: Date.now() - startTime, data: advice }
+        } catch (e) {
+          console.error('[GLM] JSON 解析失败:', e.message)
+          // JSON 解析失败不重试，直接返回 null
+          break
+        }
+      }
+      
+    } catch (err) {
+      console.error(`[GLM] ${Date.now() - startTime}ms - 第 ${retry + 1} 次失败:`, err.message)
     }
-    
-    return { timing: Date.now() - startTime, data: null }
-    
-  } catch (err) {
-    console.error(`[GLM] ${Date.now() - startTime}ms - 失败:`, err.message)
-    return { timing: Date.now() - startTime, data: null }
   }
+  
+  return { timing: Date.now() - startTime, data: null }
+}
+
+/**
+ * 带超时的 fetch（node-fetch v2 不支持 timeout 选项，兼容 Node.js 12/14）
+ */
+async function fetchWithTimeout(url, timeout = 3000, options = {}) {
+  const fetchPromise = fetch(url, options)
+  const timeoutPromise = new Promise((_, reject) => {
+    setTimeout(() => reject(new Error(`请求超时（${timeout}ms）`)), timeout)
+  })
+  return Promise.race([fetchPromise, timeoutPromise])
 }
 
 /**
@@ -621,20 +863,32 @@ async function getCareAdvice(plantInfo) {
  */
 async function fetchPlantImage(plantName) {
   try {
-    const url = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(plantName)}`
-    const res = await fetch(url, { timeout: 3000 })
-    
+    // 策略 1：尝试用英文名搜索 Wikipedia
+    const url = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(plantName)}`;
+    const res = await fetchWithTimeout(url, 5000);
+
     if (res.ok) {
-      const data = await res.json()
+      const data = await res.json();
       if (data.thumbnail?.source) {
         // 获取更大尺寸的图片
-        return data.thumbnail.source.replace(/\/\d+px-/, '/400px-')
+        return data.thumbnail.source.replace(/\/\d+px-/, '/400px-');
       }
     }
+
+    // 策略 2：尝试用中文名搜索中文 Wikipedia
+    const urlCN = `https://zh.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(plantName)}`;
+    const resCN = await fetchWithTimeout(urlCN, 5000);
+    
+    if (resCN.ok) {
+      const data = await resCN.json();
+      if (data.thumbnail?.source) {
+        return data.thumbnail.source.replace(/\/\d+px-/, '/400px-');
+      }
+    }
+    
   } catch (e) {
-    console.log('[Image] 获取失败:', e.message)
   }
-  return null
+  return null;
 }
 
 /**
@@ -645,30 +899,26 @@ async function getBaiduBaike(plantName) {
   
   try {
     // 1. 获取 Token
-    const tokenRes = await fetch(`${BAIDU_TOKEN_URL}?grant_type=client_credentials&client_id=${BAIDU_API_KEY}&client_secret=${BAIDU_SECRET_KEY}`, {
-      method: 'POST',
-      timeout: 3000
+    const tokenRes = await fetchWithTimeout(`${BAIDU_TOKEN_URL}?grant_type=client_credentials&client_id=${BAIDU_API_KEY}&client_secret=${BAIDU_SECRET_KEY}`, 3000, {
+      method: 'POST'
     })
     
     const tokenData = await tokenRes.json()
     if (!tokenData.access_token) {
-      console.log(`[BaiduBaike] Token 获取失败`)
       return null
     }
     
     // 2. 调用植物识别（带 baike_num=1 获取百科信息）
-    const plantRes = await fetch(`${BAIDU_PLANT_URL}?access_token=${tokenData.access_token}`, {
+    const plantRes = await fetchWithTimeout(`${BAIDU_PLANT_URL}?access_token=${tokenData.access_token}`, 5000, {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: `image=&baike_num=1&top_num=1`,  // 不传图片，只获取名称匹配的百科信息
-      timeout: 5000
+      body: `image=&baike_num=1&top_num=1`  // 不传图片，只获取名称匹配的百科信息
     })
     
     const plantData = await plantRes.json()
     const bestMatch = plantData.result?.classification_result?.[0]
     const baikeInfo = bestMatch?.baike_info || {}
     
-    console.log(`[BaiduBaike] ${Date.now() - startTime}ms - 完成`)
     
     if (baikeInfo.description || baikeInfo.image_url) {
       return {
@@ -680,7 +930,6 @@ async function getBaiduBaike(plantName) {
     return null
     
   } catch (err) {
-    console.log(`[BaiduBaike] ${Date.now() - startTime}ms - 失败:`, err.message)
     return null
   }
 }
@@ -729,6 +978,93 @@ function getDefaultGrowthHabit(plantName) {
   
   // 默认
   return '喜温暖湿润环境，适应性强，易于养护'
+}
+
+/**
+ * 根据植物名称生成默认档案描述（避免所有植物都一样）
+ */
+function generateFallbackProfile(plantName) {
+  const name = plantName.toLowerCase()
+
+  if (name.includes('多肉') || name.includes('仙人掌') || name.includes('芦荟') || name.includes('石莲花')) {
+    return `${plantName}叶片肥厚多汁，能储存大量水分，是耐旱植物的代表。造型奇特可爱，养护简单，非常适合忙碌的现代人。`
+  }
+
+  if (name.includes('绿萝') || name.includes('吊兰') || name.includes('常春藤') || name.includes('虎尾兰')) {
+    return `${plantName}是广受欢迎的室内净化植物，能有效吸收空气中的有害物质。生命力顽强，即使在光线较弱的环境也能生长良好。`
+  }
+
+  if (name.includes('玫瑰') || name.includes('月季') || name.includes('蔷薇')) {
+    return `${plantName}花姿优美，色彩丰富，香气怡人，被誉为"花中皇后"。无论是庭院栽种还是切花观赏，都极具魅力。`
+  }
+
+  if (name.includes('兰')) {
+    return `${plantName}花型典雅，气质高洁，是中国传统名花之一。虽然对养护环境有一定要求，但开花时的美丽绝对值得付出。`
+  }
+
+  if (name.includes('竹') || name.includes('富贵竹') || name.includes('文竹')) {
+    return `${plantName}姿态挺拔潇洒，充满东方韵味，象征着坚韧与高洁。既可土培也可水培，是书房茶室的经典搭配。`
+  }
+
+  if (name.includes('树') || name.includes('榕') || name.includes('松') || name.includes('枫')) {
+    return `${plantName}株型挺拔，枝叶茂盛，能为空间增添自然气息。随着四季变化呈现不同的景致，是庭院和大型空间的理想选择。`
+  }
+
+  if (name.includes('菊') || name.includes('向日葵') || name.includes('康乃馨')) {
+    return `${plantName}花色鲜艳，花期较长，能给居室带来明媚的色彩和愉悦的心情。养护得当可多次开花，性价比很高。`
+  }
+
+  return `${plantName}姿态优美，适应性较强，是家居绿化的优良选择。合理的养护能让它展现出最佳的观赏状态，为生活空间增添生机。`
+}
+
+/**
+ * 根据植物名称生成默认主要价值描述
+ */
+function generateFallbackMainValue(plantName) {
+  const name = plantName.toLowerCase()
+
+  if (name.includes('多肉') || name.includes('仙人掌')) {
+    return '造型独特，装饰性强，且养护省心，适合现代简约风格的家居装饰'
+  }
+
+  if (name.includes('绿萝') || name.includes('吊兰') || name.includes('虎尾兰') || name.includes('常春藤')) {
+    return '净化空气能力突出，能有效吸收甲醛等有害物质，是新装修居室的理想选择'
+  }
+
+  if (name.includes('玫瑰') || name.includes('月季') || name.includes('兰') || name.includes('菊')) {
+    return '观赏价值极高，花香怡人，可用于装饰居室、馈赠亲友，还能陶冶情操'
+  }
+
+  if (name.includes('薄荷') || name.includes('罗勒') || name.includes('迷迭香') || name.includes('香')) {
+    return '兼具观赏与实用价值，部分品种可食用或提取精油，香气还能驱虫提神'
+  }
+
+  return '观赏价值较高，能美化居住环境、净化空气，养护过程也能带来身心放松的愉悦感'
+}
+
+/**
+ * 根据植物名称生成默认养护要点
+ */
+function generateFallbackTips(plantName) {
+  const name = plantName.toLowerCase()
+
+  if (name.includes('多肉') || name.includes('仙人掌')) {
+    return ['少浇水，宁干勿湿', '给予充足阳光', '使用透气排水好的土壤']
+  }
+
+  if (name.includes('绿萝') || name.includes('龟背') || name.includes('竹芋')) {
+    return ['保持土壤微湿，避免积水', '放在明亮的散射光处', '经常喷水保持湿度']
+  }
+
+  if (name.includes('兰花') || name.includes('蝴蝶兰')) {
+    return ['使用专用兰花土', '避免强光直射', '注意通风，防止烂根']
+  }
+
+  if (name.includes('玫瑰') || name.includes('月季')) {
+    return ['需要充足阳光', '定期施肥促花', '注意防治病虫害']
+  }
+
+  return ['保持适当光照，避免暴晒', '见干见湿，合理浇水', '定期通风，保持空气流通']
 }
 
 /**
@@ -1076,66 +1412,67 @@ const PLANT_NAME_MAP = {
 
 /**
  * 翻译植物名称（英文/拉丁名 → 中文）
- * 完全依赖智谱 AI GLM-4-Flash 翻译（免费、智能、覆盖所有植物）
+ * 完全依赖智谱 AI GLM-4.5-Air 翻译（智能、覆盖所有植物）
  */
 async function translatePlantName(englishName) {
   if (!englishName) return '未知植物'
   
-  // 0. 特殊处理：如果是中文，直接返回
   if (/[\u4e00-\u9fa5]/.test(englishName)) {
     return englishName
   }
   
   const lowerName = englishName.toLowerCase().trim()
+  const genusName = lowerName.split(' ')[0]
   
-  // 1. 尝试从云数据库缓存读取（最快）
+  if (PLANT_NAME_MAP[lowerName]) {
+    return PLANT_NAME_MAP[lowerName]
+  }
+  
+  if (PLANT_NAME_MAP[genusName]) {
+    return PLANT_NAME_MAP[genusName]
+  }
+  
   try {
-    const db = cloud.database()
     const cache = await db.collection('plant_name_cache').doc(lowerName).get()
     if (cache.data && cache.data.chineseName) {
-      console.log('[Translate] 缓存命中:', englishName, '→', cache.data.chineseName)
       return cache.data.chineseName
     }
   } catch (err) {
-    // 缓存不存在或读取失败，继续
   }
   
-  // 2. 使用智谱 AI 翻译（主力）
-  try {
-    const translation = await translateWithGLM(englishName)
-    if (translation && translation !== '未知植物') {
-      // 验证翻译结果（确保是中文，不是字母缩写）
-      if (/^[\u4e00-\u9fa5]+$/.test(translation) && translation.length >= 2) {
-        // 保存到缓存
-        try {
-          const db = cloud.database()
-          await db.collection('plant_name_cache').doc(lowerName).set({
-            data: {
-              englishName: englishName,
-              chineseName: translation,
-              createTime: new Date()
-            }
-          })
-        } catch (cacheErr) {
-          console.error('[Translate] 缓存保存失败:', cacheErr)
+  if (!GLM_API_KEY) {
+    console.error('[Translate] GLM_API_KEY 未配置，跳过 AI 翻译')
+  } else {
+    try {
+      const translation = await translateWithGLM(englishName)
+      if (translation && translation !== '未知植物') {
+        if (/^[\u4e00-\u9fa5]+$/.test(translation) && translation.length >= 2) {
+          try {
+            await db.collection('plant_name_cache').doc(lowerName).set({
+              data: {
+                englishName: englishName,
+                chineseName: translation,
+                createTime: new Date()
+              }
+            })
+          } catch (cacheErr) {
+            console.error('[Translate] 缓存保存失败:', cacheErr)
+          }
+          return translation
+        } else {
         }
-        return translation
-      } else {
-        console.log('[Translate] 翻译结果不合法，跳过:', translation)
       }
+    } catch (err) {
+      console.error('[Translate] GLM 翻译失败:', err.message)
     }
-  } catch (err) {
-    console.error('[Translate] GLM 翻译失败:', err.message)
   }
   
-  // 3. 常见关键词匹配（兜底）
   for (const [keyword, chinese] of Object.entries(COMMON_PLANT_KEYWORDS)) {
     if (lowerName.includes(keyword)) {
       return chinese
     }
   }
   
-  // 4. 常见植物属名映射（兜底方案 1）
   const commonGenusMapping = {
     'zamioculcas': '金钱树',
     'epipremnum': '绿萝',
@@ -1154,70 +1491,85 @@ async function translatePlantName(englishName) {
     'echeveria': '拟石莲'
   }
   
-  // 检查是否常见属
-  if (commonGenusMapping[genus]) {
-    return commonGenusMapping[genus]
+  if (commonGenusMapping[genusName]) {
+    return commonGenusMapping[genusName]
   }
-  
-  // 5. 实在无法匹配，返回通用名称（而不是"XX 属植物"）
-  return '观赏植物'
+
+  // 无法翻译时返回原始名称（总比"观赏植物"更有信息量）
+  return englishName || '未知植物'
 }
 
 /**
- * 使用智谱 AI GLM-4-Flash 翻译植物名称
+ * 使用智谱 AI 翻译植物名称（带重试）
  */
 async function translateWithGLM(plantName) {
-  try {
-    const GLM_API_URL = 'https://open.bigmodel.cn/api/paas/v4/chat/completions'
-    
-    const response = await fetch(GLM_API_URL, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${GLM_API_KEY}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        model: 'glm-4-flash',
-        messages: [
-          {
-            role: 'system',
-            content: '你是一位专业的植物名称翻译官。你的任务是将植物的拉丁学名或英文名翻译成标准的中文植物名称。\n\n翻译规则：\n1. 只返回中文名称，不要解释\n2. 使用常见的中文植物名（如"绿萝"、"金钱树"、"虎尾兰"）\n3. 如果没有标准中文名，返回音译名（如"龟背竹"、"蔓绿绒"）\n4. 绝对不要返回字母缩写或拉丁字母\n5. 保持简洁，只返回名称本身\n\n示例：\n- Clivia miniata → 君子兰\n- Pelargonium inquinans → 天竺葵\n- Goeppertia warszewiczii → 竹芋\n- Zamioculcas zamiifolia → 金钱树\n- Epipremnum aureum → 绿萝'
-          },
-          {
-            role: 'user',
-            content: `请将"${plantName}"翻译成中文植物名称：`
-          }
-        ],
-        temperature: 0.1,
-        max_tokens: 50
-      }),
-      timeout: 5000
-    })
-    
-    if (!response.ok) {
-      throw new Error(`GLM API 错误：${response.status}`)
-    }
-    
-    const data = await response.json()
-    const translation = data.choices?.[0]?.message?.content?.trim()
-    
-    if (translation) {
-      console.log(`[GLM 翻译] ${plantName} → ${translation}`)
+  if (!GLM_API_KEY) {
+    console.error('[GLM 翻译] GLM_API_KEY 未配置，无法翻译')
+    return null
+  }
+  
+  for (let retry = 0; retry <= 2; retry++) {
+    try {
+      if (retry > 0) {
+        await sleep(800 * retry)
+      }
       
-      // 清理翻译结果（去除多余字符）
+      const response = await fetchWithTimeout(GLM_API_URL, 8000, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${GLM_API_KEY}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          model: 'glm-4-flash',
+          messages: [
+            {
+              role: 'system',
+              content: '你是一位专业的植物名称翻译官。你的任务是将植物的拉丁学名或英文名翻译成标准的中文植物名称。\n\n翻译规则：\n1. 只返回中文名称，不要解释\n2. 使用常见的中文植物名（如"绿萝"、"金钱树"、"虎尾兰"）\n3. 如果没有标准中文名，返回音译名（如"龟背竹"、"蔓绿绒"）\n4. 绝对不要返回字母缩写或拉丁字母\n5. 保持简洁，只返回名称本身\n\n示例：\n- Clivia miniata → 君子兰\n- Pelargonium inquinans → 天竺葵\n- Goeppertia warszewiczii → 竹芋\n- Zamioculcas zamiifolia → 金钱树\n- Epipremnum aureum → 绿萝'
+            },
+            {
+              role: 'user',
+              content: `请将"${plantName}"翻译成中文植物名称：`
+            }
+          ],
+          temperature: 0.1,
+          max_tokens: 50
+        })
+      })
+      
+      if (!response.ok) {
+        const errorText = await response.text().catch(() => '')
+        console.error(`[GLM 翻译] HTTP 错误：${response.status}`, errorText.substring(0, 200))
+        continue
+      }
+      
+      const data = await response.json()
+      
+      if (data.error) {
+        console.error('[GLM 翻译] API 错误：', JSON.stringify(data.error))
+        continue  // 重试
+      }
+      
+      const translation = data.choices?.[0]?.message?.content?.trim()
+      
+      if (!translation) {
+        console.error('[GLM 翻译] 返回内容为空，完整响应：', JSON.stringify(data).substring(0, 300))
+        continue
+      }
+      
       const cleanTranslation = translation
-        .replace(/[：:]/g, '')  // 去除冒号
-        .replace(/^[^一 - 龥]*(一 - 龥+)/, '$1')  // 只保留中文部分
+        .replace(/[：:]/g, '')
+        .replace(/^[^\u4e00-\u9fa5]*([\u4e00-\u9fa5]+)/, '$1')
         .trim()
       
       return cleanTranslation || translation
+      
+    } catch (err) {
+      console.error(`[GLM 翻译] 第 ${retry + 1} 次失败：${err.message}`)
     }
-    
-    return null
-  } catch (err) {
-    console.error(`[GLM 翻译] 失败：${err.message}`)
-    return null
   }
+  
+  return null
 }
 
 /**

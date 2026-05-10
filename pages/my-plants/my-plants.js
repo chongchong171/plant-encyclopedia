@@ -28,18 +28,48 @@ Page({
     editPlantNotes: '',
     showPhotoModal: false,
     addPhotoPlantId: null,
-    addPhotoPlantName: ''
+    addPhotoPlantName: '',
+    showProfileGuide: false,
+    tempAvatarUrl: '',
+    tempNickname: '',
+    pendingAddPlant: false,
+    diagnosisEnabled: true,
+    uiConfig: {}
   },
 
   onLoad() {
-    // 获取系统状态栏高度
-    const systemInfo = wx.getSystemInfoSync()
-    this.setData({
-      statusBarHeight: systemInfo.statusBarHeight || 20
+    // 获取系统状态栏高度（使用新 API 避免废弃警告）
+    wx.getWindowInfo({
+      success: (windowInfo) => {
+        this.setData({
+          statusBarHeight: windowInfo.statusBarHeight || 20
+        })
+      }
     })
-    
-    wx.removeStorageSync('my_garden_plants')
+
+    this.loadUIConfig();
+    this.checkFeatureFlags();
     this.loadPlants()
+  },
+
+  /**
+   * 读取 UI 文案配置
+   */
+  loadUIConfig() {
+    const app = getApp();
+    const config = app?.globalData?.appConfig?.ui || {};
+    this.setData({ uiConfig: config });
+  },
+
+  /**
+   * 读取远程功能开关
+   */
+  checkFeatureFlags() {
+    const app = getApp();
+    const featureFlags = app?.globalData?.featureFlags || {};
+    this.setData({
+      diagnosisEnabled: featureFlags.enableDiagnosis !== false
+    });
   },
 
   /**
@@ -53,15 +83,48 @@ Page({
     if (typeof this.getTabBar === 'function' && this.getTabBar()) {
       this.getTabBar().setData({ selected: 1, homePage: false });
     }
-    this.loadPlants();
+
+    // 检查数据是否需要刷新（30 秒缓存，避免从子页面返回时重复加载）
+    const now = Date.now();
+    const lastLoad = this._lastLoadTime || 0;
+    const needsRefresh = now - lastLoad > 30 * 1000;
+
+    // 功能开关每次检查（轻量，直接读内存）
+    this.checkFeatureFlags();
+
+    // 如果其他页面标记了花园数据变更，强制刷新
+    const app = getApp()
+    const forceRefresh = app.globalData && app.globalData.plantsNeedRefresh
+
+    if (forceRefresh || needsRefresh || !this.data.plants || this.data.plants.length === 0) {
+      const hasData = this.data.plants && this.data.plants.length > 0;
+      this.loadPlants(hasData); // 有数据时静默刷新，不闪 loading
+      this._lastLoadTime = now;
+      if (forceRefresh) app.globalData.plantsNeedRefresh = false
+    }
+  },
+
+  /**
+   * 重新拉取远程配置（管理后台修改后立即生效）
+   */
+  refreshConfig() {
+    const app = getApp();
+    app.loadAppConfig().then(() => {
+      this.loadUIConfig();
+    }).catch(() => {
+      this.loadUIConfig();
+    });
   },
 
   /**
    * 加载植物列表
    */
-  async loadPlants() {
-    this.setData({ loading: true });
-    
+  async loadPlants(silent = false) {
+    // 已有数据时静默刷新，不显示 loading 避免闪烁
+    if (!silent || !this.data.plants || this.data.plants.length === 0) {
+      this.setData({ loading: true });
+    }
+
     logInfo('MyPlants', '开始加载植物列表');
     
     try {
@@ -76,7 +139,6 @@ Page({
       let plants = result.plants || [];
       const fromCache = result.fromCache || false;
       
-      console.log('[MyPlants] 获取到植物数量:', plants.length, fromCache ? '(来自缓存)' : '(来自云端)');
       
       const processedPlants = gardenService.processPlantData(plants);
       const { today, soon, others } = gardenService.categorizePlants(processedPlants);
@@ -218,7 +280,6 @@ Page({
    * 使用模拟数据
    */
   useMockData() {
-    console.warn('[MyPlants] 使用模拟数据');
     
     const plantNames = ['绿萝、黄金葛', '仙人掌', '月季、玫瑰', '多肉', '发财树', '吊兰', '虎皮兰', '芦荟'];
     const mockPlants = plantNames.map((name, index) => {
@@ -257,9 +318,7 @@ Page({
    * 植物点击事件 - 整个卡片可点击
    */
   onPlantTap(e) {
-    console.log('[MyPlants] 点击植物卡片，event:', e)
     const plantId = e.currentTarget.dataset.plantId;
-    console.log('[MyPlants] 获取到植物 ID:', plantId)
     
     if (!plantId) {
       console.error('[MyPlants] 植物 ID 为空');
@@ -270,13 +329,11 @@ Page({
       return;
     }
     
-    const url = `/pages/plant-detail/plant-detail?id=${plantId}`
-    console.log('[MyPlants] 准备跳转:', url)
+    const url = `/package-plant/pages/plant-detail/plant-detail?id=${plantId}`
     
     wx.navigateTo({ 
       url: url,
       success: () => {
-        console.log('[MyPlants] 跳转成功')
       },
       fail: (err) => {
         console.error('[MyPlants] 跳转失败:', err)
@@ -293,7 +350,6 @@ Page({
    */
   onImageError(e) {
     const plant = e.currentTarget.dataset.plant;
-    console.warn('[MyPlants] 图片加载失败，使用默认图:', plant ? plant.name : '未知植物');
   },
 
   /**
@@ -303,7 +359,6 @@ Page({
     const plantId = e.currentTarget.dataset.plantId;
     const plantName = e.currentTarget.dataset.plantName;
     
-    console.log('[MyPlants] 点击添加照片:', plantId, plantName);
     
     wx.showActionSheet({
       itemList: ['拍摄照片', '从相册选择'],
@@ -326,9 +381,8 @@ Page({
     if (sourceType === 'camera') {
       // 跳转到自定义相机页面
       wx.navigateTo({
-        url: `/pages/camera/camera?mode=identify&plantId=${plantId}&plantName=${encodeURIComponent(plantName)}`,
+        url: `/package-camera/pages/camera/camera?mode=identify&plantId=${plantId}&plantName=${encodeURIComponent(plantName)}`,
         success: (res) => {
-          console.log('[MyPlants] 跳转到相机页面成功')
         },
         fail: (err) => {
           console.error('[MyPlants] 跳转到相机页面失败:', err)
@@ -352,7 +406,6 @@ Page({
         }
 
         const tempFilePath = chooseRes.tempFilePaths[0]
-        console.log('[MyPlants] 选择照片成功:', tempFilePath)
 
         wx.showLoading({ title: '上传中...' })
 
@@ -397,7 +450,6 @@ Page({
       return;
     }
     
-    console.log('[MyPlants] 点击编辑:', plant);
     
     // 提取别名（如果有）
     let mainName = plant.name || plant.displayName || '';
@@ -611,7 +663,6 @@ Page({
     const plantId = e.currentTarget.dataset.plantId;
     const plantName = e.currentTarget.dataset.plantName;
     
-    console.log('[MyPlants] 点击删除:', plantId, plantName);
     
     this.setData({
       showDeleteModal: true,
@@ -689,17 +740,135 @@ Page({
   },
 
   /**
-   * 添加植物入口点击（右上角按钮）
+   * 检查用户是否已设置个人信息
    */
-  onAddPlantEntry() {
+  checkUserProfile() {
+    const app = getApp();
+    const userInfo = app.globalData.userInfo || wx.getStorageSync('userInfo') || {};
+    const hasProfile = userInfo.nickName && userInfo.nickName !== '植物达人' && userInfo.nickName !== '微信用户';
+    return hasProfile;
+  },
+
+  /**
+   * 打开完善资料引导弹窗
+   */
+  openProfileGuide(pendingAddPlant = false) {
+    this.setData({
+      showProfileGuide: true,
+      pendingAddPlant
+    });
+  },
+
+  /**
+   * 关闭完善资料弹窗
+   */
+  closeProfileGuide() {
+    this.setData({
+      showProfileGuide: false,
+      tempAvatarUrl: '',
+      tempNickname: '',
+      pendingAddPlant: false
+    });
+  },
+
+  /**
+   * 跳过完善资料，继续原有操作
+   */
+  skipProfileGuide() {
+    const pendingAddPlant = this.data.pendingAddPlant;
+    this.closeProfileGuide();
+    if (pendingAddPlant) {
+      this.doAddPlant();
+    }
+  },
+
+  /**
+   * 选择头像
+   */
+  onChooseAvatar(e) {
+    const { avatarUrl } = e.detail;
+    this.setData({ tempAvatarUrl: avatarUrl });
+  },
+
+  /**
+   * 输入昵称
+   */
+  onNicknameInput(e) {
+    this.setData({ tempNickname: e.detail.value });
+  },
+
+  /**
+   * 保存个人信息
+   */
+  async saveProfile() {
+    const { tempNickname, tempAvatarUrl } = this.data;
+    const nickname = tempNickname.trim();
+
+    if (!nickname) {
+      wx.showToast({ title: '请输入昵称', icon: 'none' });
+      return;
+    }
+
+    wx.showLoading({ title: '保存中...' });
+
+    try {
+      // 如果有本地头像，先上传到云存储
+      let avatarUrl = tempAvatarUrl;
+      if (tempAvatarUrl && (tempAvatarUrl.startsWith('http://tmp') || tempAvatarUrl.startsWith('wxfile://'))) {
+        const cloudPath = `user-avatars/${Date.now()}.jpg`;
+        const uploadRes = await wx.cloud.uploadFile({
+          cloudPath,
+          filePath: tempAvatarUrl
+        });
+        const tempUrlRes = await wx.cloud.getTempFileURL({
+          fileList: [uploadRes.fileID]
+        });
+        avatarUrl = tempUrlRes.fileList[0].tempFileURL;
+      }
+
+      // 调用云函数保存
+      await wx.cloud.callFunction({
+        name: 'updateUserInfo',
+        data: {
+          nickName: nickname,
+          avatarUrl: avatarUrl || ''
+        }
+      });
+
+      // 更新本地缓存
+      const app = getApp();
+      const userInfo = { nickName: nickname, avatarUrl: avatarUrl || '' };
+      app.globalData.userInfo = userInfo;
+      wx.setStorageSync('userInfo', userInfo);
+      wx.setStorageSync('hasUserInfoAuth', true);
+
+      wx.hideLoading();
+      wx.showToast({ title: '保存成功', icon: 'success' });
+
+      const pendingAddPlant = this.data.pendingAddPlant;
+      this.closeProfileGuide();
+
+      // 如果是因为添加植物触发的，继续添加流程
+      if (pendingAddPlant) {
+        setTimeout(() => this.doAddPlant(), 300);
+      }
+    } catch (err) {
+      wx.hideLoading();
+      console.error('[MyPlants] 保存个人信息失败:', err);
+      wx.showToast({ title: '保存失败', icon: 'none' });
+    }
+  },
+
+  /**
+   * 执行添加植物（绕过资料检查）
+   */
+  doAddPlant() {
     wx.showActionSheet({
       itemList: ['📷 拍照识别', '📁 从相册选择'],
       success: (res) => {
         if (res.tapIndex === 0) {
-          // 拍照识别
           this.takePhotoToAdd();
         } else if (res.tapIndex === 1) {
-          // 从相册选择
           this.chooseFromAlbumToAdd();
         }
       }
@@ -707,11 +876,23 @@ Page({
   },
 
   /**
+   * 添加植物入口点击（右上角按钮）
+   */
+  onAddPlantEntry() {
+    // 检查用户是否已完善资料，未完善则先引导
+    if (!this.checkUserProfile()) {
+      this.openProfileGuide(true);
+      return;
+    }
+    this.doAddPlant();
+  },
+
+  /**
    * 诊断悬浮按钮点击（右下角呼吸灯）
    */
   onDiagnosisFloatTap() {
     wx.navigateTo({ 
-      url: '/pages/diagnosis/diagnosis' 
+      url: '/package-user/pages/diagnosis/diagnosis' 
     });
   },
 
@@ -724,7 +905,7 @@ Page({
     
     // 直接跳转到相机页面（不经过首页）
     wx.navigateTo({
-      url: '/pages/camera/camera?mode=identify&from=mygarden'
+      url: '/package-camera/pages/camera/camera?mode=identify&from=mygarden'
     });
   },
 
@@ -738,11 +919,10 @@ Page({
       sourceType: ['album'],
       success: (res) => {
         const tempFilePath = res.tempFiles[0].tempFilePath;
-        console.log('[MyPlants] 从相册选择成功:', tempFilePath);
         // 直接跳转到识别结果页（和相机页面拍照后的逻辑一致）
         // 传递 from 参数，用于识别完成后正确返回
         wx.navigateTo({
-          url: `/pages/result_swiper/result_swiper?tmp_filePath=${encodeURIComponent(tempFilePath)}&from=mygarden`
+          url: `/package-camera/pages/result_swiper/result_swiper?tmp_filePath=${encodeURIComponent(tempFilePath)}&from=mygarden`
         });
       },
       fail: (err) => {

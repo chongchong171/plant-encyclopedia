@@ -1,0 +1,320 @@
+/** 数据看板样式 */
+
+.dashboard-container {
+  min-height: 100vh;
+  background: #f5f5f5;
+  padding-bottom: 60rpx;
+}
+
+/* 加载 */
+.loading-state {
+  display: flex;
+  justify-content: center;
+  padding: 200rpx 40rpx;
+}
+
+.loading-text {
+  font-size: 28rpx;
+  color: #999;
+}
+
+/* 内容区 */
+.dashboard-content {
+  padding: 20rpx;
+}
+
+/* 概况卡片 */
+.overview-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16rpx;
+  margin-bottom: 24rpx;
+}
+
+.overview-card {
+  background: #fff;
+  border-radius: 16rpx;
+  padding: 28rpx 20rpx;
+  text-align: center;
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.04);
+}
+
+.overview-label {
+  display: block;
+  font-size: 24rpx;
+  color: #888;
+  margin-bottom: 10rpx;
+}
+
+.overview-value {
+  display: block;
+  font-size: 40rpx;
+  font-weight: bold;
+  color: #2E7D32;
+}
+
+/* 通用 section */
+.section {
+  background: #fff;
+  border-radius: 20rpx;
+  padding: 30rpx;
+  margin-bottom: 24rpx;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.04);
+}
+
+.section-title {
+  display: block;
+  font-size: 30rpx;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 24rpx;
+}
+
+/* 趋势图 */
+.trend-chart {
+  padding-top: 10rpx;
+}
+
+.trend-bars {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  height: 200rpx;
+  padding: 0 10rpx;
+}
+
+.trend-bar-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+}
+
+.trend-bar-stack {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  width: 100%;
+  height: 140rpx;
+}
+
+.trend-bar {
+  width: 24rpx;
+  border-radius: 6rpx 6rpx 0 0;
+  transition: height 0.3s;
+}
+
+.trend-bar.visits {
+  background: linear-gradient(180deg, #4CAF50 0%, #2E7D32 100%);
+}
+
+.trend-date {
+  font-size: 20rpx;
+  color: #999;
+  margin-top: 10rpx;
+}
+
+.trend-val {
+  font-size: 20rpx;
+  color: #666;
+  margin-top: 4rpx;
+}
+
+/* 漏斗 */
+.funnel-wrap {
+  padding: 10rpx 0;
+}
+
+.funnel-row {
+  position: relative;
+  height: 64rpx;
+  background: #f8f9fa;
+  border-radius: 12rpx;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+}
+
+.funnel-bar {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  border-radius: 12rpx;
+  transition: width 0.5s;
+}
+
+.funnel-visit {
+  background: linear-gradient(90deg, #4CAF50, #81C784);
+}
+
+.funnel-identify {
+  background: linear-gradient(90deg, #66BB6A, #A5D6A7);
+}
+
+.funnel-add {
+  background: linear-gradient(90deg, #81C784, #C8E6C9);
+}
+
+.funnel-fav {
+  background: linear-gradient(90deg, #A5D6A7, #E8F5E9);
+}
+
+.funnel-info {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 0 20rpx;
+}
+
+.funnel-name {
+  font-size: 26rpx;
+  color: #333;
+  font-weight: 500;
+}
+
+.funnel-count {
+  font-size: 24rpx;
+  color: #666;
+}
+
+.funnel-arrow {
+  text-align: center;
+  font-size: 22rpx;
+  color: #bbb;
+  padding: 8rpx 0;
+}
+
+/* 排行 */
+.rank-list {
+  padding-top: 10rpx;
+}
+
+.rank-item {
+  display: flex;
+  align-items: center;
+  padding: 16rpx 0;
+  border-bottom: 1rpx solid #f5f5f5;
+}
+
+.rank-item:last-child {
+  border-bottom: none;
+}
+
+.rank-num {
+  width: 44rpx;
+  height: 44rpx;
+  line-height: 44rpx;
+  text-align: center;
+  border-radius: 50%;
+  font-size: 24rpx;
+  color: #999;
+  background: #f0f0f0;
+  margin-right: 16rpx;
+  flex-shrink: 0;
+}
+
+.rank-top {
+  background: linear-gradient(135deg, #FFD700, #FFA000);
+  color: #fff;
+  font-weight: bold;
+}
+
+.rank-name {
+  font-size: 28rpx;
+  color: #333;
+  width: 160rpx;
+  flex-shrink: 0;
+}
+
+.rank-bar-wrap {
+  flex: 1;
+  height: 16rpx;
+  background: #f0f0f0;
+  border-radius: 8rpx;
+  overflow: hidden;
+  margin: 0 16rpx;
+}
+
+.rank-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #4CAF50, #81C784);
+  border-radius: 8rpx;
+  transition: width 0.5s;
+}
+
+.rank-count {
+  font-size: 26rpx;
+  color: #666;
+  width: 80rpx;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+/* 事件流 */
+.event-list {
+  padding-top: 10rpx;
+}
+
+.event-item {
+  display: flex;
+  align-items: center;
+  padding: 16rpx 0;
+  border-bottom: 1rpx solid #f5f5f5;
+}
+
+.event-item:last-child {
+  border-bottom: none;
+}
+
+.event-time {
+  font-size: 22rpx;
+  color: #999;
+  width: 80rpx;
+  flex-shrink: 0;
+}
+
+.event-user {
+  font-size: 22rpx;
+  color: #bbb;
+  width: 140rpx;
+  flex-shrink: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.event-name {
+  font-size: 26rpx;
+  color: #333;
+  flex: 1;
+}
+
+/* 空状态 */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 80rpx 40rpx;
+}
+
+.empty-icon {
+  font-size: 80rpx;
+  margin-bottom: 16rpx;
+}
+
+.empty-text {
+  font-size: 30rpx;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 8rpx;
+}
+
+.empty-desc {
+  font-size: 24rpx;
+  color: #999;
+  text-align: center;
+}

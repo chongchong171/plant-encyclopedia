@@ -1,0 +1,127 @@
+<!-- 数据看板 -->
+<view class="dashboard-container">
+
+  <!-- 加载中 -->
+  <view wx:if="{{loading}}" class="loading-state">
+    <text class="loading-text">加载数据中...</text>
+  </view>
+
+  <!-- 数据内容 -->
+  <view wx:if="{{!loading}}" class="dashboard-content">
+
+    <!-- 顶部概况卡片 -->
+    <view class="overview-grid">
+      <view class="overview-card">
+        <text class="overview-label">今日访问</text>
+        <text class="overview-value">{{overview.todayVisits}}</text>
+      </view>
+      <view class="overview-card">
+        <text class="overview-label">今日新客</text>
+        <text class="overview-value">{{overview.todayNewUsers}}</text>
+      </view>
+      <view class="overview-card">
+        <text class="overview-label">今日识别</text>
+        <text class="overview-value">{{overview.todayIdentify}}</text>
+      </view>
+      <view class="overview-card">
+        <text class="overview-label">平均停留</text>
+        <text class="overview-value">{{overview.avgSession}}</text>
+      </view>
+    </view>
+
+    <!-- 近 7 天趋势图 -->
+    <view class="section" wx:if="{{trend.length > 0}}">
+      <view class="section-title">📈 近7天访问趋势</view>
+      <view class="trend-chart">
+        <view class="trend-bars">
+          <view class="trend-bar-wrap" wx:for="{{trend}}" wx:key="fullDate">
+            <view class="trend-bar-stack">
+              <view class="trend-bar visits" style="height: {{item.visits > 0 ? Math.min(item.visits * 2, 120) : 4}}rpx;"></view>
+            </view>
+            <text class="trend-date">{{item.date}}</text>
+            <text class="trend-val">{{item.visits}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 转化漏斗 -->
+    <view class="section" wx:if="{{funnel.visit > 0}}">
+      <view class="section-title">🔄 转化漏斗（近7天）</view>
+      <view class="funnel-wrap">
+        <view class="funnel-row">
+          <view class="funnel-bar funnel-visit" style="width: 100%;"></view>
+          <view class="funnel-info">
+            <text class="funnel-name">访问小程序</text>
+            <text class="funnel-count">{{funnel.visit}}</text>
+          </view>
+        </view>
+        <view class="funnel-arrow">▼</view>
+        <view class="funnel-row">
+          <view class="funnel-bar funnel-identify"
+                style="width: {{funnel.visit > 0 ? (funnel.identify/funnel.visit*100) : 0}}%;"></view>
+          <view class="funnel-info">
+            <text class="funnel-name">拍照识别</text>
+            <text class="funnel-count">{{funnel.identify}} ({{funnel.visit > 0 ? Math.round(funnel.identify/funnel.visit*100) : 0}}%)</text>
+          </view>
+        </view>
+        <view class="funnel-arrow">▼</view>
+        <view class="funnel-row">
+          <view class="funnel-bar funnel-add"
+                style="width: {{funnel.visit > 0 ? (funnel.addPlant/funnel.visit*100) : 0}}%;"></view>
+          <view class="funnel-info">
+            <text class="funnel-name">添加植物</text>
+            <text class="funnel-count">{{funnel.addPlant}} ({{funnel.visit > 0 ? Math.round(funnel.addPlant/funnel.visit*100) : 0}}%)</text>
+          </view>
+        </view>
+        <view class="funnel-arrow">▼</view>
+        <view class="funnel-row">
+          <view class="funnel-bar funnel-fav"
+                style="width: {{funnel.visit > 0 ? (funnel.favorite/funnel.visit*100) : 0}}%;"></view>
+          <view class="funnel-info">
+            <text class="funnel-name">收藏植物</text>
+            <text class="funnel-count">{{funnel.favorite}} ({{funnel.visit > 0 ? Math.round(funnel.favorite/funnel.visit*100) : 0}}%)</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 热门功能排行 -->
+    <view class="section" wx:if="{{topFeatures.length > 0}}">
+      <view class="section-title">🏆 热门功能排行（近7天）</view>
+      <view class="rank-list">
+        <view class="rank-item" wx:for="{{topFeatures}}" wx:key="name">
+          <text class="rank-num {{index < 3 ? 'rank-top' : ''}}">{{index + 1}}</text>
+          <text class="rank-name">{{item.name}}</text>
+          <view class="rank-bar-wrap">
+            <view class="rank-bar"
+                  style="width: {{topFeatures[0].count > 0 ? (item.count / topFeatures[0].count * 100) : 0}}%;"></view>
+          </view>
+          <text class="rank-count">{{item.count}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 实时事件流 -->
+    <view class="section" wx:if="{{recentEvents.length > 0}}">
+      <view class="section-title">🔔 实时事件流（最近20条）</view>
+      <view class="event-list">
+        <view class="event-item" wx:for="{{recentEvents}}" wx:key="*this">
+          <text class="event-time">{{item.time}}</text>
+          <text class="event-user">{{item.openId}}</text>
+          <text class="event-name">{{item.eventName}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 无数据提示 -->
+    <view class="section" wx:if="{{trend.length === 0 && funnel.visit === 0 && recentEvents.length === 0}}">
+      <view class="empty-state">
+        <text class="empty-icon">📊</text>
+        <text class="empty-text">暂无数据</text>
+        <text class="empty-desc">analytics 集合暂无记录，请确认埋点已正常上报</text>
+      </view>
+    </view>
+
+  </view>
+</view>

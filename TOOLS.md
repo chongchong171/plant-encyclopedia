@@ -201,10 +201,10 @@ cloud://plant-encyclopedia-8d9x10139590b.706c-plant-encyclopedia-8d9x10139590b-1
 ### 植物识别 API
 | 服务 | Key | 用途 | 配置位置 | 额度 |
 |------|-----|------|---------|------|
-| GLM-4-Flash | `962f865d75934dacb0dba248c39269ff.bYosRiGyN3N1aTNJ` | 云函数调用 AI 识别 | 云函数环境变量 `GLM_API_KEY` | 免费 |
-| PlantNet | `2b10FL68fQYQN3rsOHf9xCrSe` | 前端直接调用 | 云函数环境变量 `PLANTNET_API_KEY` | 免费 |
-| 百度 AI | API Key: `BA97HsZzeoehYqUm2ZlzqEkF`<br>Secret Key: `1ipudaAnfy7HRAqevg2xulhMPyH2fYx4` | 植物识别备选 | 云函数环境变量 `BAIDU_API_KEY` `BAIDU_SECRET_KEY` | 1000 次/天 |
-| Pexels | `vJlMaD0ecm89X7UDPi9wm6ekyGJnzOjBB3y5jIJJZ4QoQ1HI0rximiZz` | 植物图片搜索 | 云函数环境变量 `PEXELS_API_KEY` | 20,000 次/天 |
+| GLM-4-Flash | `已移除，请查看云函数环境变量` | 云函数调用 AI 识别 | 云函数环境变量 `GLM_API_KEY` | 免费 |
+| PlantNet | `已移除，请查看云函数环境变量` | 前端直接调用 | 云函数环境变量 `PLANTNET_API_KEY` | 免费 |
+| 百度 AI | `已移除，请查看云函数环境变量` | 植物识别备选 | 云函数环境变量 `BAIDU_API_KEY` `BAIDU_SECRET_KEY` | 1000 次/天 |
+| Pexels | `已移除，请查看云函数环境变量` | 植物图片搜索 | 云函数环境变量 `PEXELS_API_KEY` | 20,000 次/天 |
 
 ### 微信支付配置
 | 项目 | 值 |

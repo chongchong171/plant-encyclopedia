@@ -56,34 +56,100 @@ function saveCount() {
 }
 
 /**
- * 主入口：调用云函数统一识别
+ * 压缩图片：在转 Base64 前降低体积，减少传输时间
+ * @param {string} filePath 本地临时文件路径
+ * @param {number} maxSizeKB 最大允许大小
+ * @returns {Promise<string>} 压缩后的临时文件路径
  */
-const identifyPlant = async (imageBase64) => {
+async function compressImage(filePath, maxSizeKB = 1500) {
+  try {
+    const fileInfo = await wx.getFileInfo({ filePath });
+    const sizeKB = fileInfo.size / 1024;
+
+    if (sizeKB <= maxSizeKB) {
+      return filePath; // 已满足要求
+    }
+
+    console.log(`🗜️ 图片 ${sizeKB.toFixed(0)}KB，超过 ${maxSizeKB}KB，开始压缩...`);
+
+    const quality = sizeKB > 3000 ? 50 : 70;
+    const compressed = await wx.compressImage({
+      src: filePath,
+      quality
+    });
+
+    const newInfo = await wx.getFileInfo({ filePath: compressed.tempFilePath });
+    console.log(`🗜️ 压缩后：${(newInfo.size / 1024).toFixed(0)}KB`);
+
+    return compressed.tempFilePath;
+  } catch (err) {
+    console.warn('[compressImage] 压缩失败，使用原图:', err);
+    return filePath;
+  }
+}
+
+/**
+ * 读取本地图片为 Base64
+ */
+function fileToBase64(filePath) {
+  return new Promise((resolve, reject) => {
+    wx.getFileSystemManager().readFile({
+      filePath,
+      encoding: 'base64',
+      success: (res) => resolve(res.data),
+      fail: reject
+    });
+  });
+}
+
+/**
+ * 主入口：调用云函数统一识别
+ * @param {string} imageInput 可以是 Base64 字符串或本地临时文件路径
+ */
+const identifyPlant = async (imageInput) => {
   checkDailyReset()
   const startTime = Date.now()
-  
+
   console.log('🌿 ========== 开始识别 ==========')
   console.log(`📊 今日已识别：${todayCount}/${DAILY_LIMIT}`)
-  
+
   // 检查额度
   if (todayCount >= DAILY_LIMIT) {
     return { success: false, error: '今日识别次数已用完，请明天再试' }
   }
-  
+
+  let imageBase64 = imageInput;
+
+  // 如果传入的是文件路径（相册选择/拍照），先压缩再转 Base64
+  if (imageInput && typeof imageInput === 'string' && !imageInput.startsWith('data:image') && (imageInput.startsWith('http://tmp') || imageInput.startsWith('wxfile://') || imageInput.startsWith('file://'))) {
+    try {
+      const compressedPath = await compressImage(imageInput, 1500);
+      imageBase64 = await fileToBase64(compressedPath);
+    } catch (err) {
+      console.warn('[identifyPlant] 图片处理失败，尝试原图:', err);
+      // 尝试原图
+      try {
+        imageBase64 = await fileToBase64(imageInput);
+      } catch (e) {
+        return { success: false, error: '图片读取失败，请重新选择' };
+      }
+    }
+  }
+
   // 计算图片大小
   const sizeKB = imageBase64.length * 0.75 / 1024
   console.log(`📐 图片大小：${sizeKB.toFixed(1)} KB`)
-  
+
   // 云函数调用限制：5MB（5120KB）
   if (sizeKB > 5000) {
     return { success: false, error: '图片太大 (>5MB)，请选择较小的图片或压缩后上传' }
   }
-  
+
   // 建议大小：2MB 以内
   if (sizeKB > 2000) {
     console.log(`⚠️ 图片较大 (${sizeKB.toFixed(1)} KB)，可能影响识别速度`)
   }
-  
+
   console.log('☁️ 调用云函数 identifyPlant...')
   
   return new Promise((resolve) => {
@@ -93,7 +159,7 @@ const identifyPlant = async (imageBase64) => {
         imageBase64: imageBase64,
         organ: 'auto'
       },
-      timeout: 22000,  // 22 秒超时（云函数 25 秒）
+      timeout: 35000,  // 35 秒超时（云函数最长 30 秒，留足余量）
       success: (res) => {
         const duration = Date.now() - startTime
         

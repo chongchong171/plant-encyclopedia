@@ -1,0 +1,289 @@
+<!-- 管理控制台（仅管理员可见） -->
+<view class="container">
+
+  <!-- 头部 -->
+  <view class="header">
+    <text class="header-sub">热更新配置，无需重新发版</text>
+  </view>
+
+  <!-- Tab 切换 -->
+  <view class="tab-bar" wx:if="{{isAdmin}}">
+    <view class="tab-item {{currentTab === 'config' ? 'tab-active' : ''}}"
+          data-tab="config" bindtap="switchTab">
+      <text class="tab-text">配置管理</text>
+    </view>
+    <view class="tab-item {{currentTab === 'dashboard' ? 'tab-active' : ''}}"
+          data-tab="dashboard" bindtap="switchTab">
+      <text class="tab-text">数据看板</text>
+    </view>
+  </view>
+
+  <!-- 无权访问提示 -->
+  <view wx:if="{{!isAdmin}}" class="empty-state">
+    <text class="empty-icon">🔒</text>
+    <text class="empty-text">无权访问</text>
+    <text class="empty-desc">你不是管理员</text>
+  </view>
+
+  <!-- 加载中 -->
+  <view wx:if="{{isAdmin && loading && currentTab === 'config'}}" class="loading-state">
+    <text class="loading-text">加载配置中...</text>
+  </view>
+
+  <!-- ====== 配置管理 Tab ====== -->
+  <view wx:if="{{isAdmin && !loading && currentTab === 'config'}}" class="content">
+
+    <!-- 功能开关 -->
+    <view class="section">
+      <view class="section-title">🎛️ 功能开关（feature_flags）</view>
+      <view class="section-desc">修改后立即生效，所有用户下次进入页面时感知</view>
+
+      <view class="switch-list">
+        <view class="switch-item">
+          <view class="switch-info">
+            <text class="switch-name">植物商城</text>
+            <text class="switch-tip">显示/隐藏商城入口</text>
+          </view>
+          <switch checked="{{flags.shopEnabled}}" data-key="shopEnabled" bindchange="toggleFlag"></switch>
+        </view>
+
+        <view class="switch-item">
+          <view class="switch-info">
+            <text class="switch-name">花友排行榜</text>
+            <text class="switch-tip">显示/隐藏排行榜入口</text>
+          </view>
+          <switch checked="{{flags.showRanking !== false}}" data-key="showRanking" bindchange="toggleFlag"></switch>
+        </view>
+
+        <view class="switch-item">
+          <view class="switch-info">
+            <text class="switch-name">AI 智能提醒</text>
+            <text class="switch-tip">浇水/施肥提醒推送</text>
+          </view>
+          <switch checked="{{flags.showAiReminder}}" data-key="showAiReminder" bindchange="toggleFlag"></switch>
+        </view>
+
+        <view class="switch-item">
+          <view class="switch-info">
+            <text class="switch-name">植物诊断</text>
+            <text class="switch-tip">诊断悬浮按钮和页面</text>
+          </view>
+          <switch checked="{{flags.enableDiagnosis}}" data-key="enableDiagnosis" bindchange="toggleFlag"></switch>
+        </view>
+
+        <view class="switch-item">
+          <view class="switch-info">
+            <text class="switch-name">订阅消息</text>
+            <text class="switch-tip">微信订阅消息推送开关</text>
+          </view>
+          <switch checked="{{flags.enableSubscriptionMsg}}" data-key="enableSubscriptionMsg" bindchange="toggleFlag"></switch>
+        </view>
+      </view>
+    </view>
+
+    <!-- 提示 -->
+    <view class="tip-box">
+      <text class="tip-text">💡 功能开关修改后立即生效，无需重新提交审核。</text>
+    </view>
+
+  </view>
+
+  <!-- ====== 数据看板 Tab ====== -->
+  <view wx:if="{{isAdmin && currentTab === 'dashboard'}}" class="dashboard-content">
+
+    <!-- 加载中 -->
+    <view wx:if="{{dashboardLoading}}" class="loading-state">
+      <text class="loading-text">加载数据中...</text>
+    </view>
+
+    <!-- 数据内容 -->
+    <view wx:if="{{!dashboardLoading}}">
+
+      <!-- 顶部概况卡片 -->
+      <view class="overview-grid">
+        <view class="overview-card">
+          <text class="overview-label">今日访问</text>
+          <text class="overview-value">{{overview.todayVisits}}</text>
+        </view>
+        <view class="overview-card">
+          <text class="overview-label">今日新客</text>
+          <text class="overview-value">{{overview.todayNewUsers}}</text>
+        </view>
+        <view class="overview-card">
+          <text class="overview-label">今日识别</text>
+          <text class="overview-value">{{overview.todayIdentify}}</text>
+        </view>
+        <view class="overview-card">
+          <text class="overview-label">平均停留</text>
+          <text class="overview-value">{{overview.avgSession}}</text>
+        </view>
+      </view>
+
+      <!-- 关键指标行 -->
+      <view class="mini-metrics">
+        <view class="mini-metric">
+          <text class="mini-label">识别成功率</text>
+          <text class="mini-value {{identifySuccessRate.rate >= 80 ? 'good' : identifySuccessRate.rate >= 60 ? 'warn' : 'bad'}}">{{identifySuccessRate.rate}}%</text>
+        </view>
+        <view class="mini-metric">
+          <text class="mini-label">人均功能数</text>
+          <text class="mini-value">{{overview.avgFeatureUsage}}</text>
+        </view>
+        <view class="mini-metric">
+          <text class="mini-label">次日留存</text>
+          <text class="mini-value {{overview.retention1d >= 30 ? 'good' : overview.retention1d >= 15 ? 'warn' : 'bad'}}">{{overview.retention1d}}%</text>
+        </view>
+        <view class="mini-metric">
+          <text class="mini-label">7日留存</text>
+          <text class="mini-value {{overview.retention7d >= 20 ? 'good' : overview.retention7d >= 10 ? 'warn' : 'bad'}}">{{overview.retention7d}}%</text>
+        </view>
+      </view>
+
+      <!-- 近 7 天趋势图 -->
+      <view class="section" wx:if="{{trend.length > 0}}">
+        <view class="section-title">📈 近7天访问趋势</view>
+        <view class="trend-chart">
+          <view class="trend-bars">
+            <view class="trend-bar-wrap" wx:for="{{trend}}" wx:key="fullDate">
+              <view class="trend-bar-stack">
+                <view class="trend-bar visits" style="height: {{item.visits > 0 ? Math.min(item.visits * 2, 120) : 4}}rpx;"></view>
+              </view>
+              <text class="trend-date">{{item.date}}</text>
+              <text class="trend-val">{{item.visits}}</text>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <!-- 转化漏斗 -->
+      <view class="section">
+        <view class="section-title">🔄 转化漏斗（近7天）</view>
+        <view class="funnel-wrap">
+          <view class="funnel-row">
+            <view class="funnel-bar funnel-visit" style="width: 100%;"></view>
+            <view class="funnel-info">
+              <text class="funnel-name">访问小程序</text>
+              <text class="funnel-count">{{funnel.visit || 0}}</text>
+            </view>
+          </view>
+          <view class="funnel-arrow">▼</view>
+          <view class="funnel-row">
+            <view class="funnel-bar funnel-identify"
+                  style="width: {{funnel.visit > 0 ? (funnel.identify/funnel.visit*100) : 0}}%;"></view>
+            <view class="funnel-info">
+              <text class="funnel-name">拍照识别</text>
+              <text class="funnel-count">{{funnel.identify || 0}} ({{funnel.visit > 0 ? Math.round(funnel.identify/funnel.visit*100) : 0}}%)</text>
+            </view>
+          </view>
+          <view class="funnel-arrow">▼</view>
+          <view class="funnel-row">
+            <view class="funnel-bar funnel-add"
+                  style="width: {{funnel.visit > 0 ? (funnel.addPlant/funnel.visit*100) : 0}}%;"></view>
+            <view class="funnel-info">
+              <text class="funnel-name">添加植物</text>
+              <text class="funnel-count">{{funnel.addPlant || 0}} ({{funnel.visit > 0 ? Math.round(funnel.addPlant/funnel.visit*100) : 0}}%)</text>
+            </view>
+          </view>
+          <view class="funnel-arrow">▼</view>
+          <view class="funnel-row">
+            <view class="funnel-bar funnel-fav"
+                  style="width: {{funnel.visit > 0 ? (funnel.favorite/funnel.visit*100) : 0}}%;"></view>
+            <view class="funnel-info">
+              <text class="funnel-name">收藏植物</text>
+              <text class="funnel-count">{{funnel.favorite || 0}} ({{funnel.visit > 0 ? Math.round(funnel.favorite/funnel.visit*100) : 0}}%)</text>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <!-- 热门功能排行 -->
+      <view class="section" wx:if="{{topFeatures.length > 0}}">
+        <view class="section-title">🏆 热门功能排行（近7天）</view>
+        <view class="rank-list">
+          <view class="rank-item" wx:for="{{topFeatures}}" wx:key="name">
+            <text class="rank-num {{index < 3 ? 'rank-top' : ''}}">{{index + 1}}</text>
+            <text class="rank-name">{{item.name}}</text>
+            <view class="rank-bar-wrap">
+              <view class="rank-bar"
+                    style="width: {{topFeatures[0].count > 0 ? (item.count / topFeatures[0].count * 100) : 0}}%;"></view>
+            </view>
+            <text class="rank-count">{{item.count}}</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 热门植物排行 -->
+      <view class="section" wx:if="{{hotPlants.length > 0}}">
+        <view class="section-title">🔥 大家都在识（近7天）</view>
+        <view class="rank-list">
+          <view class="rank-item" wx:for="{{hotPlants}}" wx:key="name">
+            <text class="rank-num {{index < 3 ? 'rank-top' : ''}}">{{index + 1}}</text>
+            <text class="rank-name">{{item.name}}</text>
+            <view class="rank-bar-wrap">
+              <view class="rank-bar rank-bar-plant"
+                    style="width: {{hotPlants[0].count > 0 ? (item.count / hotPlants[0].count * 100) : 0}}%;"></view>
+            </view>
+            <text class="rank-count">{{item.count}}</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 活跃时段分布 -->
+      <view class="section" wx:if="{{hourlyActivity.length > 0}}">
+        <view class="section-title">⏰ 活跃时段分布（近7天）</view>
+        <view class="hour-chart">
+          <view class="hour-bars">
+            <view class="hour-bar-wrap" wx:for="{{hourlyActivity}}" wx:key="hour">
+              <view class="hour-bar-stack">
+                <view class="hour-bar" style="height: {{item.percent > 0 ? Math.max(item.percent * 1.2, 4) : 4}}rpx;"></view>
+              </view>
+              <text class="hour-label {{item.hour % 6 === 0 ? 'hour-major' : ''}}">{{item.hour}}</text>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <!-- 添加植物回访率 -->
+      <view class="section">
+        <view class="section-title">🌱 添加植物后的回访率</view>
+        <view class="return-wrap">
+          <view class="return-ring">
+            <view class="return-ring-bg"></view>
+            <view class="return-ring-fill"
+                  style="background: conic-gradient(#4CAF50 {{addPlantReturnRate.rate * 3.6}}deg, #E8F5E9 0deg);"></view>
+            <view class="return-ring-inner">
+              <text class="return-rate">{{addPlantReturnRate.rate}}%</text>
+            </view>
+          </view>
+          <view class="return-info">
+            <text class="return-desc">添加植物后3日内回访的用户比例</text>
+            <text class="return-detail">{{addPlantReturnRate.returned}} / {{addPlantReturnRate.total}} 人</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 实时事件流 -->
+      <view class="section" wx:if="{{recentEvents.length > 0}}">
+        <view class="section-title">🔔 实时事件流（最近20条）</view>
+        <view class="event-list">
+          <view class="event-item" wx:for="{{recentEvents}}" wx:key="*this">
+            <text class="event-time">{{item.time}}</text>
+            <text class="event-user">{{item.openId}}</text>
+            <text class="event-name">{{item.eventName}}</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 无数据提示 -->
+      <view class="section" wx:if="{{trend.length === 0 && funnel.visit === 0 && recentEvents.length === 0}}">
+        <view class="empty-state">
+          <text class="empty-icon">📊</text>
+          <text class="empty-text">暂无数据</text>
+          <text class="empty-desc">analytics 集合暂无记录，请确认埋点已正常上报</text>
+        </view>
+      </view>
+
+    </view>
+  </view>
+
+</view>

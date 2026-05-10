@@ -11,8 +11,9 @@
     wx:if="{{!videoLoaded}}"
   ></image>
 
-  <!-- 全屏视频（腾讯云服务器加载完成后淡入） -->
-  <video 
+  <!-- 全屏视频（延迟加载，低端机不渲染） -->
+  <video
+    wx:if="{{enableVideo}}"
     id="bgVideo"
     class="main-video {{videoLoaded ? 'fade-in' : ''}}"
     src="{{videoUrl}}"
@@ -64,10 +65,10 @@
       <scroll-view class="messages-area" scroll-y scroll-into-view="{{scrollToView}}" scroll-with-animation="true" scroll-anchoring="true">
         <!-- 欢迎卡片（第一条消息时显示，加号菜单打开时隐藏） -->
         <view wx:if="{{messages.length === 0 && !showPlusMenu}}" class="welcome-msg">
-          <view class="welcome-title">你好！我是 AI 植物管家 🌿</view>
-          <view class="welcome-subtitle">我可以帮你识别植物、提醒养护、诊断问题</view>
+          <view class="welcome-title">你好！我是你的植物管家 🌿</view>
+          <view class="welcome-subtitle">专治各种"植物养不活"疑难杂症</view>
           <view class="welcome-hint" style="margin-bottom: 12px; font-size: 12px; color: rgba(255, 255, 255, 0.7);">
-            直接提问，或点击右下角加号识别植物
+            拍照识别 · 养护提醒 · 病虫害诊断 · 花园管理
           </view>
           <view class="welcome-examples">
             <view class="example-item" bindtap="onExampleTap" data-text="推荐一些好养的植物">🌸 推荐一些好养的植物</view>

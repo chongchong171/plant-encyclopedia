@@ -21,8 +21,8 @@ exports.main = async (event, context) => {
   const wxContext = cloud.getWXContext();
   const openId = wxContext.OPENID;
   
-  console.log('[login] 用户登录:', openId);
-  
+  const maskedOpenId = openId ? openId.substring(0, 4) + '****' + openId.substring(openId.length - 4) : '';
+
   try {
     // 查询 user_stats 表，检查是否已有用户信息
     const statsRes = await db.collection('user_stats')
@@ -60,8 +60,7 @@ exports.main = async (event, context) => {
     console.error('[login] 登录失败:', err);
     return {
       success: false,
-      error: err.message,
-      openid: openId
+      error: err.message
     };
   }
 };

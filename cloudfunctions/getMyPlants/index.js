@@ -17,9 +17,7 @@ const db = cloud.database()
 exports.main = async (event, context) => {
   const wxContext = cloud.getWXContext()
   
-  console.log('getMyPlants 被调用')
-  console.log('OPENID:', wxContext.OPENID)
-  console.log('APPID:', wxContext.APPID)
+  const maskedOpenId = wxContext.OPENID ? wxContext.OPENID.substring(0, 4) + '****' + wxContext.OPENID.substring(wxContext.OPENID.length - 4) : '';
   
   // 检查用户是否登录
   if (!wxContext.OPENID) {
@@ -41,7 +39,6 @@ exports.main = async (event, context) => {
       .orderBy('careInfo.nextWatering', 'asc')
       .get()
     
-    console.log('查询成功，找到', res.data.length, '盆植物')
     
     return {
       success: true,

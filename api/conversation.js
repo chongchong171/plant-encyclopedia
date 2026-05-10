@@ -20,7 +20,7 @@ async function classifyIntent(userMessage, openid, contextInfo = null) {
     userMessage,
     openid,
     contextInfo
-  }, { timeout: 60000 })
+  }, { timeout: 15000 })
 }
 
 module.exports = {

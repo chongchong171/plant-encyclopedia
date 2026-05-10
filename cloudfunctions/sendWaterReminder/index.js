@@ -25,7 +25,6 @@ exports.main = async (event, context) => {
   const today = new Date().toISOString().split('T')[0]
   const todayStr = formatDate(new Date())
   
-  console.log(`📅 开始检查 ${today} 需要浇水的植物...`)
   
   try {
     // 查询今天需要浇水的植物
@@ -36,7 +35,6 @@ exports.main = async (event, context) => {
       .get()
     
     const plants = plantsRes.data
-    console.log(`🌱 找到 ${plants.length} 盆植物需要浇水`)
     
     if (plants.length === 0) {
       return {
@@ -85,17 +83,16 @@ exports.main = async (event, context) => {
         })
         
         successCount++
-        console.log(`✅ 发送成功: ${openid} - ${plant.name}`)
-        
+        const maskedOpenId = openid ? openid.substring(0, 4) + '****' + openid.substring(openid.length - 4) : '';
+
       } catch (err) {
         failCount++
-        console.error(`❌ 发送失败: ${openid}`, err.message)
+        const maskedOpenId = openid ? openid.substring(0, 4) + '****' + openid.substring(openid.length - 4) : '';
+        console.error(`❌ 发送失败: ${maskedOpenId}`, err.message)
         
         // 常见错误处理
         if (err.errCode === 43101) {
-          console.log('用户未订阅该模板消息')
         } else if (err.errCode === 47003) {
-          console.log('模板参数不准确')
         }
       }
       
@@ -103,7 +100,6 @@ exports.main = async (event, context) => {
       await new Promise(resolve => setTimeout(resolve, 100))
     }
     
-    console.log(`📊 发送完成: 成功 ${successCount}, 失败 ${failCount}`)
     
     return {
       success: true,

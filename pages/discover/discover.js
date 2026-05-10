@@ -3,6 +3,7 @@
  */
 const app = getApp();
 const api = require('../../api/index');
+const { IMAGE_MAP } = require('../../utils/plantImages');
 
 Page({
   data: {
@@ -59,13 +60,37 @@ Page({
         tags: ['花期长', '花色美', '芳香', '观赏性强'],
         features: ['四季有花', '香气宜人', '色彩丰富', '装饰性强']
       }
-    ]
+    ],
+
+    uiConfig: {}
   },
 
   onShow() {
+    this.refreshConfig()
     this.loadStats()
     this.loadFavorites()
     this.initHotSearches()  // 初始化热门搜索图片
+  },
+
+  /**
+   * 重新拉取远程配置（管理后台修改后立即生效）
+   */
+  refreshConfig() {
+    const app = getApp()
+    app.loadAppConfig().then(() => {
+      this.loadUIConfig()
+    }).catch(() => {
+      this.loadUIConfig()
+    })
+  },
+
+  /**
+   * 读取 UI 文案配置
+   */
+  loadUIConfig() {
+    const app = getApp();
+    const config = app?.globalData?.appConfig?.ui || {};
+    this.setData({ uiConfig: config });
   },
 
   /**
@@ -99,41 +124,6 @@ Page({
     })
   },
 
-  /**
-   * 植物名称 → 云存储 fileID 映射
-   * 图片存储位置：微信云存储
-   */
-  IMAGE_MAP: {
-    '虎尾兰': 'cloud://plant-encyclopedia-8d9x10139590b.706c-plant-encyclopedia-8d9x10139590b-1416656727/plant-images/categories/hubilan.png',
-    '长寿花': 'cloud://plant-encyclopedia-8d9x10139590b.706c-plant-encyclopedia-8d9x10139590b-1416656727/plant-images/categories/changshouhua.png',
-    '芦荟': 'cloud://plant-encyclopedia-8d9x10139590b.706c-plant-encyclopedia-8d9x10139590b-1416656727/plant-images/categories/luhui.png',
-    '富贵竹': 'cloud://plant-encyclopedia-8d9x10139590b.706c-plant-encyclopedia-8d9x10139590b-1416656727/plant-images/categories/fuguizhu.png',
-    '吊兰': 'cloud://plant-encyclopedia-8d9x10139590b.706c-plant-encyclopedia-8d9x10139590b-1416656727/plant-images/categories/diaolan.png',
-    '万年青': 'cloud://plant-encyclopedia-8d9x10139590b.706c-plant-encyclopedia-8d9x10139590b-1416656727/plant-images/categories/wannianqing.png',
-    '绿萝': 'cloud://plant-encyclopedia-8d9x10139590b.706c-plant-encyclopedia-8d9x10139590b-1416656727/plant-images/categories/lvluo.png',
-    '虎皮兰': 'cloud://plant-encyclopedia-8d9x10139590b.706c-plant-encyclopedia-8d9x10139590b-1416656727/plant-images/categories/hupilan.png',
-    '文竹': 'cloud://plant-encyclopedia-8d9x10139590b.706c-plant-encyclopedia-8d9x10139590b-1416656727/plant-images/categories/wenzhu.png',
-    '仙人掌': 'cloud://plant-encyclopedia-8d9x10139590b.706c-plant-encyclopedia-8d9x10139590b-1416656727/plant-images/categories/xianrenzhang.png',
-    '竹芋': 'cloud://plant-encyclopedia-8d9x10139590b.706c-plant-encyclopedia-8d9x10139590b-1416656727/plant-images/categories/zhuyu.png',
-    '空气凤梨': 'cloud://plant-encyclopedia-8d9x10139590b.706c-plant-encyclopedia-8d9x10139590b-1416656727/plant-images/categories/kongqifengli.png',
-    '波士顿蕨': 'cloud://plant-encyclopedia-8d9x10139590b.706c-plant-encyclopedia-8d9x10139590b-1416656727/plant-images/categories/boshidunjue.png',
-    '蜘蛛抱蛋': 'cloud://plant-encyclopedia-8d9x10139590b.706c-plant-encyclopedia-8d9x10139590b-1416656727/plant-images/categories/zhiwubaodan.png',
-    '圆叶椒草': 'cloud://plant-encyclopedia-8d9x10139590b.706c-plant-encyclopedia-8d9x10139590b-1416656727/plant-images/categories/yuanyejiaocao.png',
-    '金钱树': 'cloud://plant-encyclopedia-8d9x10139590b.706c-plant-encyclopedia-8d9x10139590b-1416656727/plant-images/categories/jinqianshu.png',
-    '君子兰': 'cloud://plant-encyclopedia-8d9x10139590b.706c-plant-encyclopedia-8d9x10139590b-1416656727/plant-images/categories/junzilan.png',
-    '蝴蝶兰': 'https://images.pexels.com/photos/11177712/pexels-photo-11177712.jpeg',  // 2026-04-16 新图：紫色蝴蝶兰
-    '栀子花': 'cloud://plant-encyclopedia-8d9x10139590b.706c-plant-encyclopedia-8d9x10139590b-1416656727/plant-images/categories/zhizihua.png',
-    '茉莉花': 'cloud://plant-encyclopedia-8d9x10139590b.706c-plant-encyclopedia-8d9x10139590b-1416656727/plant-images/categories/molihua.png',
-    '茉莉': 'cloud://plant-encyclopedia-8d9x10139590b.706c-plant-encyclopedia-8d9x10139590b-1416656727/plant-images/categories/molihua.png',
-    '天竺葵': 'cloud://plant-encyclopedia-8d9x10139590b.706c-plant-encyclopedia-8d9x10139590b-1416656727/plant-images/categories/tianzhukui.png',
-    '矮牵牛': 'cloud://plant-encyclopedia-8d9x10139590b.706c-plant-encyclopedia-8d9x10139590b-1416656727/plant-images/categories/aiqianniu.png',
-    '月季': 'cloud://plant-encyclopedia-8d9x10139590b.706c-plant-encyclopedia-8d9x10139590b-1416656727/plant-images/categories/yueji.png',
-    '发财树': 'https://images.pexels.com/photos/29150327/pexels-photo-29150327.jpeg',  // 2026-04-16 新图：发财树盆栽
-    '龟背竹': 'cloud://plant-encyclopedia-8d9x10139590b.706c-plant-encyclopedia-8d9x10139590b-1416656727/plant-images/categories/guibeizhu.png',
-    '多肉': 'cloud://plant-encyclopedia-8d9x10139590b.706c-plant-encyclopedia-8d9x10139590b-1416656727/plant-images/categories/duorou.png',
-    '蝴蝶兰': 'https://images.pexels.com/photos/11177712/pexels-photo-11177712.jpeg'  // 2026-04-16 新图
-  },
-
   // 热门搜索植物列表（用于初始化）
   HOT_SEARCH_NAMES: [
     '绿萝', '多肉', '发财树', '吊兰',
@@ -147,14 +137,13 @@ Page({
   initHotSearches() {
     const updatedHotSearches = this.HOT_SEARCH_NAMES.map(name => ({
       name: name,
-      imageUrl: this.IMAGE_MAP[name] || ''
+      imageUrl: IMAGE_MAP[name] || ''
     }))
 
     this.setData({
       hotSearches: updatedHotSearches
     })
 
-    console.log('[discover] 热门搜索初始化完成，共', updatedHotSearches.length, '个植物')
   },
 
   /**
@@ -162,10 +151,10 @@ Page({
    */
   goToSearch(e) {
     const { name } = e.currentTarget.dataset
-    const imageUrl = this.IMAGE_MAP[name] || ''
+    const imageUrl = IMAGE_MAP[name] || ''
     
     wx.navigateTo({
-      url: `/pages/search_result/search_result?search_text=${encodeURIComponent(name)}&image_url=${encodeURIComponent(imageUrl)}`
+      url: `/package-plant/pages/search_result/search_result?search_text=${encodeURIComponent(name)}&image_url=${encodeURIComponent(imageUrl)}`
     })
   },
 
@@ -174,7 +163,6 @@ Page({
    */
   focusSearch() {
     // 文字搜索，不需要特殊处理，用户直接输入即可
-    console.log('[discover] 搜索框聚焦，等待用户输入')
   },
 
   /**
@@ -201,21 +189,19 @@ Page({
     }
 
     const searchText = value.trim()
-    const knownImage = this.IMAGE_MAP[searchText]
+    const knownImage = IMAGE_MAP[searchText]
 
     // 已知植物：直接传递缩略图，秒开
     if (knownImage) {
-      console.log('[discover] 已知植物，秒开:', searchText)
       wx.navigateTo({
-        url: `/pages/search_result/search_result?search_text=${encodeURIComponent(searchText)}&image_url=${encodeURIComponent(knownImage)}`
+        url: `/package-plant/pages/search_result/search_result?search_text=${encodeURIComponent(searchText)}&image_url=${encodeURIComponent(knownImage)}`
       })
       return
     }
 
     // 未知植物：跳转搜索，显示放大镜加载动画
-    console.log('[discover] 未知植物，跳转搜索:', searchText)
     wx.navigateTo({
-      url: `/pages/search_result/search_result?search_text=${encodeURIComponent(searchText)}`
+      url: `/package-plant/pages/search_result/search_result?search_text=${encodeURIComponent(searchText)}`
     })
   },
 
@@ -233,7 +219,7 @@ Page({
     }
     const targetCategory = categoryMap[category.name] || category.name
     wx.navigateTo({
-      url: `/pages/category_list/category_list?category=${encodeURIComponent(targetCategory)}`
+      url: `/package-plant/pages/category_list/category_list?category=${encodeURIComponent(targetCategory)}`
     })
   },
 
@@ -243,9 +229,9 @@ Page({
    */
   goToPlant(e) {
     const { name } = e.currentTarget.dataset
-    const imageUrl = this.IMAGE_MAP[name] || ''
+    const imageUrl = IMAGE_MAP[name] || ''
     wx.navigateTo({
-      url: `/pages/search_result/search_result?search_text=${encodeURIComponent(name)}&image_url=${encodeURIComponent(imageUrl)}`
+      url: `/package-plant/pages/search_result/search_result?search_text=${encodeURIComponent(name)}&image_url=${encodeURIComponent(imageUrl)}`
     })
   },
 
@@ -254,7 +240,7 @@ Page({
    */
   goToFavorites() {
     wx.navigateTo({
-      url: '/pages/favorites/favorites'
+      url: '/package-user/pages/favorites/favorites'
     })
   },
 
