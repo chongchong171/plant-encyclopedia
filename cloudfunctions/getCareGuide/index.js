@@ -254,62 +254,76 @@ exports.main = async (event, context) => {
   
   if (!GLM_API_KEY) {
     console.error('[getCareGuide] GLM_API_KEY 未配置');
-    return Object.assign({ success: false, error: '服务配置错误' }, getDefaultPlant());
+    return Object.assign({ success: false, error: '服务配置错误' }, getDefaultPlant(plantName));
   }
   
-  
+
   // 并行执行：AI 调用和图片搜索同时进行
   const aiStartTime = Date.now();
   const aiPromise = (async () => {
     let plantData = null;
-    try {
-      
-      const startTime = Date.now();
-      const response = await fetch(GLM_API_URL, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${GLM_API_KEY}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          model: 'glm-4-flash',  // 使用与 identifyPlant 一致的模型，确保可用性
-          messages: [{
-            role: 'user',
-            content: PROMPT_TEMPLATE.replace('{plantName}', standardPlantName)
-          }],
-          temperature: 0.1,  // 最低随机性，提高响应速度
-          max_tokens: 1000,   // 增加 token 数量，支持更详细内容
-          stream: false      // 不使用流式响应
-        })
-      });
-      
-      
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('[getCareGuide] API 错误详情:', response.status, errorText);
-        throw new Error(`API 响应失败：${response.status} - ${errorText}`);
-      }
-      
-      const data = await response.json();
-      
-      const content = data.choices?.[0]?.message?.content || '';
-      
-      const jsonStartTime = Date.now();
-      const jsonMatch = content.match(/\{[\s\S]*\}/);
-      const jsonStr = jsonMatch ? jsonMatch[0] : '{}';
-      
+    let lastError = null;
+
+    // 最多重试 2 次
+    for (let attempt = 1; attempt <= 2; attempt++) {
       try {
-        plantData = JSON.parse(jsonStr);
-      } catch (e) {
-        console.error('[getCareGuide] JSON 解析失败:', e, '原始内容:', content);
-        plantData = null;
+        const startTime = Date.now();
+        const response = await fetchWithTimeout(GLM_API_URL, 25000, {  // 25 秒超时，留 35 秒给图片搜索
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${GLM_API_KEY}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            model: 'glm-4-flash',  // 使用与 identifyPlant 一致的模型，确保可用性
+            messages: [{
+              role: 'user',
+              content: PROMPT_TEMPLATE.replace('{plantName}', standardPlantName)
+            }],
+            temperature: 0.1,  // 最低随机性，提高响应速度
+            max_tokens: 1000,   // 增加 token 数量，支持更详细内容
+            stream: false      // 不使用流式响应
+          })
+        });
+
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error('[getCareGuide] API 错误详情:', response.status, errorText);
+          throw new Error(`API 响应失败：${response.status} - ${errorText}`);
+        }
+
+        const data = await response.json();
+
+        const content = data.choices?.[0]?.message?.content || '';
+
+        const jsonStartTime = Date.now();
+        const jsonMatch = content.match(/\{[\s\S]*\}/);
+        const jsonStr = jsonMatch ? jsonMatch[0] : '{}';
+
+        try {
+          plantData = JSON.parse(jsonStr);
+          if (plantData && plantData.success) {
+            break;  // 成功则退出重试循环
+          }
+        } catch (e) {
+          console.error('[getCareGuide] JSON 解析失败:', e, '原始内容:', content);
+          lastError = e;
+        }
+      } catch (err) {
+        console.error(`[getCareGuide] AI 调用失败 (第 ${attempt} 次):`, err);
+        lastError = err;
+        if (attempt < 2) {
+          // 等待 1 秒后重试
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        }
       }
-    } catch (err) {
-      console.error('[getCareGuide] AI 调用失败:', err);
-      console.error('[getCareGuide] 错误堆栈:', err.stack);
-      plantData = null;
     }
-    
+
+    if (!plantData) {
+      console.error('[getCareGuide] AI 调用最终失败:', lastError?.stack);
+    }
+
     return plantData;
   })();
   
@@ -376,7 +390,7 @@ exports.main = async (event, context) => {
       error: '未能获取到详细信息',
       name: plantName,
       imageUrl: imageUrl || '',
-      ...getDefaultPlant()
+      ...getDefaultPlant(plantName)
     };
   }
 };
@@ -391,6 +405,44 @@ exports.main = async (event, context) => {
  * 4. 其他植物 → 使用中文名
  */
 function getOptimalSearchQuery(plantName) {
+  // 0. 颜色敏感植物处理（如：黑玫瑰、红玫瑰、白百合等）
+  // 这些植物需要保留颜色关键词，否则会返回错误颜色的图片
+  const COLOR_SENSITIVE_PATTERNS = [
+    // 玫瑰类（颜色敏感）
+    { pattern: /^黑玫瑰$/, query: 'Black rose flower' },
+    { pattern: /^红玫瑰$/, query: 'Red rose flower' },
+    { pattern: /^白玫瑰$/, query: 'White rose flower' },
+    { pattern: /^粉玫瑰$/, query: 'Pink rose flower' },
+    { pattern: /^黄玫瑰$/, query: 'Yellow rose flower' },
+    { pattern: /^蓝玫瑰$/, query: 'Blue rose flower' },
+    { pattern: /^紫玫瑰$/, query: 'Purple rose flower' },
+    // 百合类（颜色敏感）
+    { pattern: /^白百合$/, query: 'White lily flower' },
+    { pattern: /^红百合$/, query: 'Red lily flower' },
+    { pattern: /^粉百合$/, query: 'Pink lily flower' },
+    { pattern: /^黄百合$/, query: 'Yellow lily flower' },
+    // 牡丹类（颜色敏感）
+    { pattern: /^红牡丹$/, query: 'Red peony flower' },
+    { pattern: /^白牡丹$/, query: 'White peony flower' },
+    { pattern: /^粉牡丹$/, query: 'Pink peony flower' },
+    // 郁金香类（颜色敏感）
+    { pattern: /^红郁金香$/, query: 'Red tulip flower' },
+    { pattern: /^白郁金香$/, query: 'White tulip flower' },
+    { pattern: /^黄郁金香$/, query: 'Yellow tulip flower' },
+    { pattern: /^紫郁金香$/, query: 'Purple tulip flower' },
+    // 康乃馨类（颜色敏感）
+    { pattern: /^红康乃馨$/, query: 'Red carnation flower' },
+    { pattern: /^粉康乃馨$/, query: 'Pink carnation flower' },
+    { pattern: /^白康乃馨$/, query: 'White carnation flower' },
+  ];
+
+  // 检查颜色敏感植物
+  for (const item of COLOR_SENSITIVE_PATTERNS) {
+    if (item.pattern.test(plantName)) {
+      return item.query;
+    }
+  }
+
   // 1. 特殊植物列表（容易搜索到错误结果的）
   const SPECIAL_PLANTS = {
     // 观赏植物 - 使用拉丁学名或英文
@@ -538,32 +590,33 @@ function getOptimalSearchQuery(plantName) {
 }
 
 /**
- * 默认植物信息
+ * 默认植物信息（AI 调用失败时的兜底）
+ * 修复：提供基本提示信息，而不是完全空白
  */
-function getDefaultPlant() {
+function getDefaultPlant(plantName) {
   return {
     commonNames: '',
-    scientificName: '',
+    scientificName: plantName || '',
     scientificNameLatin: '',
     family: '',
     origin: '',
-    plantProfile: '',
+    plantProfile: `正在为您查找"${plantName}"的详细信息，请稍后再试或尝试其他植物名称。`,
     growthHabit: '',
     mainValue: '',
     careGuide: {
-      light: '适中光照',
-      water: '适量浇水',
-      temperature: '室温',
+      light: '请稍后再试',
+      water: '',
+      temperature: '',
       humidity: '',
       fertilizer: '',
       soil: '',
       pruning: '',
       propagation: ''
     },
-    difficultyLevel: 3,
-    difficultyText: '适合有一定经验的养护者',
-    commonProblems: [],
-    quickTips: [],
+    difficultyLevel: 0,
+    difficultyText: '信息加载中...',
+    commonProblems: ['AI 服务暂时不可用，请稍后再试'],
+    quickTips: ['可以尝试搜索其他植物', '如：绿萝、月季、龟背竹等'],
     funFacts: [],
     imageUrl: ''
   };

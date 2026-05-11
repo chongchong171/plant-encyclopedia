@@ -663,24 +663,33 @@ Page({
    * 获取备用植物数据（当 API 失败时）
    */
   getFallbackPlant(keyword) {
-    // 云函数失败时的兜底：不编造假信息，字段留空由 WXML 控制不显示
+    // 云函数失败时的兜底：提供基本提示信息
     return {
       id: 'fallback_' + Date.now(),
       name: keyword,
       commonNames: '',
-      scientificName: '',
+      scientificName: keyword,
       scientificNameLatin: '',
       family: '',
       origin: '',
-      description: '',
+      description: `正在为您查找"${keyword}"的详细信息，请稍后再试或尝试其他植物名称。`,
       appearance: '',
       growthHabit: '',
       mainValue: '',
-      careGuide: {},
+      careGuide: {
+        light: '请稍后再试',
+        water: '',
+        temperature: '',
+        humidity: '',
+        fertilizer: '',
+        soil: '',
+        pruning: '',
+        propagation: ''
+      },
       difficultyLevel: 0,
-      difficultyText: '',
-      quickTips: [],
-      commonProblems: [],
+      difficultyText: '信息加载中...',
+      quickTips: ['可以尝试搜索其他植物', '如：绿萝、月季、龟背竹等'],
+      commonProblems: ['AI 服务暂时不可用，请稍后再试'],
       taboos: '',
       imageUrl: ''
     };
