@@ -76,9 +76,18 @@ exports.main = async (event, context) => {
  */
 async function updateUserProfile(openId, eventType, data, today, now) {
   const userRef = db.collection('analytics_users').doc(`user_${openId}`);
-  const userDoc = await userRef.get();
-  
-  if (!userDoc.data) {
+
+  // 安全获取用户文档（不存在时返回 null，而不是抛出错误）
+  let userDoc = null;
+  try {
+    const res = await userRef.get();
+    userDoc = res.data;
+  } catch (err) {
+    // 文档不存在，userDoc 保持 null
+    userDoc = null;
+  }
+
+  if (!userDoc) {
     // 新用户，创建档案
     await userRef.set({
       openId,
@@ -104,16 +113,16 @@ async function updateUserProfile(openId, eventType, data, today, now) {
     const updateData = {
       lastVisit: now
     };
-    
+
     if (eventType === 'user_visit') {
       // 检查是否是新的一天
-      const lastVisitDate = userDoc.data.lastVisit?.split('T')[0];
+      const lastVisitDate = userDoc.lastVisit?.split('T')[0];
       if (lastVisitDate !== today) {
         updateData.totalVisits = _.inc(1);
         updateData.visitDates = _.push(today);
       }
     }
-    
+
     // 更新行为计数
     const actionMap = {
       'identify_plant': 'identifyPlant',
@@ -122,19 +131,19 @@ async function updateUserProfile(openId, eventType, data, today, now) {
       'add_plant': 'addPlant',
       'favorite_plant': 'favoritePlant'
     };
-    
+
     if (actionMap[eventType]) {
       updateData[`actions.${actionMap[eventType]}`] = _.inc(1);
     }
-    
+
     // 更新会话时长
     if (eventType === 'session_end' && data?.duration) {
-      const totalSessions = (userDoc.data.totalSessions || 0) + data.duration;
-      const totalVisits = userDoc.data.totalVisits || 1;
+      const totalSessions = (userDoc.totalSessions || 0) + data.duration;
+      const totalVisits = userDoc.totalVisits || 1;
       updateData.totalSessions = totalSessions;
       updateData.avgSession = Math.round(totalSessions / totalVisits);
     }
-    
+
     await userRef.update(updateData);
   }
 }
@@ -144,36 +153,44 @@ async function updateUserProfile(openId, eventType, data, today, now) {
  */
 async function updateDailyStats(eventType, openId, data, today, now) {
   const dailyRef = db.collection('analytics_daily').doc(today);
-  const dailyDoc = await dailyRef.get();
-  
+
+  // 安全获取每日文档（不存在时返回 null）
+  let dailyDoc = null;
+  try {
+    const res = await dailyRef.get();
+    dailyDoc = res.data;
+  } catch (err) {
+    dailyDoc = null;
+  }
+
   const updateData = {};
-  
+
   // 用户统计
   if (eventType === 'user_visit') {
-    const isNewUser = !dailyDoc.data || !dailyDoc.data.visitOpenIds?.includes(openId);
-    
+    const isNewUser = !dailyDoc || !dailyDoc.visitOpenIds?.includes(openId);
+
     if (isNewUser) {
       updateData.newUsers = _.inc(1);
       updateData.visitOpenIds = _.push(openId);
     }
-    
+
     updateData.activeUsers = _.inc(1);
     if (!isNewUser) {
       updateData.returningUsers = _.inc(1);
     }
   }
-  
+
   // API 调用统计
   const apiMap = {
     'identify_plant': 'identifyPlant',
     'get_care_guide': 'getCareGuide',
     'diagnose_plant': 'diagnosePlant'
   };
-  
+
   if (apiMap[eventType]) {
     updateData[`apiCalls.${apiMap[eventType]}`] = _.inc(1);
   }
-  
+
   // 转化漏斗
   const funnelMap = {
     'user_visit': 'visit',
@@ -181,22 +198,22 @@ async function updateDailyStats(eventType, openId, data, today, now) {
     'add_plant': 'addPlant',
     'favorite_plant': 'favorite'
   };
-  
+
   if (funnelMap[eventType]) {
     updateData[`funnel.${funnelMap[eventType]}`] = _.inc(1);
   }
-  
+
   // 会话时长
   if (eventType === 'session_end' && data?.duration) {
     updateData.totalSessions = _.inc(data.duration);
     // 计算平均会话时长（总时长 / 访问次数）
-    const prevTotal = dailyDoc.data?.totalSessions || 0;
-    const prevActive = dailyDoc.data?.activeUsers || 1;
+    const prevTotal = dailyDoc?.totalSessions || 0;
+    const prevActive = dailyDoc?.activeUsers || 1;
     updateData.avgSession = Math.round((prevTotal + data.duration) / prevActive);
   }
-  
+
   if (Object.keys(updateData).length > 0) {
-    if (!dailyDoc.data) {
+    if (!dailyDoc) {
       // 创建新记录
       await dailyRef.set({
         date: today,
