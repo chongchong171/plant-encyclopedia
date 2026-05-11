@@ -1,258 +1,173 @@
 /**
  * 云函数：analytics_track
- *
- * 功能：记录用户行为数据，用于后续数据分析
- *
- * 入参：
- * {
- *   event: "user_visit" | "session_end" | "identify_plant" | "get_care_guide" | "diagnose_plant" | "add_plant" | "favorite_plant",
- *   data: { ... }  // 额外数据
- * }
- * 或批量模式：
- * {
- *   events: [{ event, data, time }, ...]
- * }
- * 注意：openId 由云函数通过 getWXContext() 安全获取，不依赖前端传递
+ * 简化版本 - 直接写入数据库
  */
 
 const cloud = require('wx-server-sdk');
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV });
 
 const db = cloud.database();
-const _ = db.command;
 
 exports.main = async (event, context) => {
   const wxContext = cloud.getWXContext();
   const openId = wxContext.OPENID;
 
+  console.log('[analytics] 开始处理, openId:', openId);
+
   if (!openId) {
-    console.error('[analytics] openId 为空');
     return { success: false, error: 'openId 为空' };
   }
 
-  // 支持批量模式和单个模式
+  // 解析事件
   let events = [];
   if (event.events && Array.isArray(event.events)) {
-    // 批量模式：前端传入 events 数组
     events = event.events;
   } else if (event.event) {
-    // 单个模式：前端传入单个 event
     events = [{ event: event.event, data: event.data }];
   } else {
-    console.error('[analytics] 参数格式错误:', event);
     return { success: false, error: '参数格式错误' };
   }
 
-  const today = new Date().toISOString().split('T')[0];  // "2026-04-13"
+  const today = new Date().toISOString().split('T')[0];
   const now = new Date().toISOString();
 
-  const maskedOpenId = openId.substring(0, 4) + '****' + openId.substring(openId.length - 4);
+  const results = {
+    user: null,
+    daily: null,
+    event: null
+  };
 
-  try {
-    // 批量处理所有事件
-    for (const evt of events) {
-      const eventType = evt.event;
-      const data = evt.data || {};
+  // 处理每个事件
+  for (const evt of events) {
+    const eventType = evt.event;
+    const data = evt.data || {};
 
-      // 1. 更新用户档案 (analytics_users)
-      await updateUserProfile(openId, eventType, data, today, now);
+    console.log('[analytics] 处理事件:', eventType);
 
-      // 2. 更新每日汇总 (analytics_daily)
-      await updateDailyStats(eventType, openId, data, today, now);
+    // 1. 写入用户档案
+    try {
+      const userId = `user_${openId}`;
+      const userRef = db.collection('analytics_users').doc(userId);
 
-      // 3. 记录事件日志 (analytics_events)
-      await logEvent(openId, eventType, data, now);
-    }
-
-    return { success: true, processed: events.length };
-  } catch (err) {
-    console.error('[analytics] 处理失败:', err);
-    return { success: false, error: err.message };
-  }
-};
-
-/**
- * 更新用户档案
- */
-async function updateUserProfile(openId, eventType, data, today, now) {
-  const userRef = db.collection('analytics_users').doc(`user_${openId}`);
-
-  // 安全获取用户文档（不存在时返回 null，而不是抛出错误）
-  let userDoc = null;
-  try {
-    const res = await userRef.get();
-    userDoc = res.data;
-  } catch (err) {
-    // 文档不存在，userDoc 保持 null
-    userDoc = null;
-  }
-
-  if (!userDoc) {
-    // 新用户，创建档案
-    await userRef.set({
-      openId,
-      registerDate: today,
-      isVip: false,
-      vipLevel: 0,
-      firstVisit: now,
-      lastVisit: now,
-      totalVisits: eventType === 'user_visit' ? 1 : 0,
-      visitDates: [today],
-      actions: {
-        identifyPlant: 0,
-        getCareGuide: 0,
-        diagnosePlant: 0,
-        addPlant: 0,
-        favoritePlant: 0
-      },
-      totalSessions: 0,
-      avgSession: 0
-    });
-  } else {
-    // 老用户，更新档案
-    const updateData = {
-      lastVisit: now
-    };
-
-    if (eventType === 'user_visit') {
-      // 检查是否是新的一天
-      const lastVisitDate = userDoc.lastVisit?.split('T')[0];
-      if (lastVisitDate !== today) {
-        updateData.totalVisits = _.inc(1);
-        updateData.visitDates = _.push(today);
+      // 尝试获取用户
+      let userExists = false;
+      try {
+        const res = await userRef.get();
+        userExists = !!res.data;
+      } catch (e) {
+        userExists = false;
       }
+
+      if (!userExists) {
+        // 创建新用户
+        await userRef.set({
+          data: {
+            openId: openId,
+            registerDate: today,
+            firstVisit: now,
+            lastVisit: now,
+            totalVisits: 1,
+            visitDates: [today],
+            actions: {
+              identifyPlant: 0,
+              getCareGuide: 0,
+              diagnosePlant: 0,
+              addPlant: 0,
+              favoritePlant: 0
+            }
+          }
+        });
+        console.log('[analytics] 用户创建成功');
+        results.user = 'created';
+      } else {
+        // 更新用户
+        await userRef.update({
+          data: {
+            lastVisit: now
+          }
+        });
+        console.log('[analytics] 用户更新成功');
+        results.user = 'updated';
+      }
+    } catch (err) {
+      console.error('[analytics] 用户操作失败:', err);
+      results.user = 'error: ' + err.message;
     }
 
-    // 更新行为计数
-    const actionMap = {
-      'identify_plant': 'identifyPlant',
-      'get_care_guide': 'getCareGuide',
-      'diagnose_plant': 'diagnosePlant',
-      'add_plant': 'addPlant',
-      'favorite_plant': 'favoritePlant'
-    };
+    // 2. 写入每日统计
+    try {
+      const dailyRef = db.collection('analytics_daily').doc(today);
 
-    if (actionMap[eventType]) {
-      updateData[`actions.${actionMap[eventType]}`] = _.inc(1);
+      // 尝试获取每日记录
+      let dailyExists = false;
+      try {
+        const res = await dailyRef.get();
+        dailyExists = !!res.data;
+      } catch (e) {
+        dailyExists = false;
+      }
+
+      if (!dailyExists) {
+        // 创建每日记录
+        await dailyRef.set({
+          data: {
+            date: today,
+            newUsers: 1,
+            activeUsers: 1,
+            returningUsers: 0,
+            visitOpenIds: [openId],
+            apiCalls: {
+              identifyPlant: 0,
+              getCareGuide: 0,
+              diagnosePlant: 0
+            },
+            funnel: {
+              visit: 1,
+              identify: 0,
+              addPlant: 0,
+              favorite: 0
+            }
+          }
+        });
+        console.log('[analytics] 每日记录创建成功');
+        results.daily = 'created';
+      } else {
+        // 更新每日记录
+        await dailyRef.update({
+          data: {
+            activeUsers: db.command.inc(1)
+          }
+        });
+        console.log('[analytics] 每日记录更新成功');
+        results.daily = 'updated';
+      }
+    } catch (err) {
+      console.error('[analytics] 每日统计操作失败:', err);
+      results.daily = 'error: ' + err.message;
     }
 
-    // 更新会话时长
-    if (eventType === 'session_end' && data?.duration) {
-      const totalSessions = (userDoc.totalSessions || 0) + data.duration;
-      const totalVisits = userDoc.totalVisits || 1;
-      updateData.totalSessions = totalSessions;
-      updateData.avgSession = Math.round(totalSessions / totalVisits);
-    }
-
-    await userRef.update(updateData);
-  }
-}
-
-/**
- * 更新每日汇总
- */
-async function updateDailyStats(eventType, openId, data, today, now) {
-  const dailyRef = db.collection('analytics_daily').doc(today);
-
-  // 安全获取每日文档（不存在时返回 null）
-  let dailyDoc = null;
-  try {
-    const res = await dailyRef.get();
-    dailyDoc = res.data;
-  } catch (err) {
-    dailyDoc = null;
-  }
-
-  const updateData = {};
-
-  // 用户统计
-  if (eventType === 'user_visit') {
-    const isNewUser = !dailyDoc || !dailyDoc.visitOpenIds?.includes(openId);
-
-    if (isNewUser) {
-      updateData.newUsers = _.inc(1);
-      updateData.visitOpenIds = _.push(openId);
-    }
-
-    updateData.activeUsers = _.inc(1);
-    if (!isNewUser) {
-      updateData.returningUsers = _.inc(1);
-    }
-  }
-
-  // API 调用统计
-  const apiMap = {
-    'identify_plant': 'identifyPlant',
-    'get_care_guide': 'getCareGuide',
-    'diagnose_plant': 'diagnosePlant'
-  };
-
-  if (apiMap[eventType]) {
-    updateData[`apiCalls.${apiMap[eventType]}`] = _.inc(1);
-  }
-
-  // 转化漏斗
-  const funnelMap = {
-    'user_visit': 'visit',
-    'identify_plant': 'identify',
-    'add_plant': 'addPlant',
-    'favorite_plant': 'favorite'
-  };
-
-  if (funnelMap[eventType]) {
-    updateData[`funnel.${funnelMap[eventType]}`] = _.inc(1);
-  }
-
-  // 会话时长
-  if (eventType === 'session_end' && data?.duration) {
-    updateData.totalSessions = _.inc(data.duration);
-    // 计算平均会话时长（总时长 / 访问次数）
-    const prevTotal = dailyDoc?.totalSessions || 0;
-    const prevActive = dailyDoc?.activeUsers || 1;
-    updateData.avgSession = Math.round((prevTotal + data.duration) / prevActive);
-  }
-
-  if (Object.keys(updateData).length > 0) {
-    if (!dailyDoc) {
-      // 创建新记录
-      await dailyRef.set({
-        date: today,
-        newUsers: 0,
-        activeUsers: 0,
-        returningUsers: 0,
-        apiCalls: {
-          identifyPlant: 0,
-          getCareGuide: 0,
-          diagnosePlant: 0
-        },
-        funnel: {
-          visit: 0,
-          identify: 0,
-          addPlant: 0,
-          favorite: 0
-        },
-        totalSessions: 0,
-        avgSession: 0,
-        visitOpenIds: [],
-        ...updateData
+    // 3. 写入事件日志
+    try {
+      await db.collection('analytics_events').add({
+        data: {
+          date: today,
+          openId: openId,
+          event: eventType,
+          timestamp: now,
+          extra: data
+        }
       });
-    } else {
-      await dailyRef.update(updateData);
+      console.log('[analytics] 事件日志写入成功');
+      results.event = 'created';
+    } catch (err) {
+      console.error('[analytics] 事件日志写入失败:', err);
+      results.event = 'error: ' + err.message;
     }
   }
-}
 
-/**
- * 记录事件日志
- */
-async function logEvent(openId, eventType, data, now) {
-  await db.collection('analytics_events').add({
-    date: now.split('T')[0],
-    openId,
-    event: eventType,
-    timestamp: now,
-    duration: data?.duration || 0,
-    success: data?.success !== false,
-    extra: data || {}
-  });
-}
+  return {
+    success: true,
+    processed: events.length,
+    results: results
+  };
+};

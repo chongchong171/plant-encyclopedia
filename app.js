@@ -230,6 +230,8 @@ App({
     this._analyticsQueue = this._analyticsQueue || [];
     this._analyticsQueue.push({ event: eventType, data: extraData, time: Date.now() });
 
+    console.log('[analytics] 添加事件:', eventType, '队列长度:', this._analyticsQueue.length);
+
     // 防抖：2 秒内的事件合并发送
     clearTimeout(this._analyticsTimer);
     this._analyticsTimer = setTimeout(() => this._flushAnalytics(), 2000);
@@ -240,10 +242,16 @@ App({
 
     const events = this._analyticsQueue.splice(0, this._analyticsQueue.length);
 
+    console.log('[analytics] 发送事件:', JSON.stringify(events));
+
     wx.cloud.callFunction({
       name: 'analytics_track',
-      data: { events },
+      data: {
+        events: events
+      },
       timeout: 5000
+    }).then(res => {
+      console.log('[analytics] 返回结果:', JSON.stringify(res.result));
     }).catch(err => {
       console.warn('[analytics] 埋点失败:', err);
     });
