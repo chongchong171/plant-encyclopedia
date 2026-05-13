@@ -133,12 +133,12 @@ Page({
     }
     
     // 未知植物：调用云函数获取信息（文字 + 图片）
-    
+
     try {
       // 优化：使用 setTimeout 防止 UI 阻塞
       const aiResult = await Promise.race([
         this.getPlantInfoFromCloud(keyword),
-        new Promise((_, reject) => setTimeout(() => reject(new Error('请求超时')), 30000))
+        new Promise((_, reject) => setTimeout(() => reject(new Error('请求超时')), 60000))  // 60 秒超时，与云函数一致
       ]);
       
       // 判断是否需要单独搜索图片（云函数失败，或成功但没返回图片）
@@ -160,7 +160,24 @@ Page({
           });
           return;
         }
-        
+
+        // 云函数返回了数据（即使 success: false），优先使用云函数的兜底数据
+        if (aiResult && aiResult.description) {
+          const stars = this.generateDifficultyStars(aiResult.difficultyLevel || 3);
+          this.setData({
+            loading: false,
+            error: false,
+            plant: {
+              ...aiResult,
+              imageUrl: searchedImageUrl || aiResult.imageUrl || ''
+            },
+            difficultyStars: stars,
+            headerImage: searchedImageUrl || aiResult.imageUrl || ''
+          });
+          this.checkFavorite();
+          return;
+        }
+
         // 云函数完全失败：使用 fallback 数据 + 搜索到的图片
         const fallbackPlant = this.getFallbackPlant(keyword);
         const stars = this.generateDifficultyStars(fallbackPlant.difficultyLevel);

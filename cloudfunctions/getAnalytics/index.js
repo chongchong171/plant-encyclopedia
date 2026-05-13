@@ -9,6 +9,13 @@
  * 5. 返回结构化数据给前端
  *
  * 入参：{ type: 'overview' | 'trend' | 'funnel' | 'events' | 'all', days: 7 }
+ *
+ * 统计规则：
+ * - 今日访问次数：不去重，每次打开都计数
+ * - 今日活跃用户：去重，同一用户多次打开只算 1 人
+ * - 今日新客访问：新用户今日打开次数
+ * - 今日老客访问：老用户今日打开次数
+ * - 平均停留：累计会话时长 / 会话数
  */
 
 const cloud = require('wx-server-sdk');
@@ -127,23 +134,31 @@ async function getOverview() {
   // 今日数据
   const daily = await getDailyDoc(today);
 
-  // 总用户数
-  let totalUsers = 0;
+  // 总累计访问人数（去重）- 从用户表统计所有访问过的用户
+  let totalUniqueVisitors = 0;
   try {
     const totalUsersRes = await db.collection('analytics_users').count();
-    totalUsers = totalUsersRes.total || 0;
+    totalUniqueVisitors = totalUsersRes.total || 0;
   } catch (err) {
-    totalUsers = 0;
+    totalUniqueVisitors = 0;
   }
 
-  // 今日新客
-  const todayNewUsers = daily.newUsers || 0;
+  // 今日访问统计
+  const todayVisits = daily.totalVisits || 0;              // 今日总访问次数（不去重）
+  const todayActiveUsers = daily.activeUsers || 0;         // 今日活跃用户数（去重）
+  const todayNewUserVisitCount = daily.newUserVisitCount || 0;  // 今日新客访问次数（不去重）
+  const todayNewUserVisitUsers = daily.newUserVisitUsers || 0;  // 今日新客访问人数（去重）
+  const todayOldUserVisitCount = daily.oldUserVisitCount || 0;  // 今日老客访问次数（不去重）
+  const todayOldUserVisitUsers = daily.oldUserVisitUsers || 0;  // 今日老客访问人数（去重）
+  const todayNewUsers = daily.newUsers || 0;               // 今日新增用户数
 
-  // 今日识别次数（从 apiCalls.identifyPlant 或 funnel.identify）
-  const todayIdentify = daily.apiCalls?.identifyPlant || daily.funnel?.identify || 0;
+  // 今日识别次数（优先从 funnel.identify 读取，这是埋点实际写入的位置）
+  const todayIdentify = daily.funnel?.identify || daily.apiCalls?.identifyPlant || 0;
 
-  // 平均会话时长（秒 -> 分:秒）
-  const avgSessionSeconds = daily.avgSession || 0;
+  // 平均会话时长（累计时长 / 会话数）
+  const totalSessionTime = daily.totalSessionTime || 0;
+  const sessionCount = daily.sessionCount || 0;
+  const avgSessionSeconds = sessionCount > 0 ? Math.round(totalSessionTime / sessionCount) : 0;
 
   // 留存率 + 人均功能使用数（从用户表聚合）
   let retention1d = 0;
@@ -187,12 +202,19 @@ async function getOverview() {
   }
 
   return {
-    todayVisits: daily.activeUsers || 0,
-    todayNewUsers,
+    // 访问统计
+    totalUniqueVisitors,          // 总累计访问人数（去重）
+    todayVisits,                  // 今日总访问次数（不去重）
+    todayActiveUsers,             // 今日活跃用户数（去重）
+    todayNewUserVisitCount,       // 今日新客访问次数（不去重）
+    todayNewUserVisitUsers,       // 今日新客访问人数（去重）
+    todayOldUserVisitCount,       // 今日老客访问次数（不去重）
+    todayOldUserVisitUsers,       // 今日老客访问人数（去重）
+    todayNewUsers,                // 今日新增用户数
+    // 其他统计
     todayIdentify,
     avgSession: formatDuration(avgSessionSeconds),
     avgSessionSeconds,
-    totalUsers,
     retention1d,
     retention7d,
     avgFeatureUsage
@@ -215,15 +237,24 @@ async function getTrend(days) {
   for (const date of dates) {
     const data = await getDailyDoc(date);
 
+    // 计算平均会话时长
+    const totalSessionTime = data.totalSessionTime || 0;
+    const sessionCount = data.sessionCount || 0;
+    const avgSession = sessionCount > 0 ? Math.round(totalSessionTime / sessionCount) : 0;
+
     trend.push({
       date: date.slice(5), // "05-09"
       fullDate: date,
-      visits: data.activeUsers || 0,
-      newUsers: data.newUsers || 0,
+      visits: data.totalVisits || 0,           // 总访问次数
+      activeUsers: data.activeUsers || 0,      // 活跃用户数
+      newUsers: data.newUsers || 0,            // 新增用户数
+      newUserVisits: data.newUserVisits || 0,  // 新客访问次数
+      oldUserVisits: data.oldUserVisits || 0,  // 老客访问次数
       returningUsers: data.returningUsers || 0,
-      identify: data.apiCalls?.identifyPlant || data.funnel?.identify || 0,
+      identify: data.funnel?.identify || data.apiCalls?.identifyPlant || 0,
       diagnose: data.apiCalls?.diagnosePlant || 0,
-      careGuide: data.apiCalls?.getCareGuide || 0
+      careGuide: data.apiCalls?.getCareGuide || 0,
+      avgSession: avgSession
     });
   }
 
@@ -314,9 +345,16 @@ async function getRecentEvents(limit = 20) {
   };
 
   return eventsRes.data.map(item => {
-    const time = item.timestamp
-      ? item.timestamp.split('T')[1]?.slice(0, 5) || '--:--'
-      : '--:--';
+    // 将 UTC 时间转换为中国时区时间（UTC+8）
+    let time = '--:--';
+    if (item.timestamp) {
+      const date = new Date(item.timestamp);
+      // 获取 UTC 时间并加 8 小时转换为中国时区
+      const chinaHours = (date.getUTCHours() + 8) % 24;
+      const hours = chinaHours.toString().padStart(2, '0');
+      const minutes = date.getUTCMinutes().toString().padStart(2, '0');
+      time = `${hours}:${minutes}`;
+    }
     const maskedId = item.openId
       ? item.openId.substring(0, 4) + '****' + item.openId.substring(item.openId.length - 4)
       : '****';
@@ -326,6 +364,7 @@ async function getRecentEvents(limit = 20) {
       openId: maskedId,
       event: item.event,
       eventName: eventNames[item.event] || item.event,
+      isNewUser: item.isNewUser,
       extra: item.extra || {}
     };
   });
@@ -345,7 +384,7 @@ async function getIdentifySuccessRate() {
     const list = res.data || [];
     if (list.length === 0) return { rate: 0, total: 0, success: 0 };
 
-    const success = list.filter(item => item.success !== false).length;
+    const success = list.filter(item => item.extra?.success !== false).length;
     return {
       rate: Math.round((success / list.length) * 100),
       total: list.length,

@@ -3,7 +3,6 @@
  * 完整意图系统 + 拍照识别
  */
 
-const VIDEO_CONFIG = require('../../config/video-config')
 const api = require('../../api/index')
 const plantIdentify = require('../../utils/plantIdentify')
 const memberLimit = require('../../utils/member-limit')
@@ -44,7 +43,7 @@ const INTENT_CONFIG = {
 Page({
   data: {
     currentPrompt: PROMPTS[0],
-    videoUrl: VIDEO_CONFIG.videoUrl,
+    videoUrl: '',  // 从 globalData 动态获取
     videoLoaded: false,
     enableVideo: false, // 延迟加载，低端机不加载
 
@@ -103,12 +102,19 @@ Page({
       console.warn('[home] 设备检测失败，默认按非低端机处理:', e)
     }
 
-    if (!isLowEnd) {
-      console.log('[home] 启用视频加载, URL:', this.data.videoUrl)
-      this.setData({ enableVideo: true })
-    } else {
-      console.log('[home] 低端机，保持静态海报')
+    // 从 globalData 获取视频地址（可能还没加载完）
+    const app = getApp()
+    const checkAndSetVideo = () => {
+      const videoUrl = app.globalData.staticResources?.homeVideo || ''
+      if (videoUrl) {
+        this.setData({ videoUrl, enableVideo: !isLowEnd })
+        console.log('[home] 视频地址已设置:', videoUrl.substring(0, 50) + '...')
+      } else {
+        // 如果还没加载完，100ms 后重试
+        setTimeout(checkAndSetVideo, 100)
+      }
     }
+    checkAndSetVideo()
 
     // 检测是否需要自动识别（从我的花园页面跳转过来）
     this.checkAutoIdentify()

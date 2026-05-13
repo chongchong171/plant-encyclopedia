@@ -8,12 +8,19 @@ Page({
   data: {
     loading: true,
     overview: {
-      todayVisits: 0,
-      todayNewUsers: 0,
+      todayVisits: 0,              // 今日总访问次数（不去重）
+      todayActiveUsers: 0,         // 今日活跃用户数（去重）
+      todayNewUserVisitCount: 0,   // 今日新客访问次数（不去重）
+      todayNewUserVisitUsers: 0,   // 今日新客访问人数（去重）
+      todayOldUserVisitCount: 0,   // 今日老客访问次数（不去重）
+      todayOldUserVisitUsers: 0,   // 今日老客访问人数（去重）
+      todayNewUsers: 0,            // 今日新增用户数
       todayIdentify: 0,
       avgSession: '0秒'
     },
     trend: [],
+    totalUniqueVisitors: 0,        // 近7天累计总访问人数（去重）
+    lastDayActiveUsers: 0,         // 最近一天活跃用户数
     funnel: { visit: 0, identify: 0, addPlant: 0, favorite: 0 },
     topFeatures: [],
     recentEvents: []
@@ -39,9 +46,15 @@ Page({
       });
 
       if (result?.success) {
+        // 计算最近一天活跃用户数
+        const trend = result.trend || [];
+        const lastDayActiveUsers = trend.length > 0 ? (trend[trend.length - 1].activeUsers || 0) : 0;
+
         this.setData({
           overview: result.overview || this.data.overview,
-          trend: result.trend || [],
+          trend: trend,
+          totalUniqueVisitors: result.totalUniqueVisitors || 0,
+          lastDayActiveUsers: lastDayActiveUsers,
           funnel: result.funnel || { visit: 0, identify: 0, addPlant: 0, favorite: 0 },
           topFeatures: result.topFeatures || [],
           recentEvents: result.recentEvents || [],

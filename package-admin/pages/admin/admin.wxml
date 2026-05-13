@@ -99,23 +99,65 @@
     <!-- 数据内容 -->
     <view wx:if="{{!dashboardLoading}}">
 
-      <!-- 顶部概况卡片 -->
+      <!-- 累计总访问人数（置顶） -->
+      <view class="total-visitors-top">
+        <text class="total-visitors-label">累计总访问人数</text>
+        <text class="total-visitors-value">{{overview.totalUniqueVisitors}}</text>
+        <text class="total-visitors-unit">人（去重）</text>
+        <view class="refresh-btn" bindtap="loadDashboard">
+          <text class="refresh-icon">🔄</text>
+        </view>
+      </view>
+
+      <!-- 顶部概况卡片 - 第一行 -->
       <view class="overview-grid">
         <view class="overview-card">
-          <text class="overview-label">今日访问</text>
+          <text class="overview-label">今日访问次数</text>
           <text class="overview-value">{{overview.todayVisits}}</text>
+          <text class="overview-sub">（不去重）</text>
         </view>
         <view class="overview-card">
-          <text class="overview-label">今日新客</text>
-          <text class="overview-value">{{overview.todayNewUsers}}</text>
+          <text class="overview-label">今日活跃用户</text>
+          <text class="overview-value">{{overview.todayActiveUsers}}</text>
+          <text class="overview-sub">（去重）</text>
         </view>
         <view class="overview-card">
           <text class="overview-label">今日识别</text>
           <text class="overview-value">{{overview.todayIdentify}}</text>
+          <text class="overview-sub">次</text>
         </view>
         <view class="overview-card">
           <text class="overview-label">平均停留</text>
           <text class="overview-value">{{overview.avgSession}}</text>
+          <text class="overview-sub">/会话</text>
+        </view>
+      </view>
+
+      <!-- 新客统计 -->
+      <view class="overview-grid">
+        <view class="overview-card overview-card-new">
+          <text class="overview-label">新客访问次数</text>
+          <text class="overview-value">{{overview.todayNewUserVisitCount}}</text>
+          <text class="overview-sub">（不去重）</text>
+        </view>
+        <view class="overview-card overview-card-new">
+          <text class="overview-label">新客访问人数</text>
+          <text class="overview-value">{{overview.todayNewUserVisitUsers}}</text>
+          <text class="overview-sub">（去重）新增 {{overview.todayNewUsers}} 人</text>
+        </view>
+      </view>
+
+      <!-- 老客统计 -->
+      <view class="overview-grid">
+        <view class="overview-card overview-card-old">
+          <text class="overview-label">老客访问次数</text>
+          <text class="overview-value">{{overview.todayOldUserVisitCount}}</text>
+          <text class="overview-sub">（不去重）</text>
+        </view>
+        <view class="overview-card overview-card-old">
+          <text class="overview-label">老客访问人数</text>
+          <text class="overview-value">{{overview.todayOldUserVisitUsers}}</text>
+          <text class="overview-sub">（去重）回访用户</text>
         </view>
       </view>
 

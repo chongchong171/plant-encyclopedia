@@ -23,8 +23,13 @@ Page({
     // 数据看板
     dashboardLoading: true,
     overview: {
-      todayVisits: 0,
-      todayNewUsers: 0,
+      todayVisits: 0,              // 今日总访问次数（不去重）
+      todayActiveUsers: 0,         // 今日活跃用户数（去重）
+      todayNewUserVisitCount: 0,   // 今日新客访问次数（不去重）
+      todayNewUserVisitUsers: 0,   // 今日新客访问人数（去重）
+      todayOldUserVisitCount: 0,    // 今日老客访问次数（不去重）
+      todayOldUserVisitUsers: 0,   // 今日老客访问人数（去重）
+      todayNewUsers: 0,            // 今日新增用户数
       todayIdentify: 0,
       avgSession: '0秒',
       retention1d: 0,

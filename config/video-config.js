@@ -17,7 +17,7 @@
 
 const VIDEO_CONFIG = {
   // 首页视频配置（微信云存储 - 原生支持，播放稳定）
-  videoUrl: 'cloud://plant-encyclopedia-8d9x10139590b.706c-plant-encyclopedia-8d9x10139590b-1416656727/home-video-v12.mp4',
+  videoUrl: 'cloud://plant-encyclopedia-d-d1af4e84f48.706c-plant-encyclopedia-d-d1af4e84f48-1416656727/优化版H2.65 harmonyos.mp4',
   
   // 备用地址（空）
   backupUrl: '',

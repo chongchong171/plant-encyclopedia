@@ -174,6 +174,24 @@ exports.main = async (event, context) => {
       const baiduErr = settled[0].status === 'fulfilled' ? settled[0].value?.error : settled[0].reason?.message
       const plantnetErr = settled[1].status === 'fulfilled' ? settled[1].value?.error : settled[1].reason?.message
       console.error(`[identifyPlant] ${Date.now() - startTime}ms - 全部失败：百度=${baiduErr}, PlantNet=${plantnetErr}`)
+      const totalDuration = Date.now() - startTime;
+
+      // 埋点：记录识图失败（传入 openId，确保云函数调用链中身份正确传递）
+      if (userOpenId) {
+        cloud.callFunction({
+          name: 'analytics_track',
+          data: {
+            openId: userOpenId,
+            event: 'identify_plant',
+            data: {
+              success: false,
+              duration: totalDuration,
+              error: `百度=${baiduErr}, PlantNet=${plantnetErr}`
+            }
+          }
+        }).catch(() => {});
+      }
+
       const missingKeys = []
       if (!BAIDU_API_KEY) missingKeys.push('BAIDU_API_KEY')
       if (!BAIDU_SECRET_KEY) missingKeys.push('BAIDU_SECRET_KEY')
@@ -193,7 +211,25 @@ exports.main = async (event, context) => {
     let result = best.result
 
     if (!result.success) {
-      console.error(`[identifyPlant] ${Date.now() - startTime}ms - 全部失败：`, result.error)
+      const totalDuration = Date.now() - startTime;
+      console.error(`[identifyPlant] ${totalDuration}ms - 全部失败：`, result.error)
+
+      // 埋点：记录识图失败（传入 openId）
+      if (userOpenId) {
+        cloud.callFunction({
+          name: 'analytics_track',
+          data: {
+            openId: userOpenId,
+            event: 'identify_plant',
+            data: {
+              success: false,
+              duration: totalDuration,
+              error: result.error
+            }
+          }
+        }).catch(() => {});
+      }
+
       return {
         success: false,
         error: '网络连接不稳定，请稍后重试。如果多次失败，建议检查网络或换个时间段再试。'
@@ -255,14 +291,13 @@ exports.main = async (event, context) => {
     }
     
     const totalDuration = Date.now() - startTime;
-    
-    // 埋点：记录识图成功（统一走 analytics_track，同时更新 daily 和 users）
-    const wxContext = cloud.getWXContext();
-    const openId = wxContext.OPENID;
-    if (openId && result.data?.name) {
+
+    // 埋点：记录识图成功（传入 openId，确保云函数调用链中身份正确传递）
+    if (userOpenId && result.data?.name) {
       cloud.callFunction({
         name: 'analytics_track',
         data: {
+          openId: userOpenId,
           event: 'identify_plant',
           data: {
             plantName: result.data.name,
@@ -276,11 +311,11 @@ exports.main = async (event, context) => {
 
     // 更新今日识别额度计数
     try {
-      const quotaKey = `identify_quota_${openId}_${today}`
+      const quotaKey = `identify_quota_${userOpenId}_${today}`
       await db.collection('daily_quota').doc(quotaKey).set({
         count: db.command.inc(1),
         date: today,
-        openId: openId,
+        openId: userOpenId,
         updatedAt: new Date().toISOString()
       })
     } catch (e) {
@@ -303,13 +338,14 @@ exports.main = async (event, context) => {
     const totalDuration = Date.now() - startTime;
     console.error(`[identifyPlant] ${totalDuration}ms - 识别失败:`, err)
     
-    // 埋点：记录识图失败（统一走 analytics_track）
+    // 埋点：记录识图失败（传入 openId）
     const wxContext = cloud.getWXContext();
     const openId = wxContext.OPENID;
     if (openId) {
       cloud.callFunction({
         name: 'analytics_track',
         data: {
+          openId: openId,
           event: 'identify_plant',
           data: {
             success: false,

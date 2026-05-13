@@ -13,28 +13,33 @@ App({
     hasLogin: false,
     openid: null,
     needUserInfoAuth: false,
-    
-    // 会话时长统计
-    launchTime: Date.now(),
-    
+
+    // 会话时长统计（在 onLaunch 中初始化）
+    launchTime: 0,
+
+    // 静态资源（视频等）- 在 onLaunch 中动态初始化
+    staticResources: {
+      homeVideo: ''  // 首页视频地址（动态获取）
+    },
+
     // API Key 配置 - 建议从云函数环境变量获取
     // 本地开发时可临时配置以下值（生产环境请移除）
     // plantnetApiKey: 云函数环境变量 PLANTNET_API_KEY
     // baiduApiKey: 云函数环境变量 BAIDU_API_KEY
     // baiduSecretKey: 云函数环境变量 BAIDU_SECRET_KEY
-    
+
     // 热门植物配置（统一管理）
     hotPlants: [
       '绿萝', '多肉', '君子兰', '发财树',
       '蝴蝶兰', '吊兰', '龟背竹', '富贵竹',
       '仙人掌', '芦荟', '栀子花', '茉莉花'
     ],
-    
+
     // 识别额度
     identifyCount: 0,
     identifyLimit: 500,  // PlantNet 免费 500次/天
     plantCache: {},
-    
+
     // 用户数据
     favorites: [],
     history: []
@@ -46,12 +51,22 @@ App({
     // 记录启动时间
     this.globalData.launchTime = Date.now();
 
-    if (wx.cloud) {
-      wx.cloud.init({
-        env: 'plant-encyclopedia-8d9x10139590b',
-        traceUser: true
-      });
-    }
+    // ========== 云开发环境初始化 ==========
+    const info = wx.getAccountInfoSync().miniProgram;
+    const TEST_ENV = "plant-encyclopedia-d-d1af4e84f48";
+    const PROD_ENV = "plant-encyclopedia-8d9x10139590b";
+
+    // 开发/体验版 → 测试环境，正式版 → 生产环境
+    const envId = (info.envVersion === "develop" || info.envVersion === "trial")
+      ? TEST_ENV
+      : PROD_ENV;
+
+    wx.cloud.init({ env: envId, traceUser: true });
+    console.log('[app] 云开发环境:', envId, '小程序版本:', info.envVersion);
+    // ======================================
+
+    // 预转换静态资源地址（视频等）
+    this.initStaticResources(envId);
 
     // 并行执行独立的初始化任务，减少串行阻塞
     await Promise.all([
@@ -73,6 +88,40 @@ App({
     // 标记需要引导授权（在首页由用户点击触发）
     if (this.globalData.needUserInfoAuth) {
       console.log('[app] 需要引导用户授权信息');
+    }
+  },
+
+  /**
+   * 初始化静态资源（视频等）
+   * 根据当前环境动态获取云存储资源的临时访问地址
+   */
+  async initStaticResources(envId) {
+    // 视频版本号（用于解决缓存问题）
+    const VIDEO_VERSION = '20260513';
+
+    // 根据环境选择视频文件路径
+    const videoFileId = envId === 'plant-encyclopedia-d-d1af4e84f48'
+      ? 'cloud://plant-encyclopedia-d-d1af4e84f48.706c-plant-encyclopedia-d-d1af4e84f48-1416656727/H2.65home_video.mp4'
+      : 'cloud://plant-encyclopedia-8d9x10139590b.706c-plant-encyclopedia-8d9x10139590b-1416656727/H2.65home_video.mp4';
+
+    console.log('[app] 初始化视频资源, 环境:', envId);
+
+    try {
+      // 获取临时访问地址
+      const res = await wx.cloud.getTempFileURL({
+        fileList: [videoFileId]
+      });
+
+      if (res.fileList && res.fileList[0] && res.fileList[0].tempFileURL) {
+        // 添加版本号参数解决缓存问题
+        const videoUrl = res.fileList[0].tempFileURL + '?v=' + VIDEO_VERSION;
+        this.globalData.staticResources.homeVideo = videoUrl;
+        console.log('[app] 视频地址转换成功');
+      } else {
+        console.error('[app] 视频地址转换失败:', res);
+      }
+    } catch (err) {
+      console.error('[app] 获取视频临时地址失败:', err);
     }
   },
 

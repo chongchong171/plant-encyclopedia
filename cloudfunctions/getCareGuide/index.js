@@ -127,8 +127,28 @@ function isPlantName(name) {
   return 'needs_verification';
 }
 
-// 固定模板（极简版：更快响应）
-const PROMPT_TEMPLATE = `你是一位资深植物爱好者，养过上百种植物，对"{plantName}"了如指掌。请像给朋友写养护笔记一样，分享这盆植物的特点和养护心得，让读者感觉到你在真心分享经验，而不是在背课本。\n\n请直接返回以下 JSON，字段内容要生动自然、有"人味儿"，避免模板化套话：\n{"success":true,"name":"{plantName}","commonNames":"常见别名，口语化","scientificName":"中文学名","scientificNameLatin":"拉丁学名","family":"科属","origin":"原产地，像讲故事一样","plantProfile":"植物档案：形态特征、观赏价值，自然描述，像在植物园里给朋友介绍","growthHabit":"生长习性：环境偏好、生长特点，像在分享你的养花经验","mainValue":"主要价值：观赏、净化、寓意，像聊天一样说出来","careGuide":{"light":"光照建议：像叮嘱朋友一样说","water":"浇水建议：春夏秋冬分别怎么浇，手把手的经验","temperature":"温度建议：适宜范围和过冬注意","humidity":"湿度建议：喜干还是喜湿，怎么判断","fertilizer":"施肥建议：什么时候施、用什么肥","soil":"土壤建议：配土比例，像老园丁的秘诀","pruning":"修剪建议：什么时候剪、怎么剪","propagation":"繁殖建议：最佳时间和方法"},"difficultyLevel":1-5,"difficultyText":"养护难度：像朋友间评价这盆花好不好养","quickTips":["实用养护要点，像小窍门一样","贴心提醒，像老朋友的叮嘱"],"commonProblems":["常见问题 + 解决方法，像在分享自己的踩坑经验"]}\n\n要求：1.只返回 JSON 2.不要解释 3.快速响应 4.拉丁学名准确 5.内容生动有温度`;
+// 精简模板（减少传输大小，提高响应速度）
+const PROMPT_TEMPLATE = `请用JSON格式介绍植物"{plantName}"的养护方法。JSON结构如下，请填写实际内容：
+{
+  "success": true,
+  "name": "{plantName}",
+  "plantProfile": "描述外观特点",
+  "growthHabit": "生长环境偏好",
+  "mainValue": "观赏价值",
+  "careGuide": {
+    "light": "光照需求",
+    "water": "浇水频率",
+    "temperature": "适宜温度范围",
+    "humidity": "湿度需求",
+    "fertilizer": "施肥建议",
+    "soil": "土壤要求"
+  },
+  "difficultyLevel": 3,
+  "difficultyText": "养护难度评价",
+  "quickTips": ["养护要点"],
+  "commonProblems": ["常见问题"]
+}
+只返回JSON，不要其他文字。`;
 
 const GLM_API_URL = 'https://open.bigmodel.cn/api/paas/v4/chat/completions';
 const GLM_API_KEY = process.env.GLM_API_KEY;
@@ -187,12 +207,13 @@ exports.main = async (event, context) => {
     if (PLANT_CACHE[standardPlantName]) {
       const cached = JSON.parse(JSON.stringify(PLANT_CACHE[standardPlantName])); // 深拷贝
       
-      // 埋点（统一走 analytics_track）
+      // 埋点（传入 openId）
       const wxContext = cloud.getWXContext();
       if (wxContext.OPENID) {
         cloud.callFunction({
           name: 'analytics_track',
           data: {
+            openId: wxContext.OPENID,
             event: 'get_care_guide',
             data: {
               plantName,
@@ -258,70 +279,82 @@ exports.main = async (event, context) => {
   }
   
 
+// 超精简备用模板（仅当主模板失败时使用）
+const PROMPT_TEMPLATE_SIMPLE = `关于"{plantName}"，返回JSON：{"success":true,"name":"{plantName}","plantProfile":"简介","growthHabit":"习性","mainValue":"价值","careGuide":{"light":"光照","water":"浇水"},"difficultyLevel":3,"difficultyText":"难度"}`;
+
+/**
+ * 调用 GLM API（带重试机制）
+ */
+async function callGLMApi(plantName, retryCount = 0) {
+  const startTime = Date.now();
+  const timeout = retryCount > 0 ? 15000 : 20000; // 重试时缩短超时
+  const prompt = retryCount > 0 ? PROMPT_TEMPLATE_SIMPLE : PROMPT_TEMPLATE;
+
+  try {
+    console.log(`[getCareGuide] GLM 调用开始 (重试: ${retryCount}), 植物: ${plantName}`);
+
+    const response = await fetchWithTimeout(GLM_API_URL, timeout, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${GLM_API_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: 'glm-4-flash',
+        messages: [{
+          role: 'user',
+          content: prompt.replace('{plantName}', plantName)
+        }],
+        temperature: 0.1,
+        max_tokens: retryCount > 0 ? 300 : 500,
+        stream: false
+      })
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('[getCareGuide] API 错误:', response.status, errorText);
+      return null;
+    }
+
+    const data = await response.json();
+    const content = data.choices?.[0]?.message?.content || '';
+
+    console.log('[getCareGuide] GLM 返回长度:', content.length, '耗时:', Date.now() - startTime, 'ms');
+
+    if (!content) {
+      console.error('[getCareGuide] GLM 返回空内容');
+      return null;
+    }
+
+    const jsonMatch = content.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+      console.error('[getCareGuide] 未找到 JSON');
+      return null;
+    }
+
+    const plantData = JSON.parse(jsonMatch[0]);
+    if (plantData && plantData.success) {
+      console.log('[getCareGuide] GLM 成功, 总耗时:', Date.now() - startTime, 'ms');
+      return plantData;
+    }
+    return null;
+  } catch (err) {
+    console.error('[getCareGuide] GLM 调用异常:', err.message, '耗时:', Date.now() - startTime, 'ms');
+    return null;
+  }
+}
+
   // 并行执行：AI 调用和图片搜索同时进行
   const aiStartTime = Date.now();
   const aiPromise = (async () => {
-    let plantData = null;
-    let lastError = null;
+    // 第一次尝试
+    let plantData = await callGLMApi(standardPlantName, 0);
 
-    // 最多重试 2 次
-    for (let attempt = 1; attempt <= 2; attempt++) {
-      try {
-        const startTime = Date.now();
-        const response = await fetchWithTimeout(GLM_API_URL, 25000, {  // 25 秒超时，留 35 秒给图片搜索
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${GLM_API_KEY}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            model: 'glm-4-flash',  // 使用与 identifyPlant 一致的模型，确保可用性
-            messages: [{
-              role: 'user',
-              content: PROMPT_TEMPLATE.replace('{plantName}', standardPlantName)
-            }],
-            temperature: 0.1,  // 最低随机性，提高响应速度
-            max_tokens: 1000,   // 增加 token 数量，支持更详细内容
-            stream: false      // 不使用流式响应
-          })
-        });
-
-
-        if (!response.ok) {
-          const errorText = await response.text();
-          console.error('[getCareGuide] API 错误详情:', response.status, errorText);
-          throw new Error(`API 响应失败：${response.status} - ${errorText}`);
-        }
-
-        const data = await response.json();
-
-        const content = data.choices?.[0]?.message?.content || '';
-
-        const jsonStartTime = Date.now();
-        const jsonMatch = content.match(/\{[\s\S]*\}/);
-        const jsonStr = jsonMatch ? jsonMatch[0] : '{}';
-
-        try {
-          plantData = JSON.parse(jsonStr);
-          if (plantData && plantData.success) {
-            break;  // 成功则退出重试循环
-          }
-        } catch (e) {
-          console.error('[getCareGuide] JSON 解析失败:', e, '原始内容:', content);
-          lastError = e;
-        }
-      } catch (err) {
-        console.error(`[getCareGuide] AI 调用失败 (第 ${attempt} 次):`, err);
-        lastError = err;
-        if (attempt < 2) {
-          // 等待 1 秒后重试
-          await new Promise(resolve => setTimeout(resolve, 1000));
-        }
-      }
-    }
-
+    // 如果失败，使用简化模板重试一次
     if (!plantData) {
-      console.error('[getCareGuide] AI 调用最终失败:', lastError?.stack);
+      console.log('[getCareGuide] 主模板失败，尝试简化模板...');
+      plantData = await callGLMApi(standardPlantName, 1);
     }
 
     return plantData;
@@ -357,40 +390,27 @@ exports.main = async (event, context) => {
   
   // 等待两个任务都完成
   const [plantData, imageUrl] = await Promise.all([aiPromise, imagePromise]);
-  
-  
+
   // 返回结果
   if (plantData && plantData.success) {
-    // 埋点（统一走 analytics_track）
-    if (openId) {
-      cloud.callFunction({
-        name: 'analytics_track',
-        data: {
-          event: 'get_care_guide',
-          data: {
-            plantName,
-            success: true,
-            duration: Date.now() - startTime,
-            fromCache: false,
-            hasImage: !!imageUrl
-          }
-        }
-      }).catch(() => {});
-    }
-
+    console.log('[getCareGuide] 总耗时:', Date.now() - startTime, 'ms, AI成功');
     return {
       success: true,
       ...plantData,
+      description: plantData.description || plantData.plantProfile || '',
       imageUrl: imageUrl || '',
-      name: plantName  // 使用用户搜索的名称
+      name: plantName
     };
   } else {
+    console.log('[getCareGuide] 总耗时:', Date.now() - startTime, 'ms, AI失败');
+    const defaultPlant = getDefaultPlant(plantName);
     return {
       success: false,
-      error: '未能获取到详细信息',
+      error: 'AI 服务暂时不可用',
       name: plantName,
+      description: defaultPlant.plantProfile,
       imageUrl: imageUrl || '',
-      ...getDefaultPlant(plantName)
+      ...defaultPlant
     };
   }
 };

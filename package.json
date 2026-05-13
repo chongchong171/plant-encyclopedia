@@ -5,6 +5,7 @@
   },
   "devDependencies": {
     "miniprogram-automator": "^0.12.1",
-    "miniprogram-ci": "^2.1.31"
+    "miniprogram-ci": "^2.1.31",
+    "node-fetch": "^3.3.2"
   }
 }

@@ -78,7 +78,7 @@
     "compileWorklet": false,
     "minifyWXML": true,
     "localPlugins": false,
-    "condition": false,
+    "condition": true,
     "swc": true,
     "disableSWC": false
   },
@@ -110,6 +110,9 @@
   "cloud": {
     "envId": "plant-encyclopedia-8d9x10139590b"
   },
-  "simulatorPluginLibVersion": {},
-  "editorSetting": {}
+  "simulatorPluginLibVersion": {
+    "wxext14566970e7e9f62": "2.27.3"
+  },
+  "editorSetting": {},
+  "projectArchitecture": "multiPlatform"
 }
